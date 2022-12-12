@@ -107,7 +107,7 @@ You may use and modify this file unter the terms of the MIT licence.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
--- <li><a href="QSB_0_Kernel.api.html">(0) Kernel</a></li>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
 -- </ul>
 --
 -- @within Modulbeschreibung
@@ -195,7 +195,10 @@ function API.StopEventPlaylist(_Playlist, _PlayerID)
 end
 
 ---
--- Spielt einen Sound aus dem Spiel ab.
+-- Spielt einen 2D-Sound aus dem Spiel ab.
+--
+-- Ein 2D-Sound ist nicht positionsgebunden und ist immer zu hören, egal an
+-- welcher Stelle auf der Map sich die Kamera befindet.
 --
 -- Wenn eigene Sounds verwendet werden sollen, müssen sie im WAV-Format
 -- vorliegen und in die zwei Verzeichnisse für niedrige und hohe Qualität
@@ -213,16 +216,68 @@ end
 -- @within Anwenderfunktionen
 --
 -- @usage
--- API.PlaySound("ui\\menu_left_gold_pay");
+-- API.Play2DSound("ui/menu_left_gold_pay");
 --
-function API.PlaySound(_Sound, _PlayerID)
+function API.Play2DSound(_Sound, _PlayerID)
     _PlayerID = _PlayerID or 1;
     if not GUI then
-        Logic.ExecuteInLuaLocalState(string.format([[API.PlaySound("%s", %d)]], _Sound, _PlayerID));
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[API.Play2DSound("%s", %d)]],
+            _Sound,
+            _PlayerID
+        ));
         return;
     end
     if _PlayerID == GUI.GetPlayerID() then
-        Sound.FXPlay2DSound(_Sound);
+        Sound.FXPlay2DSound(_Sound:gsub("/", "\\"));
+    end
+end
+API.PlaySound = API.Play2DSound;
+
+---
+-- Spielt einen 3D-Sound aus dem Spiel ab.
+--
+-- Ein 3D-Sound wird an einer bestimmten Position abgespielt und ist nur in
+-- einem begrenzten Bereich um die Position höhrbar.
+--
+-- Wenn eigene Sounds verwendet werden sollen, müssen sie im WAV-Format
+-- vorliegen und in die zwei Verzeichnisse für niedrige und hohe Qualität
+-- kopiert werden.
+--
+-- Verzeichnisstruktur für eigene Sounds:
+-- <pre>map_xyz.s6xmap.unpacked
+--|-- sounds/high/ui/*
+--|-- sounds/low/ui/*
+--|-- maps/externalmap/map_xyz/*
+--|-- ...</pre>
+--
+-- @param _Sound    Pfad des Sound
+-- @param _X        X-Position des Sound
+-- @param _Y        Y-Position des Sound
+-- @param _Z        Z-Position des Sound
+-- @param _PlayerID (Optional) ID des menschlichen Spielers
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.Play3DSound("Animals/cow_disease", 8500, 35800, 2000);
+--
+function API.Play3DSound(_Sound, _X, _Y, _Z, _PlayerID)
+    _PlayerID = _PlayerID or 1;
+    _X = _X or 1;
+    _Y = _Y or 1
+    _Z = _Z or 0
+    if not GUI then
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[API.Play3DSound("%s", %f, %f, %d)]],
+            _Sound,
+            _X,
+            _Y,
+            _PlayerID
+        ));
+        return;
+    end
+    if _PlayerID == GUI.GetPlayerID() then
+        Sound.FXPlay3DSound(_Sound:gsub("/", "\\"), _X, _Y, _Z);
     end
 end
 

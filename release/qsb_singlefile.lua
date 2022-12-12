@@ -14926,7 +14926,7 @@ You may use and modify this file unter the terms of the MIT licence.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
--- <li><a href="QSB_0_Kernel.api.html">(0) Kernel</a></li>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
 -- </ul>
 --
 -- @within Beschreibung
@@ -16628,7 +16628,7 @@ You may use and modify this file unter the terms of the MIT licence.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
--- <li><a href="QSB_0_Kernel.api.html">(0) Kernel</a></li>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
 -- </ul>
 --
 -- @within Modulbeschreibung
@@ -16716,7 +16716,10 @@ function API.StopEventPlaylist(_Playlist, _PlayerID)
 end
 
 ---
--- Spielt einen Sound aus dem Spiel ab.
+-- Spielt einen 2D-Sound aus dem Spiel ab.
+--
+-- Ein 2D-Sound ist nicht positionsgebunden und ist immer zu hören, egal an
+-- welcher Stelle auf der Map sich die Kamera befindet.
 --
 -- Wenn eigene Sounds verwendet werden sollen, müssen sie im WAV-Format
 -- vorliegen und in die zwei Verzeichnisse für niedrige und hohe Qualität
@@ -16734,16 +16737,68 @@ end
 -- @within Anwenderfunktionen
 --
 -- @usage
--- API.PlaySound("ui\\menu_left_gold_pay");
+-- API.Play2DSound("ui/menu_left_gold_pay");
 --
-function API.PlaySound(_Sound, _PlayerID)
+function API.Play2DSound(_Sound, _PlayerID)
     _PlayerID = _PlayerID or 1;
     if not GUI then
-        Logic.ExecuteInLuaLocalState(string.format([[API.PlaySound("%s", %d)]], _Sound, _PlayerID));
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[API.Play2DSound("%s", %d)]],
+            _Sound,
+            _PlayerID
+        ));
         return;
     end
     if _PlayerID == GUI.GetPlayerID() then
-        Sound.FXPlay2DSound(_Sound);
+        Sound.FXPlay2DSound(_Sound:gsub("/", "\\"));
+    end
+end
+API.PlaySound = API.Play2DSound;
+
+---
+-- Spielt einen 3D-Sound aus dem Spiel ab.
+--
+-- Ein 3D-Sound wird an einer bestimmten Position abgespielt und ist nur in
+-- einem begrenzten Bereich um die Position höhrbar.
+--
+-- Wenn eigene Sounds verwendet werden sollen, müssen sie im WAV-Format
+-- vorliegen und in die zwei Verzeichnisse für niedrige und hohe Qualität
+-- kopiert werden.
+--
+-- Verzeichnisstruktur für eigene Sounds:
+-- <pre>map_xyz.s6xmap.unpacked
+--|-- sounds/high/ui/*
+--|-- sounds/low/ui/*
+--|-- maps/externalmap/map_xyz/*
+--|-- ...</pre>
+--
+-- @param _Sound    Pfad des Sound
+-- @param _X        X-Position des Sound
+-- @param _Y        Y-Position des Sound
+-- @param _Z        Z-Position des Sound
+-- @param _PlayerID (Optional) ID des menschlichen Spielers
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.Play3DSound("Animals/cow_disease", 8500, 35800, 2000);
+--
+function API.Play3DSound(_Sound, _X, _Y, _Z, _PlayerID)
+    _PlayerID = _PlayerID or 1;
+    _X = _X or 1;
+    _Y = _Y or 1
+    _Z = _Z or 0
+    if not GUI then
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[API.Play3DSound("%s", %f, %f, %d)]],
+            _Sound,
+            _X,
+            _Y,
+            _PlayerID
+        ));
+        return;
+    end
+    if _PlayerID == GUI.GetPlayerID() then
+        Sound.FXPlay3DSound(_Sound:gsub("/", "\\"), _X, _Y, _Z);
     end
 end
 
@@ -16940,7 +16995,8 @@ ModuleTrade = {
     Global = {
         Analysis = {
             PlayerOffersAmount = {
-                [1] = {}, [2] = {}, [3] = {}, [4] = {}, [5] = {}, [6] = {}, [7] = {}, [8] = {},
+                [1] = {}, [2] = {}, [3] = {}, [4] = {},
+                [5] = {}, [6] = {}, [7] = {}, [8] = {},
             };
         },
         Lambda = {},
@@ -16958,7 +17014,7 @@ ModuleTrade = {
         },
         ShowKnightTraderAbility = true;
     },
-    -- This is a shared structure but the values are asynchronous!
+
     Shared = {},
 };
 
@@ -16998,11 +17054,11 @@ function ModuleTrade.Global:OverwriteBasePricesAndRefreshRates()
     MerchantSystem.BasePrices[Entities.U_CatapultCart] = MerchantSystem.BasePrices[Entities.U_CatapultCart] or 1000;
     MerchantSystem.BasePrices[Entities.U_BatteringRamCart] = MerchantSystem.BasePrices[Entities.U_BatteringRamCart] or 450;
     MerchantSystem.BasePrices[Entities.U_SiegeTowerCart] = MerchantSystem.BasePrices[Entities.U_SiegeTowerCart] or 600;
-    MerchantSystem.BasePrices[Entities.U_AmmunitionCart] = MerchantSystem.BasePrices[Entities.U_AmmunitionCart] or 180;
-    MerchantSystem.BasePrices[Entities.U_MilitarySword_RedPrince] = MerchantSystem.BasePrices[Entities.U_MilitarySword_RedPrince] or 150;
-    MerchantSystem.BasePrices[Entities.U_MilitarySword] = MerchantSystem.BasePrices[Entities.U_MilitarySword] or 150;
-    MerchantSystem.BasePrices[Entities.U_MilitaryBow_RedPrince] = MerchantSystem.BasePrices[Entities.U_MilitaryBow_RedPrince] or 220;
-    MerchantSystem.BasePrices[Entities.U_MilitaryBow] = MerchantSystem.BasePrices[Entities.U_MilitaryBow] or 220;
+    MerchantSystem.BasePrices[Entities.U_AmmunitionCart] = MerchantSystem.BasePrices[Entities.U_AmmunitionCart] or 150;
+    MerchantSystem.BasePrices[Entities.U_MilitarySword_RedPrince] = MerchantSystem.BasePrices[Entities.U_MilitarySword_RedPrince] or 200;
+    MerchantSystem.BasePrices[Entities.U_MilitarySword] = MerchantSystem.BasePrices[Entities.U_MilitarySword] or 200;
+    MerchantSystem.BasePrices[Entities.U_MilitaryBow_RedPrince] = MerchantSystem.BasePrices[Entities.U_MilitaryBow_RedPrince] or 350;
+    MerchantSystem.BasePrices[Entities.U_MilitaryBow] = MerchantSystem.BasePrices[Entities.U_MilitaryBow] or 350;
 
     MerchantSystem.RefreshRates[Entities.U_CatapultCart] = MerchantSystem.RefreshRates[Entities.U_CatapultCart] or 270;
     MerchantSystem.RefreshRates[Entities.U_BatteringRamCart] = MerchantSystem.RefreshRates[Entities.U_BatteringRamCart] or 190;
@@ -17014,8 +17070,8 @@ function ModuleTrade.Global:OverwriteBasePricesAndRefreshRates()
     MerchantSystem.RefreshRates[Entities.U_MilitaryBow] = MerchantSystem.RefreshRates[Entities.U_MilitaryBow] or 150;
 
     if g_GameExtraNo >= 1 then
-        MerchantSystem.BasePrices[Entities.U_MilitaryBow_Khana] = MerchantSystem.BasePrices[Entities.U_MilitaryBow_Khana] or 220;
-        MerchantSystem.BasePrices[Entities.U_MilitarySword_Khana] = MerchantSystem.BasePrices[Entities.U_MilitarySword_Khana] or 150;
+        MerchantSystem.BasePrices[Entities.U_MilitaryBow_Khana] = MerchantSystem.BasePrices[Entities.U_MilitaryBow_Khana] or 350;
+        MerchantSystem.BasePrices[Entities.U_MilitarySword_Khana] = MerchantSystem.BasePrices[Entities.U_MilitarySword_Khana] or 200;
 
         MerchantSystem.RefreshRates[Entities.U_MilitaryBow_Khana] = MerchantSystem.RefreshRates[Entities.U_MilitaryBow_Khana] or 150;
         MerchantSystem.RefreshRates[Entities.U_MilitaryBow_Khana] = MerchantSystem.RefreshRates[Entities.U_MilitarySword_Khana] or 150;
@@ -17101,7 +17157,7 @@ function ModuleTrade.Global:GetStorehouseInformation(_PlayerID)
                 end
 
                 AmountOfOffers = AmountOfOffers +1;
-                local OfferData = {Index, Offers[i], type, goodAmount, offerAmount};
+                local OfferData = {Index, Offers[i], type, goodAmount, offerAmount, prices};
                 table.insert(StorehouseData[1], OfferData);
             end
         end
@@ -17171,11 +17227,11 @@ function ModuleTrade.Global:ModifyTradeOffer(_PlayerID, _GoodOrEntityType, _NewA
         return;
     end
 
-    -- Menge == -1 oder Menge == nil bedeutet Maximum
+    -- Amount == -1 or amount == nil means maximum
     if _NewAmount == nil or _NewAmount == -1 then
         _NewAmount = self.Analysis.PlayerOffersAmount[_PlayerID][_GoodOrEntityType];
     end
-    -- Werte größer als das Maximum werden nicht erneuert!
+    -- Values greater than the maximum will not respawn!
     if self.Analysis.PlayerOffersAmount[_PlayerID][_GoodOrEntityType] and self.Analysis.PlayerOffersAmount[_PlayerID][_GoodOrEntityType] < _NewAmount then
         _NewAmount = self.Analysis.PlayerOffersAmount[_PlayerID][_GoodOrEntityType];
     end
@@ -17282,7 +17338,7 @@ function ModuleTrade.Local:OverrideMerchantPurchaseOfferClicked()
             BuyLock.Locked = false;
         end
     end
-    
+
     GUI_Merchant.OfferClicked = function(_ButtonIndex)
         local CurrentWidgetID = XGUIEng.GetCurrentWidgetID();
         local PlayerID   = GUI.GetPlayerID();
@@ -17424,7 +17480,7 @@ function ModuleTrade.Local:OverrideMerchantSellGoodsClicked()
             return;
         end
         if g_Trade.GoodType == Goods.G_Gold then
-            -- check for treasury space in castle
+            -- FIXME: check for treasury space in castle?
         elseif Logic.GetGoodCategoryForGoodType(g_Trade.GoodType) == GoodCategories.GC_Resource then
             local SpaceForNewGoods = Logic.GetPlayerUnreservedStorehouseSpace(TargetID);
             if SpaceForNewGoods < g_Trade.GoodAmount then
@@ -17536,7 +17592,7 @@ function ModuleTrade.Local:OverrideMerchantComputePurchasePrice()
         end
 
         -- Invoke price inflation
-        local OfferCount = 0; -- Logic.GetOfferCount(BuildingID, OfferID, PlayerID, TraderType);
+        local OfferCount = 0;
         if g_Merchant.BuyFromPlayer[TraderPlayerID] and g_Merchant.BuyFromPlayer[TraderPlayerID][Type] then
             OfferCount = g_Merchant.BuyFromPlayer[TraderPlayerID][Type];
         end
@@ -17620,12 +17676,11 @@ You may use and modify this file unter the terms of the MIT licence.
 ]]
 
 ---
--- Modul zum Überschreiben des Verhaltens von Händlern. Es können Angebote im
--- eigenen Lagerhaus und in fremden Lagerhäusern beeinflusst werden.
+-- Ein Modul zur Steuerung des Kauf und Verkauf.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
--- <li><a href="QSB_0_Kernel.api.html">(0) Kernel</a></li>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
 -- </ul>
 --
 -- @within Beschreibung
@@ -18073,7 +18128,7 @@ function API.SaleSetDefaultCondition(_Function)
 end
 
 ---
--- Lässt einen NPC-Spieler einem anderen Spieler Waren anbieten.
+-- Lässt einen NPC-Spieler Waren anbieten.
 --
 -- @param[type=number] _VendorID    Spieler-ID des Verkäufers
 -- @param[type=number] _OfferType   Typ der Angebote
@@ -18082,10 +18137,8 @@ end
 -- @within Anwenderfunktionen
 --
 -- @usage
--- -- Spieler 2 bietet Spieler 1 Brot an
+-- -- Spieler 2 bietet Brot an
 -- API.AddGoodOffer(2, Goods.G_Bread, 1, 2);
--- -- Spieler 2 bietet Spieler 3 Eisen an
--- API.AddGoodOffer(2, Goods.G_Iron, 3, 4, 180);
 --
 function API.AddGoodOffer(_VendorID, _OfferType, _OfferAmount, _RefreshRate)
     _OfferType = (type(_OfferType) == "string" and Goods[_OfferType]) or _OfferType;
@@ -18137,7 +18190,7 @@ function AddOffer(_Merchant, _NumberOfOffers, _GoodType, _RefreshRate)
 end
 
 ---
--- Lässt einen NPC-Spieler einem anderen Spieler Söldner anbieten.
+-- Lässt einen NPC-Spieler Söldner anbieten.
 --
 -- <b>Hinweis</b>: Stadtlagerhäuser können keine Söldner anbieten!
 --
@@ -18148,7 +18201,7 @@ end
 -- @within Anwenderfunktionen
 --
 -- @usage
--- -- Spieler 2 bietet Spieler 1 Sölder an
+-- -- Spieler 2 bietet Sölder an
 -- API.AddMercenaryOffer(2, Entities.U_MilitaryBandit_Melee_SE, 1, 3);
 --
 function API.AddMercenaryOffer(_VendorID, _OfferType, _OfferAmount, _RefreshRate)
@@ -18201,14 +18254,14 @@ function AddMercenaryOffer(_Mercenary, _Amount, _Type, _RefreshRate)
 end
 
 ---
--- Lässt einen NPC-Spieler einem anderen Spieler einen Entertainer anbieten.
+-- Lässt einen NPC-Spieler einen Entertainer anbieten.
 --
 -- @param[type=number] _VendorID    Spieler-ID des Verkäufers
 -- @param[type=number] _OfferType   Typ des Entertainer
 -- @within Anwenderfunktionen
 --
 -- @usage
--- -- Spieler 2 bietet Spieler 1 einen Feuerschlucker an
+-- -- Spieler 2 bietet einen Feuerschlucker an
 -- API.AddEntertainerOffer(2, Entities.U_Entertainer_NA_FireEater);
 --
 function API.AddEntertainerOffer(_VendorID, _OfferType)
@@ -18246,7 +18299,7 @@ function AddEntertainerOffer(_Merchant, _EntertainerType)
 end
 
 ---
--- Gibt die Handelsinformationen des Spielers aus. In dem Objekt stehen
+-- Gibt die Angebotsinformationen des Spielers aus. In dem Table stehen
 -- ID des Spielers, ID des Lagerhaus, Menge an Angeboten insgesamt und
 -- alle Angebote der Händlertypen.
 --
@@ -18327,7 +18380,7 @@ end
 -- @within Anwenderfunktionen
 --
 -- @usage
--- -- Wird die Ware angeboten?
+-- -- Wie viel wird aktuell angeboten?
 -- local CurrentAmount = API.IsGoodOrUnitOffered(4, Goods.G_Bread);
 --
 function API.GetTradeOfferWaggonAmount(_PlayerID, _GoodOrEntityType)
@@ -18367,7 +18420,8 @@ end
 -- Beschränkungen.
 --
 -- <b>Hinweis</b>: Wird eine höherer Wert gesetzt, als das ursprüngliche
--- Maximum, regenerieren sich die zusätzlichen Angebote nicht.
+-- Maximum, regenerieren sich die Angebote nicht, bis die zusätzlichen
+-- Angebote verkauft wurden.
 --
 -- @param[type=number] _PlayerID Player ID
 -- @param[type=number] _GoodOrEntityType ID des Händlers im Gebäude
@@ -18375,10 +18429,11 @@ end
 -- @within Anwenderfunktionen
 --
 -- @usage
--- -- Angebote voll auffüllen
+-- -- Beispiel #1: Angebote voll auffüllen
 -- API.ModifyTradeOffer(7, Goods.G_Cheese, -1);
--- API.ModifyTradeOffer(7, Goods.U_MilitarySword);
--- -- 2 Angebote auffüllen
+--
+-- @usage
+-- -- Beispiel #2: Angebote auffüllen
 -- API.ModifyTradeOffer(7, Goods.G_Dye, 2);
 --
 function API.ModifyTradeOffer(_PlayerID, _GoodOrEntityType, _NewAmount)
@@ -18426,7 +18481,7 @@ function ModuleQuest.Global:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     elseif _ID == QSB.ScriptEvents.ChatClosed then
-        self:ProcessChatInput(arg[1], arg[3]);
+        self:ProcessChatInput(arg[1], arg[2], arg[3]);
     end
 end
 
@@ -18912,8 +18967,8 @@ function ModuleQuest.Global:FindQuestNames(_Pattern, _ExactName)
     return NamesOfFoundQuests;
 end
 
-function ModuleQuest.Global:ProcessChatInput(_Text, _IsDebug)
-    if not _IsDebug then
+function ModuleQuest.Global:ProcessChatInput(_Text, _PlayerID, _IsDebug)
+    if not _IsDebug or GUI.GetPlayerID() ~= _PlayerID then
         return;
     end
     local Commands = Revision.Text:CommandTokenizer(_Text);
@@ -19103,12 +19158,12 @@ end
 -- Verschachtelte Aufträge (Nested Quests) vereinfachen aufschreiben und
 -- zuordnen der zugeordneten Aufträge. Ein Nested Quest ist selbst unsichtbar
 -- und hat mindestens ein ihm untergeordnetes Segment. Die Segmente eines
--- Nested Quest sind wiederum eigenständige Quests.
+-- Nested Quest sind wiederum Quests.
 --
 -- Du kannst für Segmente die gleichen Einträge setzen, wie bei gewöhnlichen
 -- Quests. Zudem kannst du auch ihnen einen Namen geben. Wenn du das nicht tust,
--- werden sie automatisch benannt. Der Name setzt sich zusammen aus dem Namen
--- des Nested Quest und ihrem Index (z.B. "UnimaginativeQuestname@Segment1").
+-- werden sie automatisch benannt. Der Name setzt sich dann zusammen aus dem
+-- Namen des Nested Quest und ihrem Index (z.B. "ExampleName@Segment1").
 --
 -- Segmente haben ein erwartetes Ergebnis. Für gewöhnlich ist dies auf Erfolg
 -- festgelegt. Du kanns es aber auch auf Fehlschlag ändern oder ganz ignorieren.
@@ -19117,8 +19172,8 @@ end
 -- Ergebnis als erwartet hatte (Fehlschlag).
 --
 -- Werden Status oder Resultat eines Quest über Funktionen verändert (zb.
--- API.StopQuest bzw "stop" Konsolenbefehl), dann werden automatisch die
--- Segmente ausgelöst oder abgebrochen.
+-- API.StopQuest oder "stop" Konsolenbefehl), dann werden automatisch die
+-- Segmente ebenfalls ausgelöst bzw. beendet.
 --
 -- Es ist nicht zwingend notwendig, einen Trigger für die Segmente zu setzen.
 -- Alle Segmente starten automatisch sobald der Nested Quest startet. Du kannst
@@ -19144,7 +19199,7 @@ end
 --             Goal_KnightTitle("Mayor"),
 --         },
 --         {
---             -- Mit dem Typ Ignore wird Fehlschlag ignoriert.
+--             -- Mit dem Typ Ignore wird ein Fehlschlag ignoriert.
 --             Result      = QSB.SegmentResult.Ignore,
 --
 --             Suggestion  = "Wir benötigen außerdem mehr Asche! Und das sofort...",
@@ -19190,6 +19245,8 @@ end
 -- Fügt eine Prüfung hinzu, ob Quests getriggert werden. Soll ein Quest nicht
 -- getriggert werden, muss false zurückgegeben werden, sonst true.
 --
+-- FIXME: Ist das für den Durchschnittsbenutzer überhaupt von Belang?
+--
 -- @param[type=function] _Function Prüffunktion
 -- @within Anwenderfunktionen
 -- @local
@@ -19205,6 +19262,8 @@ end
 -- Fügt eine Prüfung hinzu, ob für laufende Quests Zeit vergeht. Soll keine Zeit
 -- vergehen für einen Quest muss false zurückgegeben werden, sonst true.
 --
+-- FIXME: Ist das für den Durchschnittsbenutzer überhaupt von Belang?
+--
 -- @param[type=function] _Function Prüffunktion
 -- @within Anwenderfunktionen
 -- @local
@@ -19219,6 +19278,8 @@ end
 ---
 -- Fügt eine Prüfung hinzu, ob für laufende Quests Ziele geprüft werden. Sollen
 -- keine Ziele geprüft werden muss false zurückgegeben werden, sonst true.
+--
+-- FIXME: Ist das für den Durchschnittsbenutzer überhaupt von Belang?
 --
 -- @param[type=function] _Function Prüffunktion
 -- @within Anwenderfunktionen
@@ -19829,6 +19890,12 @@ You may use and modify this file unter the terms of the MIT licence.
 ---
 -- Zusätzliche Buttons im Gebäudemenü platzieren.
 --
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
+-- <li><a href="QSB_1_GUI.api.html">(0) Benutzerschnittstelle</a></li>
+-- </ul>
+--
 -- @within Beschreibung
 -- @set sort=true
 --
@@ -19938,9 +20005,10 @@ end
 ---
 -- Fügt einen Gebäudeschalter für den Entity-Typ hinzu.
 --
--- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Wenn ein Typ einen
--- Button zugewiesen bekommt, werden alle mit API.AddBuildingButton gesetzten
--- Buttons für den Typ ignoriert.
+-- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+-- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+-- Update-Funktion. Wenn ein Typ einen Button zugewiesen bekommt, werden alle 
+-- allgemeinen Buttons für den Typ ignoriert.
 --
 -- @param[type=number]   _Type    Typ des Gebäudes
 -- @param[type=number]   _X       X-Position des Button
@@ -19959,9 +20027,10 @@ end
 ---
 -- Fügt einen Gebäudeschalter für den Entity-Typ hinzu.
 --
--- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Wenn ein Typ einen
--- Button zugewiesen bekommt, werden alle mit API.AddBuildingButton gesetzten
--- Buttons für den Typ ignoriert.
+-- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+-- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+-- Update-Funktion. Wenn ein Typ einen Button zugewiesen bekommt, werden alle 
+-- allgemeinen Buttons für den Typ ignoriert.
 --
 -- @param[type=number]   _Type    Typ des Gebäudes
 -- @param[type=function] _Action  Funktion für die Aktion beim Klicken
@@ -19978,9 +20047,10 @@ end
 ---
 -- Fügt einen Gebäudeschalter für das Entity hinzu.
 --
--- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Wenn ein Entity
--- einen Button zugewiesen bekommt, werden alle mit API.AddBuildingButton oder
--- API.AddBuildingButtonByType gesetzten Buttons für das Entity ignoriert.
+-- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+-- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+-- Update-Funktion. Wenn ein Entity einen Button zugewiesen bekommt, werden
+-- alle allgemeinen Buttons und alle Buttons für Typen für das Entity ignoriert.
 --
 -- @param[type=function] _ScriptName Scriptname des Entity
 -- @param[type=number]   _X          X-Position des Button
@@ -19999,9 +20069,10 @@ end
 ---
 -- Fügt einen Gebäudeschalter für das Entity hinzu.
 --
--- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Wenn ein Entity
--- einen Button zugewiesen bekommt, werden alle mit API.AddBuildingButton oder
--- API.AddBuildingButtonByType gesetzten Buttons für das Entity ignoriert.
+-- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+-- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+-- Update-Funktion. Wenn ein Entity einen Button zugewiesen bekommt, werden
+-- alle allgemeinen Buttons und alle Buttons für Typen für das Entity ignoriert.
 --
 -- @param[type=function] _ScriptName Scriptname des Entity
 -- @param[type=function] _Action     Funktion für die Aktion beim Klicken

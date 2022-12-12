@@ -36,7 +36,7 @@ function ModuleQuest.Global:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     elseif _ID == QSB.ScriptEvents.ChatClosed then
-        self:ProcessChatInput(arg[1], arg[3]);
+        self:ProcessChatInput(arg[1], arg[2], arg[3]);
     end
 end
 
@@ -522,8 +522,8 @@ function ModuleQuest.Global:FindQuestNames(_Pattern, _ExactName)
     return NamesOfFoundQuests;
 end
 
-function ModuleQuest.Global:ProcessChatInput(_Text, _IsDebug)
-    if not _IsDebug then
+function ModuleQuest.Global:ProcessChatInput(_Text, _PlayerID, _IsDebug)
+    if not _IsDebug or GUI.GetPlayerID() ~= _PlayerID then
         return;
     end
     local Commands = Revision.Text:CommandTokenizer(_Text);
@@ -713,12 +713,12 @@ end
 -- Verschachtelte Aufträge (Nested Quests) vereinfachen aufschreiben und
 -- zuordnen der zugeordneten Aufträge. Ein Nested Quest ist selbst unsichtbar
 -- und hat mindestens ein ihm untergeordnetes Segment. Die Segmente eines
--- Nested Quest sind wiederum eigenständige Quests.
+-- Nested Quest sind wiederum Quests.
 --
 -- Du kannst für Segmente die gleichen Einträge setzen, wie bei gewöhnlichen
 -- Quests. Zudem kannst du auch ihnen einen Namen geben. Wenn du das nicht tust,
--- werden sie automatisch benannt. Der Name setzt sich zusammen aus dem Namen
--- des Nested Quest und ihrem Index (z.B. "UnimaginativeQuestname@Segment1").
+-- werden sie automatisch benannt. Der Name setzt sich dann zusammen aus dem
+-- Namen des Nested Quest und ihrem Index (z.B. "ExampleName@Segment1").
 --
 -- Segmente haben ein erwartetes Ergebnis. Für gewöhnlich ist dies auf Erfolg
 -- festgelegt. Du kanns es aber auch auf Fehlschlag ändern oder ganz ignorieren.
@@ -727,8 +727,8 @@ end
 -- Ergebnis als erwartet hatte (Fehlschlag).
 --
 -- Werden Status oder Resultat eines Quest über Funktionen verändert (zb.
--- API.StopQuest bzw "stop" Konsolenbefehl), dann werden automatisch die
--- Segmente ausgelöst oder abgebrochen.
+-- API.StopQuest oder "stop" Konsolenbefehl), dann werden automatisch die
+-- Segmente ebenfalls ausgelöst bzw. beendet.
 --
 -- Es ist nicht zwingend notwendig, einen Trigger für die Segmente zu setzen.
 -- Alle Segmente starten automatisch sobald der Nested Quest startet. Du kannst
@@ -754,7 +754,7 @@ end
 --             Goal_KnightTitle("Mayor"),
 --         },
 --         {
---             -- Mit dem Typ Ignore wird Fehlschlag ignoriert.
+--             -- Mit dem Typ Ignore wird ein Fehlschlag ignoriert.
 --             Result      = QSB.SegmentResult.Ignore,
 --
 --             Suggestion  = "Wir benötigen außerdem mehr Asche! Und das sofort...",
@@ -800,6 +800,8 @@ end
 -- Fügt eine Prüfung hinzu, ob Quests getriggert werden. Soll ein Quest nicht
 -- getriggert werden, muss false zurückgegeben werden, sonst true.
 --
+-- FIXME: Ist das für den Durchschnittsbenutzer überhaupt von Belang?
+--
 -- @param[type=function] _Function Prüffunktion
 -- @within Anwenderfunktionen
 -- @local
@@ -815,6 +817,8 @@ end
 -- Fügt eine Prüfung hinzu, ob für laufende Quests Zeit vergeht. Soll keine Zeit
 -- vergehen für einen Quest muss false zurückgegeben werden, sonst true.
 --
+-- FIXME: Ist das für den Durchschnittsbenutzer überhaupt von Belang?
+--
 -- @param[type=function] _Function Prüffunktion
 -- @within Anwenderfunktionen
 -- @local
@@ -829,6 +833,8 @@ end
 ---
 -- Fügt eine Prüfung hinzu, ob für laufende Quests Ziele geprüft werden. Sollen
 -- keine Ziele geprüft werden muss false zurückgegeben werden, sonst true.
+--
+-- FIXME: Ist das für den Durchschnittsbenutzer überhaupt von Belang?
 --
 -- @param[type=function] _Function Prüffunktion
 -- @within Anwenderfunktionen

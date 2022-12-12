@@ -17,7 +17,8 @@ ModuleTrade = {
     Global = {
         Analysis = {
             PlayerOffersAmount = {
-                [1] = {}, [2] = {}, [3] = {}, [4] = {}, [5] = {}, [6] = {}, [7] = {}, [8] = {},
+                [1] = {}, [2] = {}, [3] = {}, [4] = {},
+                [5] = {}, [6] = {}, [7] = {}, [8] = {},
             };
         },
         Lambda = {},
@@ -35,7 +36,7 @@ ModuleTrade = {
         },
         ShowKnightTraderAbility = true;
     },
-    -- This is a shared structure but the values are asynchronous!
+
     Shared = {},
 };
 
@@ -75,11 +76,11 @@ function ModuleTrade.Global:OverwriteBasePricesAndRefreshRates()
     MerchantSystem.BasePrices[Entities.U_CatapultCart] = MerchantSystem.BasePrices[Entities.U_CatapultCart] or 1000;
     MerchantSystem.BasePrices[Entities.U_BatteringRamCart] = MerchantSystem.BasePrices[Entities.U_BatteringRamCart] or 450;
     MerchantSystem.BasePrices[Entities.U_SiegeTowerCart] = MerchantSystem.BasePrices[Entities.U_SiegeTowerCart] or 600;
-    MerchantSystem.BasePrices[Entities.U_AmmunitionCart] = MerchantSystem.BasePrices[Entities.U_AmmunitionCart] or 180;
-    MerchantSystem.BasePrices[Entities.U_MilitarySword_RedPrince] = MerchantSystem.BasePrices[Entities.U_MilitarySword_RedPrince] or 150;
-    MerchantSystem.BasePrices[Entities.U_MilitarySword] = MerchantSystem.BasePrices[Entities.U_MilitarySword] or 150;
-    MerchantSystem.BasePrices[Entities.U_MilitaryBow_RedPrince] = MerchantSystem.BasePrices[Entities.U_MilitaryBow_RedPrince] or 220;
-    MerchantSystem.BasePrices[Entities.U_MilitaryBow] = MerchantSystem.BasePrices[Entities.U_MilitaryBow] or 220;
+    MerchantSystem.BasePrices[Entities.U_AmmunitionCart] = MerchantSystem.BasePrices[Entities.U_AmmunitionCart] or 150;
+    MerchantSystem.BasePrices[Entities.U_MilitarySword_RedPrince] = MerchantSystem.BasePrices[Entities.U_MilitarySword_RedPrince] or 200;
+    MerchantSystem.BasePrices[Entities.U_MilitarySword] = MerchantSystem.BasePrices[Entities.U_MilitarySword] or 200;
+    MerchantSystem.BasePrices[Entities.U_MilitaryBow_RedPrince] = MerchantSystem.BasePrices[Entities.U_MilitaryBow_RedPrince] or 350;
+    MerchantSystem.BasePrices[Entities.U_MilitaryBow] = MerchantSystem.BasePrices[Entities.U_MilitaryBow] or 350;
 
     MerchantSystem.RefreshRates[Entities.U_CatapultCart] = MerchantSystem.RefreshRates[Entities.U_CatapultCart] or 270;
     MerchantSystem.RefreshRates[Entities.U_BatteringRamCart] = MerchantSystem.RefreshRates[Entities.U_BatteringRamCart] or 190;
@@ -91,8 +92,8 @@ function ModuleTrade.Global:OverwriteBasePricesAndRefreshRates()
     MerchantSystem.RefreshRates[Entities.U_MilitaryBow] = MerchantSystem.RefreshRates[Entities.U_MilitaryBow] or 150;
 
     if g_GameExtraNo >= 1 then
-        MerchantSystem.BasePrices[Entities.U_MilitaryBow_Khana] = MerchantSystem.BasePrices[Entities.U_MilitaryBow_Khana] or 220;
-        MerchantSystem.BasePrices[Entities.U_MilitarySword_Khana] = MerchantSystem.BasePrices[Entities.U_MilitarySword_Khana] or 150;
+        MerchantSystem.BasePrices[Entities.U_MilitaryBow_Khana] = MerchantSystem.BasePrices[Entities.U_MilitaryBow_Khana] or 350;
+        MerchantSystem.BasePrices[Entities.U_MilitarySword_Khana] = MerchantSystem.BasePrices[Entities.U_MilitarySword_Khana] or 200;
 
         MerchantSystem.RefreshRates[Entities.U_MilitaryBow_Khana] = MerchantSystem.RefreshRates[Entities.U_MilitaryBow_Khana] or 150;
         MerchantSystem.RefreshRates[Entities.U_MilitaryBow_Khana] = MerchantSystem.RefreshRates[Entities.U_MilitarySword_Khana] or 150;
@@ -178,7 +179,7 @@ function ModuleTrade.Global:GetStorehouseInformation(_PlayerID)
                 end
 
                 AmountOfOffers = AmountOfOffers +1;
-                local OfferData = {Index, Offers[i], type, goodAmount, offerAmount};
+                local OfferData = {Index, Offers[i], type, goodAmount, offerAmount, prices};
                 table.insert(StorehouseData[1], OfferData);
             end
         end
@@ -248,11 +249,11 @@ function ModuleTrade.Global:ModifyTradeOffer(_PlayerID, _GoodOrEntityType, _NewA
         return;
     end
 
-    -- Menge == -1 oder Menge == nil bedeutet Maximum
+    -- Amount == -1 or amount == nil means maximum
     if _NewAmount == nil or _NewAmount == -1 then
         _NewAmount = self.Analysis.PlayerOffersAmount[_PlayerID][_GoodOrEntityType];
     end
-    -- Werte größer als das Maximum werden nicht erneuert!
+    -- Values greater than the maximum will not respawn!
     if self.Analysis.PlayerOffersAmount[_PlayerID][_GoodOrEntityType] and self.Analysis.PlayerOffersAmount[_PlayerID][_GoodOrEntityType] < _NewAmount then
         _NewAmount = self.Analysis.PlayerOffersAmount[_PlayerID][_GoodOrEntityType];
     end
@@ -359,7 +360,7 @@ function ModuleTrade.Local:OverrideMerchantPurchaseOfferClicked()
             BuyLock.Locked = false;
         end
     end
-    
+
     GUI_Merchant.OfferClicked = function(_ButtonIndex)
         local CurrentWidgetID = XGUIEng.GetCurrentWidgetID();
         local PlayerID   = GUI.GetPlayerID();
@@ -501,7 +502,7 @@ function ModuleTrade.Local:OverrideMerchantSellGoodsClicked()
             return;
         end
         if g_Trade.GoodType == Goods.G_Gold then
-            -- check for treasury space in castle
+            -- FIXME: check for treasury space in castle?
         elseif Logic.GetGoodCategoryForGoodType(g_Trade.GoodType) == GoodCategories.GC_Resource then
             local SpaceForNewGoods = Logic.GetPlayerUnreservedStorehouseSpace(TargetID);
             if SpaceForNewGoods < g_Trade.GoodAmount then
@@ -613,7 +614,7 @@ function ModuleTrade.Local:OverrideMerchantComputePurchasePrice()
         end
 
         -- Invoke price inflation
-        local OfferCount = 0; -- Logic.GetOfferCount(BuildingID, OfferID, PlayerID, TraderType);
+        local OfferCount = 0;
         if g_Merchant.BuyFromPlayer[TraderPlayerID] and g_Merchant.BuyFromPlayer[TraderPlayerID][Type] then
             OfferCount = g_Merchant.BuyFromPlayer[TraderPlayerID][Type];
         end
@@ -697,12 +698,11 @@ You may use and modify this file unter the terms of the MIT licence.
 ]]
 
 ---
--- Modul zum Überschreiben des Verhaltens von Händlern. Es können Angebote im
--- eigenen Lagerhaus und in fremden Lagerhäusern beeinflusst werden.
+-- Ein Modul zur Steuerung des Kauf und Verkauf.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
--- <li><a href="QSB_0_Kernel.api.html">(0) Kernel</a></li>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
 -- </ul>
 --
 -- @within Beschreibung
@@ -1150,7 +1150,7 @@ function API.SaleSetDefaultCondition(_Function)
 end
 
 ---
--- Lässt einen NPC-Spieler einem anderen Spieler Waren anbieten.
+-- Lässt einen NPC-Spieler Waren anbieten.
 --
 -- @param[type=number] _VendorID    Spieler-ID des Verkäufers
 -- @param[type=number] _OfferType   Typ der Angebote
@@ -1159,10 +1159,8 @@ end
 -- @within Anwenderfunktionen
 --
 -- @usage
--- -- Spieler 2 bietet Spieler 1 Brot an
+-- -- Spieler 2 bietet Brot an
 -- API.AddGoodOffer(2, Goods.G_Bread, 1, 2);
--- -- Spieler 2 bietet Spieler 3 Eisen an
--- API.AddGoodOffer(2, Goods.G_Iron, 3, 4, 180);
 --
 function API.AddGoodOffer(_VendorID, _OfferType, _OfferAmount, _RefreshRate)
     _OfferType = (type(_OfferType) == "string" and Goods[_OfferType]) or _OfferType;
@@ -1214,7 +1212,7 @@ function AddOffer(_Merchant, _NumberOfOffers, _GoodType, _RefreshRate)
 end
 
 ---
--- Lässt einen NPC-Spieler einem anderen Spieler Söldner anbieten.
+-- Lässt einen NPC-Spieler Söldner anbieten.
 --
 -- <b>Hinweis</b>: Stadtlagerhäuser können keine Söldner anbieten!
 --
@@ -1225,7 +1223,7 @@ end
 -- @within Anwenderfunktionen
 --
 -- @usage
--- -- Spieler 2 bietet Spieler 1 Sölder an
+-- -- Spieler 2 bietet Sölder an
 -- API.AddMercenaryOffer(2, Entities.U_MilitaryBandit_Melee_SE, 1, 3);
 --
 function API.AddMercenaryOffer(_VendorID, _OfferType, _OfferAmount, _RefreshRate)
@@ -1278,14 +1276,14 @@ function AddMercenaryOffer(_Mercenary, _Amount, _Type, _RefreshRate)
 end
 
 ---
--- Lässt einen NPC-Spieler einem anderen Spieler einen Entertainer anbieten.
+-- Lässt einen NPC-Spieler einen Entertainer anbieten.
 --
 -- @param[type=number] _VendorID    Spieler-ID des Verkäufers
 -- @param[type=number] _OfferType   Typ des Entertainer
 -- @within Anwenderfunktionen
 --
 -- @usage
--- -- Spieler 2 bietet Spieler 1 einen Feuerschlucker an
+-- -- Spieler 2 bietet einen Feuerschlucker an
 -- API.AddEntertainerOffer(2, Entities.U_Entertainer_NA_FireEater);
 --
 function API.AddEntertainerOffer(_VendorID, _OfferType)
@@ -1323,7 +1321,7 @@ function AddEntertainerOffer(_Merchant, _EntertainerType)
 end
 
 ---
--- Gibt die Handelsinformationen des Spielers aus. In dem Objekt stehen
+-- Gibt die Angebotsinformationen des Spielers aus. In dem Table stehen
 -- ID des Spielers, ID des Lagerhaus, Menge an Angeboten insgesamt und
 -- alle Angebote der Händlertypen.
 --
@@ -1404,7 +1402,7 @@ end
 -- @within Anwenderfunktionen
 --
 -- @usage
--- -- Wird die Ware angeboten?
+-- -- Wie viel wird aktuell angeboten?
 -- local CurrentAmount = API.IsGoodOrUnitOffered(4, Goods.G_Bread);
 --
 function API.GetTradeOfferWaggonAmount(_PlayerID, _GoodOrEntityType)
@@ -1444,7 +1442,8 @@ end
 -- Beschränkungen.
 --
 -- <b>Hinweis</b>: Wird eine höherer Wert gesetzt, als das ursprüngliche
--- Maximum, regenerieren sich die zusätzlichen Angebote nicht.
+-- Maximum, regenerieren sich die Angebote nicht, bis die zusätzlichen
+-- Angebote verkauft wurden.
 --
 -- @param[type=number] _PlayerID Player ID
 -- @param[type=number] _GoodOrEntityType ID des Händlers im Gebäude
@@ -1452,10 +1451,11 @@ end
 -- @within Anwenderfunktionen
 --
 -- @usage
--- -- Angebote voll auffüllen
+-- -- Beispiel #1: Angebote voll auffüllen
 -- API.ModifyTradeOffer(7, Goods.G_Cheese, -1);
--- API.ModifyTradeOffer(7, Goods.U_MilitarySword);
--- -- 2 Angebote auffüllen
+--
+-- @usage
+-- -- Beispiel #2: Angebote auffüllen
 -- API.ModifyTradeOffer(7, Goods.G_Dye, 2);
 --
 function API.ModifyTradeOffer(_PlayerID, _GoodOrEntityType, _NewAmount)

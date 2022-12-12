@@ -55,12 +55,11 @@
 <div id="content">
 
 <h1>Module <code>(1) Handelserweiterung</code></h1>
-<p>Modul zum Überschreiben des Verhaltens von Händlern.</p>
-<p> Es können Angebote im
- eigenen Lagerhaus und in fremden Lagerhäusern beeinflusst werden.
+<p>Ein Modul zur Steuerung des Kauf und Verkauf.</p>
+<p>
 <p> <b>Vorausgesetzte Module:</b>
  <ul>
- <li><a href="QSB_0_Kernel.api.html">(0) Kernel</a></li>
+ <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
  </ul>
 </p>
 
@@ -76,15 +75,15 @@
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#API.AddEntertainerOffer">API.AddEntertainerOffer (_VendorID, _OfferType)</a></td>
-	<td class="summary">Lässt einen NPC-Spieler einem anderen Spieler einen Entertainer anbieten.</td>
+	<td class="summary">Lässt einen NPC-Spieler einen Entertainer anbieten.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.AddGoodOffer">API.AddGoodOffer (_VendorID, _OfferType, _OfferAmount, _RefreshRate)</a></td>
-	<td class="summary">Lässt einen NPC-Spieler einem anderen Spieler Waren anbieten.</td>
+	<td class="summary">Lässt einen NPC-Spieler Waren anbieten.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.AddMercenaryOffer">API.AddMercenaryOffer (_VendorID, _OfferType, _OfferAmount, _RefreshRate)</a></td>
-	<td class="summary">Lässt einen NPC-Spieler einem anderen Spieler Söldner anbieten.</td>
+	<td class="summary">Lässt einen NPC-Spieler Söldner anbieten.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.GetOfferCount">API.GetOfferCount (_PlayerID)</a></td>
@@ -92,7 +91,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.GetOfferInformation">API.GetOfferInformation (_PlayerID)</a></td>
-	<td class="summary">Gibt die Handelsinformationen des Spielers aus.</td>
+	<td class="summary">Gibt die Angebotsinformationen des Spielers aus.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.GetTradeOfferWaggonAmount">API.GetTradeOfferWaggonAmount (_PlayerID, _GoodOrEntityType)</a></td>
@@ -208,7 +207,7 @@
     <strong>API.AddEntertainerOffer (_VendorID, _OfferType)</strong>
     </dt>
     <dd>
-    Lässt einen NPC-Spieler einem anderen Spieler einen Entertainer anbieten.
+    Lässt einen NPC-Spieler einen Entertainer anbieten.
 
 
     <h3>Parameters:</h3>
@@ -228,7 +227,7 @@
 
     <h3>Beispiel:</h3>
     <ul>
-        <pre class="example"><span class="comment">-- Spieler 2 bietet Spieler 1 einen Feuerschlucker an
+        <pre class="example"><span class="comment">-- Spieler 2 bietet einen Feuerschlucker an
 </span>API.AddEntertainerOffer(<span class="number">2</span>, Entities.U_Entertainer_NA_FireEater);</pre>
     </ul>
 
@@ -238,7 +237,7 @@
     <strong>API.AddGoodOffer (_VendorID, _OfferType, _OfferAmount, _RefreshRate)</strong>
     </dt>
     <dd>
-    Lässt einen NPC-Spieler einem anderen Spieler Waren anbieten.
+    Lässt einen NPC-Spieler Waren anbieten.
 
 
     <h3>Parameters:</h3>
@@ -266,10 +265,8 @@
 
     <h3>Beispiel:</h3>
     <ul>
-        <pre class="example"><span class="comment">-- Spieler 2 bietet Spieler 1 Brot an
-</span>API.AddGoodOffer(<span class="number">2</span>, Goods.G_Bread, <span class="number">1</span>, <span class="number">2</span>);
-<span class="comment">-- Spieler 2 bietet Spieler 3 Eisen an
-</span>API.AddGoodOffer(<span class="number">2</span>, Goods.G_Iron, <span class="number">3</span>, <span class="number">4</span>, <span class="number">180</span>);</pre>
+        <pre class="example"><span class="comment">-- Spieler 2 bietet Brot an
+</span>API.AddGoodOffer(<span class="number">2</span>, Goods.G_Bread, <span class="number">1</span>, <span class="number">2</span>);</pre>
     </ul>
 
 </dd>
@@ -278,7 +275,7 @@
     <strong>API.AddMercenaryOffer (_VendorID, _OfferType, _OfferAmount, _RefreshRate)</strong>
     </dt>
     <dd>
-    Lässt einen NPC-Spieler einem anderen Spieler Söldner anbieten.
+    Lässt einen NPC-Spieler Söldner anbieten.
 <p> <b>Hinweis</b>: Stadtlagerhäuser können keine Söldner anbieten!
 
 
@@ -308,7 +305,7 @@
 
     <h3>Beispiel:</h3>
     <ul>
-        <pre class="example"><span class="comment">-- Spieler 2 bietet Spieler 1 Sölder an
+        <pre class="example"><span class="comment">-- Spieler 2 bietet Sölder an
 </span>API.AddMercenaryOffer(<span class="number">2</span>, Entities.U_MilitaryBandit_Melee_SE, <span class="number">1</span>, <span class="number">3</span>);</pre>
     </ul>
 
@@ -352,7 +349,7 @@
     <strong>API.GetOfferInformation (_PlayerID)</strong>
     </dt>
     <dd>
-    Gibt die Handelsinformationen des Spielers aus.  In dem Objekt stehen
+    Gibt die Angebotsinformationen des Spielers aus.  In dem Table stehen
  ID des Spielers, ID des Lagerhaus, Menge an Angeboten insgesamt und
  alle Angebote der Händlertypen.
 
@@ -424,7 +421,7 @@
 
     <h3>Beispiel:</h3>
     <ul>
-        <pre class="example"><span class="comment">-- Wird die Ware angeboten?
+        <pre class="example"><span class="comment">-- Wie viel wird aktuell angeboten?
 </span><span class="keyword">local</span> CurrentAmount = API.IsGoodOrUnitOffered(<span class="number">4</span>, Goods.G_Bread);</pre>
     </ul>
 
@@ -477,7 +474,8 @@
 <p> Es kann ein beliebiger positiver Wert gesetzt werden. Es gibt keine
  Beschränkungen.
 <p> <b>Hinweis</b>: Wird eine höherer Wert gesetzt, als das ursprüngliche
- Maximum, regenerieren sich die zusätzlichen Angebote nicht.
+ Maximum, regenerieren sich die Angebote nicht, bis die zusätzlichen
+ Angebote verkauft wurden.
 
 
 
@@ -502,11 +500,10 @@
 
     <h3>Beispiel:</h3>
     <ul>
-        <pre class="example"><span class="comment">-- Angebote voll auffüllen
-</span>API.ModifyTradeOffer(<span class="number">7</span>, Goods.G_Cheese, -<span class="number">1</span>);
-API.ModifyTradeOffer(<span class="number">7</span>, Goods.U_MilitarySword);
-<span class="comment">-- 2 Angebote auffüllen
-</span>API.ModifyTradeOffer(<span class="number">7</span>, Goods.G_Dye, <span class="number">2</span>);</pre>
+        <li><pre class="example"><span class="comment">-- Beispiel #1: Angebote voll auffüllen
+</span>API.ModifyTradeOffer(<span class="number">7</span>, Goods.G_Cheese, -<span class="number">1</span>);</pre></li>
+        <li><pre class="example"><span class="comment">-- Beispiel #2: Angebote auffüllen
+</span>API.ModifyTradeOffer(<span class="number">7</span>, Goods.G_Dye, <span class="number">2</span>);</pre></li>
     </ul>
 
 </dd>
@@ -1098,7 +1095,7 @@ API.ModifyTradeOffer(<span class="number">7</span>, Goods.U_MilitarySword);
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-12-11 15:54:30 </i>
+<i style="float:right;">Last updated 2022-12-12 17:25:59 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 

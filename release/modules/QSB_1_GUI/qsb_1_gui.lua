@@ -814,7 +814,7 @@ You may use and modify this file unter the terms of the MIT licence.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
--- <li><a href="QSB_0_Kernel.api.html">(0) Kernel</a></li>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
 -- </ul>
 --
 -- @within Beschreibung

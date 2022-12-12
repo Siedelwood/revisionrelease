@@ -32,7 +32,7 @@
                 <h3>Ergebnisse</h3>
                 <div id="bundlelinkContainer">
                     <div style="margin-bottom: 10px;"><b>Module</b></div>
-                    <div id="modules.qsb_1_gui.qsb_1_gui" class="result module"><a href="modules/modules.qsb_1_gui.qsb_1_gui.html">(1) Benutzerschnittstelle</a><br>Dieses Modul bietet rudimentäre Funktionen zur Veränderung des Interface.</div><div id="modules.qsb_1_requester.qsb_1_requester" class="result module"><a href="modules/modules.qsb_1_requester.qsb_1_requester.html">(1) Dialogfenster</a><br>TODO</div><div id="modules.qsb_1_sound.qsb_1_sound" class="result module"><a href="modules/modules.qsb_1_sound.qsb_1_sound.html">(1) Sound</a><br>Dieses Modul bietet die Möglichkeit die Lautstärke im Spiel zu regeln.</div><div id="modules.qsb_1_trade.qsb_1_trade" class="result module"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html">(1) Handelserweiterung</a><br>Modul zum Überschreiben des Verhaltens von Händlern.</div><div id="modules.qsb_2_quest.qsb_2_quest" class="result module"><a href="modules/modules.qsb_2_quest.qsb_2_quest.html">(2) Aufträge</a><br>Dieses Modul ermöglicht es einen Quest, bzw.</div><div id="modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons" class="result module"><a href="modules/modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons.html">(4) Gebäudeschalter</a><br>Zusätzliche Buttons im Gebäudemenü platzieren.</div><div id="qsb" class="result module"><a href="modules/qsb.html">(0) Basismodul</a><br>Stellt wichtige Kernfunktionen bereit.</div>
+                    <div id="modules.qsb_1_gui.qsb_1_gui" class="result module"><a href="modules/modules.qsb_1_gui.qsb_1_gui.html">(1) Benutzerschnittstelle</a><br>Dieses Modul bietet rudimentäre Funktionen zur Veränderung des Interface.</div><div id="modules.qsb_1_requester.qsb_1_requester" class="result module"><a href="modules/modules.qsb_1_requester.qsb_1_requester.html">(1) Dialogfenster</a><br>TODO</div><div id="modules.qsb_1_sound.qsb_1_sound" class="result module"><a href="modules/modules.qsb_1_sound.qsb_1_sound.html">(1) Sound</a><br>Dieses Modul bietet die Möglichkeit die Lautstärke im Spiel zu regeln.</div><div id="modules.qsb_1_trade.qsb_1_trade" class="result module"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html">(1) Handelserweiterung</a><br>Ein Modul zur Steuerung des Kauf und Verkauf.</div><div id="modules.qsb_2_quest.qsb_2_quest" class="result module"><a href="modules/modules.qsb_2_quest.qsb_2_quest.html">(2) Aufträge</a><br>Dieses Modul ermöglicht es einen Quest, bzw.</div><div id="modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons" class="result module"><a href="modules/modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons.html">(4) Gebäudeschalter</a><br>Zusätzliche Buttons im Gebäudemenü platzieren.</div><div id="qsb" class="result module"><a href="modules/qsb.html">(0) Basismodul</a><br>Stellt wichtige Kernfunktionen bereit.</div>
                 </div>
                 <div id="directlinkContainer">
                     <div style="margin-bottom: 10px;"><b>Funktionen</b></div>
@@ -5954,8 +5954,10 @@ API.DialogSelectBox(&#x3C;span class="string"&#x3E;"Auswahl"&#x3C;/span&#x3E;, &
 API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, Text);&#x3C;/pre&#x3E;
     &#x3C;/ul&#x3E;
 
-</span></div><div id="modules.qsb_1_sound.qsb_1_sound.api.playsound" class="result method"><a href="modules/modules.qsb_1_sound.qsb_1_sound.html#API.PlaySound">API.PlaySound</a><br>Spielt einen Sound aus dem Spiel ab.<span class="docInvisibleContent">
-    Spielt einen Sound aus dem Spiel ab.
+</span></div><div id="modules.qsb_1_sound.qsb_1_sound.api.play2dsound" class="result method"><a href="modules/modules.qsb_1_sound.qsb_1_sound.html#API.Play2DSound">API.Play2DSound</a><br>Spielt einen 2D-Sound aus dem Spiel ab.<span class="docInvisibleContent">
+    Spielt einen 2D-Sound aus dem Spiel ab.
+&#x3C;p&#x3E; Ein 2D-Sound ist nicht positionsgebunden und ist immer zu hören, egal an
+ welcher Stelle auf der Map sich die Kamera befindet.
 &#x3C;p&#x3E; Wenn eigene Sounds verwendet werden sollen, müssen sie im WAV-Format
  vorliegen und in die zwei Verzeichnisse für niedrige und hohe Qualität
  kopiert werden.
@@ -5983,7 +5985,50 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 
     &#x3C;h3&#x3E;Beispiel:&#x3C;/h3&#x3E;
     &#x3C;ul&#x3E;
-        &#x3C;pre class="example"&#x3E;API.PlaySound(&#x3C;span class="string"&#x3E;"ui\\menu_left_gold_pay"&#x3C;/span&#x3E;);&#x3C;/pre&#x3E;
+        &#x3C;pre class="example"&#x3E;API.Play2DSound(&#x3C;span class="string"&#x3E;"ui/menu_left_gold_pay"&#x3C;/span&#x3E;);&#x3C;/pre&#x3E;
+    &#x3C;/ul&#x3E;
+
+</span></div><div id="modules.qsb_1_sound.qsb_1_sound.api.play3dsound" class="result method"><a href="modules/modules.qsb_1_sound.qsb_1_sound.html#API.Play3DSound">API.Play3DSound</a><br>Spielt einen 3D-Sound aus dem Spiel ab.<span class="docInvisibleContent">
+    Spielt einen 3D-Sound aus dem Spiel ab.
+&#x3C;p&#x3E; Ein 3D-Sound wird an einer bestimmten Position abgespielt und ist nur in
+ einem begrenzten Bereich um die Position höhrbar.
+&#x3C;p&#x3E; Wenn eigene Sounds verwendet werden sollen, müssen sie im WAV-Format
+ vorliegen und in die zwei Verzeichnisse für niedrige und hohe Qualität
+ kopiert werden.
+&#x3C;p&#x3E; Verzeichnisstruktur für eigene Sounds:
+ &#x3C;pre&#x3E;map_xyz.s6xmap.unpacked
+|-- sounds/high/ui/*
+|-- sounds/low/ui/*
+|-- maps/externalmap/map_xyz/*
+|-- ...&#x3C;/pre&#x3E;
+
+
+
+    &#x3C;h3&#x3E;Parameters:&#x3C;/h3&#x3E;
+    &#x3C;ul&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_Sound&#x3C;/span&#x3E;
+            Pfad des Sound
+        &#x3C;/li&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_X&#x3C;/span&#x3E;
+                X-Position des Sound
+        &#x3C;/li&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_Y&#x3C;/span&#x3E;
+                Y-Position des Sound
+        &#x3C;/li&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_Z&#x3C;/span&#x3E;
+                Z-Position des Sound
+        &#x3C;/li&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_PlayerID&#x3C;/span&#x3E;
+         (Optional) ID des menschlichen Spielers
+        &#x3C;/li&#x3E;
+    &#x3C;/ul&#x3E;
+
+
+
+
+    &#x3C;h3&#x3E;Beispiel:&#x3C;/h3&#x3E;
+    &#x3C;ul&#x3E;
+        &#x3C;pre class="example"&#x3E;API.Play3DSound(&#x3C;span class="string"&#x3E;"Animals/cow_disease"&#x3C;/span&#x3E;, &#x3C;span class="number"&#x3E;8500&#x3C;/span&#x3E;, &#x3C;span class="number"&#x3E;35800&#x3C;/span&#x3E;, &#x3C;span class="number"&#x3E;2000&#x3C;/span&#x3E;);&#x3C;/pre&#x3E;
     &#x3C;/ul&#x3E;
 
 </span></div><div id="modules.qsb_1_sound.qsb_1_sound.api.playvoice" class="result method"><a href="modules/modules.qsb_1_sound.qsb_1_sound.html#API.PlayVoice">API.PlayVoice</a><br>Gibt eine MP3-Datei als Stimme wieder.<span class="docInvisibleContent">
@@ -6239,8 +6284,8 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 
 
 
-</span></div><div id="modules.qsb_1_trade.qsb_1_trade.api.addentertaineroffer" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#API.AddEntertainerOffer">API.AddEntertainerOffer</a><br>Lässt einen NPC-Spieler einem anderen Spieler einen Entertainer anbieten.<span class="docInvisibleContent">
-    Lässt einen NPC-Spieler einem anderen Spieler einen Entertainer anbieten.
+</span></div><div id="modules.qsb_1_trade.qsb_1_trade.api.addentertaineroffer" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#API.AddEntertainerOffer">API.AddEntertainerOffer</a><br>Lässt einen NPC-Spieler einen Entertainer anbieten.<span class="docInvisibleContent">
+    Lässt einen NPC-Spieler einen Entertainer anbieten.
 
 
     &#x3C;h3&#x3E;Parameters:&#x3C;/h3&#x3E;
@@ -6260,12 +6305,12 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 
     &#x3C;h3&#x3E;Beispiel:&#x3C;/h3&#x3E;
     &#x3C;ul&#x3E;
-        &#x3C;pre class="example"&#x3E;&#x3C;span class="comment"&#x3E;-- Spieler 2 bietet Spieler 1 einen Feuerschlucker an
+        &#x3C;pre class="example"&#x3E;&#x3C;span class="comment"&#x3E;-- Spieler 2 bietet einen Feuerschlucker an
 &#x3C;/span&#x3E;API.AddEntertainerOffer(&#x3C;span class="number"&#x3E;2&#x3C;/span&#x3E;, Entities.U_Entertainer_NA_FireEater);&#x3C;/pre&#x3E;
     &#x3C;/ul&#x3E;
 
-</span></div><div id="modules.qsb_1_trade.qsb_1_trade.api.addgoodoffer" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#API.AddGoodOffer">API.AddGoodOffer</a><br>Lässt einen NPC-Spieler einem anderen Spieler Waren anbieten.<span class="docInvisibleContent">
-    Lässt einen NPC-Spieler einem anderen Spieler Waren anbieten.
+</span></div><div id="modules.qsb_1_trade.qsb_1_trade.api.addgoodoffer" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#API.AddGoodOffer">API.AddGoodOffer</a><br>Lässt einen NPC-Spieler Waren anbieten.<span class="docInvisibleContent">
+    Lässt einen NPC-Spieler Waren anbieten.
 
 
     &#x3C;h3&#x3E;Parameters:&#x3C;/h3&#x3E;
@@ -6293,14 +6338,12 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 
     &#x3C;h3&#x3E;Beispiel:&#x3C;/h3&#x3E;
     &#x3C;ul&#x3E;
-        &#x3C;pre class="example"&#x3E;&#x3C;span class="comment"&#x3E;-- Spieler 2 bietet Spieler 1 Brot an
-&#x3C;/span&#x3E;API.AddGoodOffer(&#x3C;span class="number"&#x3E;2&#x3C;/span&#x3E;, Goods.G_Bread, &#x3C;span class="number"&#x3E;1&#x3C;/span&#x3E;, &#x3C;span class="number"&#x3E;2&#x3C;/span&#x3E;);
-&#x3C;span class="comment"&#x3E;-- Spieler 2 bietet Spieler 3 Eisen an
-&#x3C;/span&#x3E;API.AddGoodOffer(&#x3C;span class="number"&#x3E;2&#x3C;/span&#x3E;, Goods.G_Iron, &#x3C;span class="number"&#x3E;3&#x3C;/span&#x3E;, &#x3C;span class="number"&#x3E;4&#x3C;/span&#x3E;, &#x3C;span class="number"&#x3E;180&#x3C;/span&#x3E;);&#x3C;/pre&#x3E;
+        &#x3C;pre class="example"&#x3E;&#x3C;span class="comment"&#x3E;-- Spieler 2 bietet Brot an
+&#x3C;/span&#x3E;API.AddGoodOffer(&#x3C;span class="number"&#x3E;2&#x3C;/span&#x3E;, Goods.G_Bread, &#x3C;span class="number"&#x3E;1&#x3C;/span&#x3E;, &#x3C;span class="number"&#x3E;2&#x3C;/span&#x3E;);&#x3C;/pre&#x3E;
     &#x3C;/ul&#x3E;
 
-</span></div><div id="modules.qsb_1_trade.qsb_1_trade.api.addmercenaryoffer" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#API.AddMercenaryOffer">API.AddMercenaryOffer</a><br>Lässt einen NPC-Spieler einem anderen Spieler Söldner anbieten.<span class="docInvisibleContent">
-    Lässt einen NPC-Spieler einem anderen Spieler Söldner anbieten.
+</span></div><div id="modules.qsb_1_trade.qsb_1_trade.api.addmercenaryoffer" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#API.AddMercenaryOffer">API.AddMercenaryOffer</a><br>Lässt einen NPC-Spieler Söldner anbieten.<span class="docInvisibleContent">
+    Lässt einen NPC-Spieler Söldner anbieten.
 &#x3C;p&#x3E; &#x3C;b&#x3E;Hinweis&#x3C;/b&#x3E;: Stadtlagerhäuser können keine Söldner anbieten!
 
 
@@ -6330,7 +6373,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 
     &#x3C;h3&#x3E;Beispiel:&#x3C;/h3&#x3E;
     &#x3C;ul&#x3E;
-        &#x3C;pre class="example"&#x3E;&#x3C;span class="comment"&#x3E;-- Spieler 2 bietet Spieler 1 Sölder an
+        &#x3C;pre class="example"&#x3E;&#x3C;span class="comment"&#x3E;-- Spieler 2 bietet Sölder an
 &#x3C;/span&#x3E;API.AddMercenaryOffer(&#x3C;span class="number"&#x3E;2&#x3C;/span&#x3E;, Entities.U_MilitaryBandit_Melee_SE, &#x3C;span class="number"&#x3E;1&#x3C;/span&#x3E;, &#x3C;span class="number"&#x3E;3&#x3C;/span&#x3E;);&#x3C;/pre&#x3E;
     &#x3C;/ul&#x3E;
 
@@ -6363,8 +6406,8 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 &#x3C;/span&#x3E;&#x3C;span class="keyword"&#x3E;local&#x3C;/span&#x3E; Count = API.GetOfferCount(&#x3C;span class="number"&#x3E;5&#x3C;/span&#x3E;);&#x3C;/pre&#x3E;
     &#x3C;/ul&#x3E;
 
-</span></div><div id="modules.qsb_1_trade.qsb_1_trade.api.getofferinformation" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#API.GetOfferInformation">API.GetOfferInformation</a><br>Gibt die Handelsinformationen des Spielers aus.<span class="docInvisibleContent">
-    Gibt die Handelsinformationen des Spielers aus.  In dem Objekt stehen
+</span></div><div id="modules.qsb_1_trade.qsb_1_trade.api.getofferinformation" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#API.GetOfferInformation">API.GetOfferInformation</a><br>Gibt die Angebotsinformationen des Spielers aus.<span class="docInvisibleContent">
+    Gibt die Angebotsinformationen des Spielers aus.  In dem Table stehen
  ID des Spielers, ID des Lagerhaus, Menge an Angeboten insgesamt und
  alle Angebote der Händlertypen.
 
@@ -6431,7 +6474,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 
     &#x3C;h3&#x3E;Beispiel:&#x3C;/h3&#x3E;
     &#x3C;ul&#x3E;
-        &#x3C;pre class="example"&#x3E;&#x3C;span class="comment"&#x3E;-- Wird die Ware angeboten?
+        &#x3C;pre class="example"&#x3E;&#x3C;span class="comment"&#x3E;-- Wie viel wird aktuell angeboten?
 &#x3C;/span&#x3E;&#x3C;span class="keyword"&#x3E;local&#x3C;/span&#x3E; CurrentAmount = API.IsGoodOrUnitOffered(&#x3C;span class="number"&#x3E;4&#x3C;/span&#x3E;, Goods.G_Bread);&#x3C;/pre&#x3E;
     &#x3C;/ul&#x3E;
 
@@ -6474,7 +6517,8 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 &#x3C;p&#x3E; Es kann ein beliebiger positiver Wert gesetzt werden. Es gibt keine
  Beschränkungen.
 &#x3C;p&#x3E; &#x3C;b&#x3E;Hinweis&#x3C;/b&#x3E;: Wird eine höherer Wert gesetzt, als das ursprüngliche
- Maximum, regenerieren sich die zusätzlichen Angebote nicht.
+ Maximum, regenerieren sich die Angebote nicht, bis die zusätzlichen
+ Angebote verkauft wurden.
 
 
 
@@ -6499,11 +6543,10 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 
     &#x3C;h3&#x3E;Beispiel:&#x3C;/h3&#x3E;
     &#x3C;ul&#x3E;
-        &#x3C;pre class="example"&#x3E;&#x3C;span class="comment"&#x3E;-- Angebote voll auffüllen
-&#x3C;/span&#x3E;API.ModifyTradeOffer(&#x3C;span class="number"&#x3E;7&#x3C;/span&#x3E;, Goods.G_Cheese, -&#x3C;span class="number"&#x3E;1&#x3C;/span&#x3E;);
-API.ModifyTradeOffer(&#x3C;span class="number"&#x3E;7&#x3C;/span&#x3E;, Goods.U_MilitarySword);
-&#x3C;span class="comment"&#x3E;-- 2 Angebote auffüllen
-&#x3C;/span&#x3E;API.ModifyTradeOffer(&#x3C;span class="number"&#x3E;7&#x3C;/span&#x3E;, Goods.G_Dye, &#x3C;span class="number"&#x3E;2&#x3C;/span&#x3E;);&#x3C;/pre&#x3E;
+        &#x3C;li&#x3E;&#x3C;pre class="example"&#x3E;&#x3C;span class="comment"&#x3E;-- Beispiel #1: Angebote voll auffüllen
+&#x3C;/span&#x3E;API.ModifyTradeOffer(&#x3C;span class="number"&#x3E;7&#x3C;/span&#x3E;, Goods.G_Cheese, -&#x3C;span class="number"&#x3E;1&#x3C;/span&#x3E;);&#x3C;/pre&#x3E;&#x3C;/li&#x3E;
+        &#x3C;li&#x3E;&#x3C;pre class="example"&#x3E;&#x3C;span class="comment"&#x3E;-- Beispiel #2: Angebote auffüllen
+&#x3C;/span&#x3E;API.ModifyTradeOffer(&#x3C;span class="number"&#x3E;7&#x3C;/span&#x3E;, Goods.G_Dye, &#x3C;span class="number"&#x3E;2&#x3C;/span&#x3E;);&#x3C;/pre&#x3E;&#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
 </span></div><div id="modules.qsb_1_trade.qsb_1_trade.api.purchasesetbasepriceforplayer" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#API.PurchaseSetBasePriceForPlayer">API.PurchaseSetBasePriceForPlayer</a><br>Setzt die Funktion zur Bestimmung des Basispreis.<span class="docInvisibleContent">
@@ -7037,19 +7080,19 @@ API.ModifyTradeOffer(&#x3C;span class="number"&#x3E;7&#x3C;/span&#x3E;, Goods.U_
 &#x3C;p&#x3E; Verschachtelte Aufträge (Nested Quests) vereinfachen aufschreiben und
  zuordnen der zugeordneten Aufträge. Ein Nested Quest ist selbst unsichtbar
  und hat mindestens ein ihm untergeordnetes Segment. Die Segmente eines
- Nested Quest sind wiederum eigenständige Quests.
+ Nested Quest sind wiederum Quests.
 &#x3C;p&#x3E; Du kannst für Segmente die gleichen Einträge setzen, wie bei gewöhnlichen
  Quests. Zudem kannst du auch ihnen einen Namen geben. Wenn du das nicht tust,
- werden sie automatisch benannt. Der Name setzt sich zusammen aus dem Namen
- des Nested Quest und ihrem Index (z.B. "UnimaginativeQuestname@Segment1").
+ werden sie automatisch benannt. Der Name setzt sich dann zusammen aus dem
+ Namen des Nested Quest und ihrem Index (z.B. "ExampleName@Segment1").
 &#x3C;p&#x3E; Segmente haben ein erwartetes Ergebnis. Für gewöhnlich ist dies auf Erfolg
  festgelegt. Du kanns es aber auch auf Fehlschlag ändern oder ganz ignorieren.
  Ein Nested Quest ist abgeschlossen, wenn alle Segmente mit ihrem erwarteten
  Ergebnis abgeschlossen wurden (Erfolg) oder mindestens einer ein anderes
  Ergebnis als erwartet hatte (Fehlschlag).
 &#x3C;p&#x3E; Werden Status oder Resultat eines Quest über Funktionen verändert (zb.
- API.StopQuest bzw "stop" Konsolenbefehl), dann werden automatisch die
- Segmente ausgelöst oder abgebrochen.
+ API.StopQuest oder "stop" Konsolenbefehl), dann werden automatisch die
+ Segmente ebenfalls ausgelöst bzw. beendet.
 &#x3C;p&#x3E; Es ist nicht zwingend notwendig, einen Trigger für die Segmente zu setzen.
  Alle Segmente starten automatisch sobald der Nested Quest startet. Du kannst
  weitere Trigger zu Segmenten hinzufügen, um dieses Verhalten nach deinen
@@ -7092,7 +7135,7 @@ API.ModifyTradeOffer(&#x3C;span class="number"&#x3E;7&#x3C;/span&#x3E;, Goods.U_
             Goal_KnightTitle(&#x3C;span class="string"&#x3E;"Mayor"&#x3C;/span&#x3E;),
         },
         {
-            &#x3C;span class="comment"&#x3E;-- Mit dem Typ Ignore wird Fehlschlag ignoriert.
+            &#x3C;span class="comment"&#x3E;-- Mit dem Typ Ignore wird ein Fehlschlag ignoriert.
 &#x3C;/span&#x3E;            Result      = QSB.SegmentResult.Ignore,
 
             Suggestion  = &#x3C;span class="string"&#x3E;"Wir benötigen außerdem mehr Asche! Und das sofort..."&#x3C;/span&#x3E;,
@@ -7337,9 +7380,10 @@ API.ModifyTradeOffer(&#x3C;span class="number"&#x3E;7&#x3C;/span&#x3E;, Goods.U_
 
 </span></div><div id="modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons.api.addbuildingbuttonbyentity" class="result method"><a href="modules/modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons.html#API.AddBuildingButtonByEntity">API.AddBuildingButtonByEntity</a><br>Fügt einen Gebäudeschalter für das Entity hinzu.<span class="docInvisibleContent">
     Fügt einen Gebäudeschalter für das Entity hinzu.
-&#x3C;p&#x3E; Einem Gebäude können maximal 6 Buttons zugewiesen werden! Wenn ein Entity
- einen Button zugewiesen bekommt, werden alle mit API.AddBuildingButton oder
- API.AddBuildingButtonByType gesetzten Buttons für das Entity ignoriert.
+&#x3C;p&#x3E; Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+ hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+ Update-Funktion. Wenn ein Entity einen Button zugewiesen bekommt, werden
+ alle allgemeinen Buttons und alle Buttons für Typen für das Entity ignoriert.
 
 
 
@@ -7379,9 +7423,10 @@ API.ModifyTradeOffer(&#x3C;span class="number"&#x3E;7&#x3C;/span&#x3E;, Goods.U_
 
 </span></div><div id="modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons.api.addbuildingbuttonbyentityatposition" class="result method"><a href="modules/modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons.html#API.AddBuildingButtonByEntityAtPosition">API.AddBuildingButtonByEntityAtPosition</a><br>Fügt einen Gebäudeschalter für das Entity hinzu.<span class="docInvisibleContent">
     Fügt einen Gebäudeschalter für das Entity hinzu.
-&#x3C;p&#x3E; Einem Gebäude können maximal 6 Buttons zugewiesen werden! Wenn ein Entity
- einen Button zugewiesen bekommt, werden alle mit API.AddBuildingButton oder
- API.AddBuildingButtonByType gesetzten Buttons für das Entity ignoriert.
+&#x3C;p&#x3E; Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+ hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+ Update-Funktion. Wenn ein Entity einen Button zugewiesen bekommt, werden
+ alle allgemeinen Buttons und alle Buttons für Typen für das Entity ignoriert.
 
 
 
@@ -7429,9 +7474,10 @@ API.ModifyTradeOffer(&#x3C;span class="number"&#x3E;7&#x3C;/span&#x3E;, Goods.U_
 
 </span></div><div id="modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons.api.addbuildingbuttonbytype" class="result method"><a href="modules/modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons.html#API.AddBuildingButtonByType">API.AddBuildingButtonByType</a><br>Fügt einen Gebäudeschalter für den Entity-Typ hinzu.<span class="docInvisibleContent">
     Fügt einen Gebäudeschalter für den Entity-Typ hinzu.
-&#x3C;p&#x3E; Einem Gebäude können maximal 6 Buttons zugewiesen werden! Wenn ein Typ einen
- Button zugewiesen bekommt, werden alle mit API.AddBuildingButton gesetzten
- Buttons für den Typ ignoriert.
+&#x3C;p&#x3E; Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+ hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+ Update-Funktion. Wenn ein Typ einen Button zugewiesen bekommt, werden alle
+ allgemeinen Buttons für den Typ ignoriert.
 
 
 
@@ -7471,9 +7517,10 @@ API.ModifyTradeOffer(&#x3C;span class="number"&#x3E;7&#x3C;/span&#x3E;, Goods.U_
 
 </span></div><div id="modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons.api.addbuildingbuttonbytypeatposition" class="result method"><a href="modules/modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons.html#API.AddBuildingButtonByTypeAtPosition">API.AddBuildingButtonByTypeAtPosition</a><br>Fügt einen Gebäudeschalter für den Entity-Typ hinzu.<span class="docInvisibleContent">
     Fügt einen Gebäudeschalter für den Entity-Typ hinzu.
-&#x3C;p&#x3E; Einem Gebäude können maximal 6 Buttons zugewiesen werden! Wenn ein Typ einen
- Button zugewiesen bekommt, werden alle mit API.AddBuildingButton gesetzten
- Buttons für den Typ ignoriert.
+&#x3C;p&#x3E; Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+ hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+ Update-Funktion. Wenn ein Typ einen Button zugewiesen bekommt, werden alle
+ allgemeinen Buttons für den Typ ignoriert.
 
 
 

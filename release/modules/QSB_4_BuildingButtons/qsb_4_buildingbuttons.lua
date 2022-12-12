@@ -596,6 +596,12 @@ You may use and modify this file unter the terms of the MIT licence.
 ---
 -- Zusätzliche Buttons im Gebäudemenü platzieren.
 --
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
+-- <li><a href="QSB_1_GUI.api.html">(0) Benutzerschnittstelle</a></li>
+-- </ul>
+--
 -- @within Beschreibung
 -- @set sort=true
 --
@@ -705,9 +711,10 @@ end
 ---
 -- Fügt einen Gebäudeschalter für den Entity-Typ hinzu.
 --
--- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Wenn ein Typ einen
--- Button zugewiesen bekommt, werden alle mit API.AddBuildingButton gesetzten
--- Buttons für den Typ ignoriert.
+-- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+-- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+-- Update-Funktion. Wenn ein Typ einen Button zugewiesen bekommt, werden alle 
+-- allgemeinen Buttons für den Typ ignoriert.
 --
 -- @param[type=number]   _Type    Typ des Gebäudes
 -- @param[type=number]   _X       X-Position des Button
@@ -726,9 +733,10 @@ end
 ---
 -- Fügt einen Gebäudeschalter für den Entity-Typ hinzu.
 --
--- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Wenn ein Typ einen
--- Button zugewiesen bekommt, werden alle mit API.AddBuildingButton gesetzten
--- Buttons für den Typ ignoriert.
+-- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+-- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+-- Update-Funktion. Wenn ein Typ einen Button zugewiesen bekommt, werden alle 
+-- allgemeinen Buttons für den Typ ignoriert.
 --
 -- @param[type=number]   _Type    Typ des Gebäudes
 -- @param[type=function] _Action  Funktion für die Aktion beim Klicken
@@ -745,9 +753,10 @@ end
 ---
 -- Fügt einen Gebäudeschalter für das Entity hinzu.
 --
--- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Wenn ein Entity
--- einen Button zugewiesen bekommt, werden alle mit API.AddBuildingButton oder
--- API.AddBuildingButtonByType gesetzten Buttons für das Entity ignoriert.
+-- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+-- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+-- Update-Funktion. Wenn ein Entity einen Button zugewiesen bekommt, werden
+-- alle allgemeinen Buttons und alle Buttons für Typen für das Entity ignoriert.
 --
 -- @param[type=function] _ScriptName Scriptname des Entity
 -- @param[type=number]   _X          X-Position des Button
@@ -766,9 +775,10 @@ end
 ---
 -- Fügt einen Gebäudeschalter für das Entity hinzu.
 --
--- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Wenn ein Entity
--- einen Button zugewiesen bekommt, werden alle mit API.AddBuildingButton oder
--- API.AddBuildingButtonByType gesetzten Buttons für das Entity ignoriert.
+-- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+-- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+-- Update-Funktion. Wenn ein Entity einen Button zugewiesen bekommt, werden
+-- alle allgemeinen Buttons und alle Buttons für Typen für das Entity ignoriert.
 --
 -- @param[type=function] _ScriptName Scriptname des Entity
 -- @param[type=function] _Action     Funktion für die Aktion beim Klicken
