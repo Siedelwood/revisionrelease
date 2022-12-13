@@ -32,7 +32,7 @@
                 <h3>Ergebnisse</h3>
                 <div id="bundlelinkContainer">
                     <div style="margin-bottom: 10px;"><b>Module</b></div>
-                    <div id="modules.qsb_1_gui.qsb_1_gui" class="result module"><a href="modules/modules.qsb_1_gui.qsb_1_gui.html">(1) Benutzerschnittstelle</a><br>Dieses Modul bietet rudimentäre Funktionen zur Veränderung des Interface.</div><div id="modules.qsb_1_requester.qsb_1_requester" class="result module"><a href="modules/modules.qsb_1_requester.qsb_1_requester.html">(1) Dialogfenster</a><br>TODO</div><div id="modules.qsb_1_sound.qsb_1_sound" class="result module"><a href="modules/modules.qsb_1_sound.qsb_1_sound.html">(1) Sound</a><br>Dieses Modul bietet die Möglichkeit die Lautstärke im Spiel zu regeln.</div><div id="modules.qsb_1_trade.qsb_1_trade" class="result module"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html">(1) Handelserweiterung</a><br>Ein Modul zur Steuerung des Kauf und Verkauf.</div><div id="modules.qsb_2_quest.qsb_2_quest" class="result module"><a href="modules/modules.qsb_2_quest.qsb_2_quest.html">(2) Aufträge</a><br>Dieses Modul ermöglicht es einen Quest, bzw.</div><div id="modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons" class="result module"><a href="modules/modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons.html">(4) Gebäudeschalter</a><br>Zusätzliche Buttons im Gebäudemenü platzieren.</div><div id="qsb" class="result module"><a href="modules/qsb.html">(0) Basismodul</a><br>Stellt wichtige Kernfunktionen bereit.</div>
+                    <div id="modules.qsb_1_gui.qsb_1_gui" class="result module"><a href="modules/modules.qsb_1_gui.qsb_1_gui.html">(1) Benutzerschnittstelle</a><br>Funktionen zur Veränderung der Benutzeroberfläche.</div><div id="modules.qsb_1_requester.qsb_1_requester" class="result module"><a href="modules/modules.qsb_1_requester.qsb_1_requester.html">(1) Dialogfenster</a><br>Stellt verschiedene Dialogfenster zur Verfügung.</div><div id="modules.qsb_1_sound.qsb_1_sound" class="result module"><a href="modules/modules.qsb_1_sound.qsb_1_sound.html">(1) Sound</a><br>Steuerung der Lautstärke und der Sound-Ausgabe.</div><div id="modules.qsb_1_trade.qsb_1_trade" class="result module"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html">(1) Handelserweiterung</a><br>Es kann in den Ablauf von Kauf und Verkauf eingegriffen werden.</div><div id="modules.qsb_2_quest.qsb_2_quest" class="result module"><a href="modules/modules.qsb_2_quest.qsb_2_quest.html">(2) Aufträge</a><br>Aufträge können über das Skript erstellt werden.</div><div id="modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons" class="result module"><a href="modules/modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons.html">(4) Gebäudeschalter</a><br>Zusätzliche Buttons im Gebäudemenü platzieren.</div><div id="qsb" class="result module"><a href="modules/qsb.html">(0) Basismodul</a><br>Stellt wichtige Kernfunktionen bereit.</div>
                 </div>
                 <div id="directlinkContainer">
                     <div style="margin-bottom: 10px;"><b>Funktionen</b></div>
@@ -250,7 +250,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -258,6 +258,10 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
     &#x3C;/ol&#x3E;
 
 
+    &#x3C;h3&#x3E;Verwandte Themen:&#x3C;/h3&#x3E;
+    &#x3C;ul&#x3E;
+         &#x3C;a href="../modules/qsb.html#API.RemoveScriptEventListener"&#x3E;API.RemoveScriptEventListener&#x3C;/a&#x3E;
+    &#x3C;/ul&#x3E;
 
     &#x3C;h3&#x3E;Beispiel:&#x3C;/h3&#x3E;
     &#x3C;ul&#x3E;
@@ -274,9 +278,9 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
 
     &#x3C;h3&#x3E;Parameters:&#x3C;/h3&#x3E;
     &#x3C;ul&#x3E;
-        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_EventID&#x3C;/span&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_EventName&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
-         ID des Event
+         Name des Event
         &#x3C;/li&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;...&#x3C;/span&#x3E;
          Optionale Parameter (nil, string, number, boolean, (array) table)
@@ -288,7 +292,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
 
     &#x3C;h3&#x3E;Beispiel:&#x3C;/h3&#x3E;
     &#x3C;ul&#x3E;
-        &#x3C;pre class="example"&#x3E;API.SendScriptEventToGlobal(SomeEventID, Param1, Param2, ...);&#x3C;/pre&#x3E;
+        &#x3C;pre class="example"&#x3E;API.SendScriptEventToGlobal(&#x3C;span class="string"&#x3E;"SomeEventName"&#x3C;/span&#x3E;, Param1, Param2, ...);&#x3C;/pre&#x3E;
     &#x3C;/ul&#x3E;
 
 </span></div><div id="qsb.api.changeentityhealth" class="result method"><a href="modules/qsb.html#API.ChangeEntityHealth">API.ChangeEntityHealth</a><br>Setzt die Gesundheit des Entity.<span class="docInvisibleContent">
@@ -341,7 +345,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -367,7 +371,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -426,7 +430,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
         Ersetzter Text
@@ -457,7 +461,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -481,7 +485,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4"&#x3E;string&#x3C;/a&#x3E;&#x3C;/span&#x3E;
@@ -589,7 +593,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
 
 
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5"&#x3E;table&#x3C;/a&#x3E;&#x3C;/span&#x3E;
@@ -607,7 +611,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
 
 
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5"&#x3E;table&#x3C;/a&#x3E;&#x3C;/span&#x3E;
@@ -637,7 +641,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5"&#x3E;table&#x3C;/a&#x3E;&#x3C;/span&#x3E;
@@ -662,7 +666,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5"&#x3E;table&#x3C;/a&#x3E;&#x3C;/span&#x3E;
@@ -686,7 +690,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -707,7 +711,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -728,7 +732,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -749,7 +753,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5"&#x3E;table&#x3C;/a&#x3E;&#x3C;/span&#x3E;
@@ -770,7 +774,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4"&#x3E;string&#x3C;/a&#x3E;&#x3C;/span&#x3E;
@@ -796,7 +800,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -821,7 +825,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -842,7 +846,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5"&#x3E;table&#x3C;/a&#x3E;&#x3C;/span&#x3E;
@@ -868,7 +872,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -897,7 +901,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
         &#x3C;li&#x3E;
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -924,7 +928,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -947,7 +951,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -972,7 +976,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
         &#x3C;li&#x3E;
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -1081,7 +1085,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;boolean&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -1101,7 +1105,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
 
 
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;boolean&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -1125,7 +1129,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;boolean&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -1147,7 +1151,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;boolean&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -1169,7 +1173,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;boolean&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -1203,7 +1207,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
         Übersetzten Text oder Table mit Texten
@@ -1236,7 +1240,11 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
     &#x3C;ul&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_Text&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4"&#x3E;string&#x3C;/a&#x3E;&#x3C;/span&#x3E;
-         Anzeigetext
+          Anzeigetext
+        &#x3C;/li&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_Sound&#x3C;/span&#x3E;
+            &#x3C;span class="types"&#x3E;&#x3C;a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4"&#x3E;string&#x3C;/a&#x3E;&#x3C;/span&#x3E;
+         (Optional) Soundeffekt der Nachricht
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
@@ -1245,7 +1253,10 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
 
     &#x3C;h3&#x3E;Beispiel:&#x3C;/h3&#x3E;
     &#x3C;ul&#x3E;
-        &#x3C;pre class="example"&#x3E;API.Message(&#x3C;span class="string"&#x3E;"Das ist eine Nachricht!"&#x3C;/span&#x3E;);&#x3C;/pre&#x3E;
+        &#x3C;li&#x3E;&#x3C;pre class="example"&#x3E;&#x3C;span class="comment"&#x3E;-- Beispiel #1: Einfache Nachricht
+&#x3C;/span&#x3E;API.Message(&#x3C;span class="string"&#x3E;"Das ist eine Nachricht!"&#x3C;/span&#x3E;);&#x3C;/pre&#x3E;&#x3C;/li&#x3E;
+        &#x3C;li&#x3E;&#x3C;pre class="example"&#x3E;&#x3C;span class="comment"&#x3E;-- Beispiel #2: Nachricht und Ton
+&#x3C;/span&#x3E;API.Message(&#x3C;span class="string"&#x3E;"Das ist eine WERTVOLLE Nachricht!"&#x3C;/span&#x3E;, &#x3C;span class="string"&#x3E;"ui/menu_left_gold_pay"&#x3C;/span&#x3E;);&#x3C;/pre&#x3E;&#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
 </span></div><div id="qsb.api.note" class="result method"><a href="modules/qsb.html#API.Note">API.Note</a><br>Schreibt eine Nachricht in das Debug Window.<span class="docInvisibleContent">
@@ -1289,7 +1300,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
         Wert
@@ -1307,7 +1318,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
 
 
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -1333,7 +1344,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -1365,6 +1376,10 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
 
 
 
+    &#x3C;h3&#x3E;Verwandte Themen:&#x3C;/h3&#x3E;
+    &#x3C;ul&#x3E;
+         &#x3C;a href="../modules/qsb.html#API.AddScriptEventListener"&#x3E;API.AddScriptEventListener&#x3C;/a&#x3E;
+    &#x3C;/ul&#x3E;
 
 
 </span></div><div id="qsb.api.replaceentity" class="result method"><a href="modules/qsb.html#API.ReplaceEntity">API.ReplaceEntity</a><br>Ersetzt ein Entity mit einem neuen eines anderen Typs.<span class="docInvisibleContent">
@@ -1392,7 +1407,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -1481,7 +1496,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -1555,7 +1570,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -1606,9 +1621,9 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
 
     &#x3C;h3&#x3E;Parameters:&#x3C;/h3&#x3E;
     &#x3C;ul&#x3E;
-        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_EventID&#x3C;/span&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_EventName&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
-         ID des Event
+         Name des Event
         &#x3C;/li&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;...&#x3C;/span&#x3E;
          Optionale Parameter (nil, string, number, boolean, (array) table)
@@ -1620,7 +1635,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
 
     &#x3C;h3&#x3E;Beispiel:&#x3C;/h3&#x3E;
     &#x3C;ul&#x3E;
-        &#x3C;pre class="example"&#x3E;API.SendScriptEventToGlobal(SomeEventID, Param1, Param2, ...);&#x3C;/pre&#x3E;
+        &#x3C;pre class="example"&#x3E;API.SendScriptEventToGlobal(&#x3C;span class="string"&#x3E;"SomeEventName"&#x3C;/span&#x3E;, Param1, Param2, ...);&#x3C;/pre&#x3E;
     &#x3C;/ul&#x3E;
 
 </span></div><div id="qsb.api.setentitymodel" class="result method"><a href="modules/qsb.html#API.SetEntityModel">API.SetEntityModel</a><br>Weist dem Entity ein Neues Model zu.<span class="docInvisibleContent">
@@ -1870,7 +1885,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -1912,7 +1927,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -1949,7 +1964,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -1980,7 +1995,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -2028,7 +2043,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -2091,7 +2106,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -4919,28 +4934,28 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
 
     &#x3C;ul&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;CinematicActivated&#x3C;/span&#x3E;
-         Ein Kinoevent wurde aktiviert (Parameter: KinoEventID, PlayerID)
+          Ein Kinoevent wurde aktiviert (Parameter: KinoEventID, PlayerID)
         &#x3C;/li&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;CinematicConcluded&#x3C;/span&#x3E;
-         Ein Kinoevent wurde deaktiviert (Parameter: KinoEventID, PlayerID)
+          Ein Kinoevent wurde deaktiviert (Parameter: KinoEventID, PlayerID)
         &#x3C;/li&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;BorderScrollLocked&#x3C;/span&#x3E;
-         Scrollen am Bildschirmrand wurde gesperrt (Parameter: PlayerID)
+          Scrollen am Bildschirmrand wurde gesperrt (Parameter: PlayerID)
         &#x3C;/li&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;BorderScrollReset&#x3C;/span&#x3E;
-         Scrollen am Bildschirmrand wurde freigegeben (Parameter: PlayerID)
+           Scrollen am Bildschirmrand wurde freigegeben (Parameter: PlayerID)
         &#x3C;/li&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;GameInterfaceShown&#x3C;/span&#x3E;
-         Die Spieloberfläche wird angezeigt (Parameter: PlayerID)
+          Die Spieloberfläche wird angezeigt (Parameter: PlayerID)
         &#x3C;/li&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;GameInterfaceHidden&#x3C;/span&#x3E;
          Die Spieloberfläche wird ausgeblendet (Parameter: PlayerID)
         &#x3C;/li&#x3E;
-        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;BlackScreenShown&#x3C;/span&#x3E;
-         Der schwarze Hintergrund wird angezeigt (Parameter: PlayerID)
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;ImageScreenShown&#x3C;/span&#x3E;
+            Der schwarze Hintergrund wird angezeigt (Parameter: PlayerID)
         &#x3C;/li&#x3E;
-        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;BlackScreenHidden&#x3C;/span&#x3E;
-         Der schwarze Hintergrund wird ausgeblendet (Parameter: PlayerID)
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;ImageScreenHidden&#x3C;/span&#x3E;
+           Der schwarze Hintergrund wird ausgeblendet (Parameter: PlayerID)
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
@@ -5072,7 +5087,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -5150,7 +5165,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
 
 
 
-</span></div><div id="modules.qsb_1_gui.qsb_1_gui.api.finishcinematicevent" class="result method"><a href="modules/modules.qsb_1_gui.qsb_1_gui.html#API.FinishCinematicEvent">API.FinishCinematicEvent</a><br>Propagiert das Ende des Kinoevent.<span class="docInvisibleContent">
+</span></div><div id="modules.qsb_1_gui.qsb_1_gui.api.finishcinematicelement" class="result method"><a href="modules/modules.qsb_1_gui.qsb_1_gui.html#API.FinishCinematicElement">API.FinishCinematicElement</a><br>Propagiert das Ende des Kinoevent.<span class="docInvisibleContent">
     Propagiert das Ende des Kinoevent.
 
 
@@ -5166,7 +5181,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
 
 
 
-</span></div><div id="modules.qsb_1_gui.qsb_1_gui.api.getcinematicevent" class="result method"><a href="modules/modules.qsb_1_gui.qsb_1_gui.html#API.GetCinematicEvent">API.GetCinematicEvent</a><br>Gibt den Zustand des Kinoevent zurück.<span class="docInvisibleContent">
+</span></div><div id="modules.qsb_1_gui.qsb_1_gui.api.getcinematicelement" class="result method"><a href="modules/modules.qsb_1_gui.qsb_1_gui.html#API.GetCinematicElement">API.GetCinematicElement</a><br>Gibt den Zustand des Kinoevent zurück.<span class="docInvisibleContent">
     Gibt den Zustand des Kinoevent zurück.
 
 
@@ -5177,7 +5192,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -5199,7 +5214,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4"&#x3E;string&#x3C;/a&#x3E;&#x3C;/span&#x3E;
@@ -5221,7 +5236,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4"&#x3E;string&#x3C;/a&#x3E;&#x3C;/span&#x3E;
@@ -5421,7 +5436,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
 
 
 
-</span></div><div id="modules.qsb_1_gui.qsb_1_gui.api.iscinematiceventactive" class="result method"><a href="modules/modules.qsb_1_gui.qsb_1_gui.html#API.IsCinematicEventActive">API.IsCinematicEventActive</a><br>Prüft ob gerade ein Kinoevent für den Spieler aktiv ist.<span class="docInvisibleContent">
+</span></div><div id="modules.qsb_1_gui.qsb_1_gui.api.iscinematicelementactive" class="result method"><a href="modules/modules.qsb_1_gui.qsb_1_gui.html#API.IsCinematicElementActive">API.IsCinematicElementActive</a><br>Prüft ob gerade ein Kinoevent für den Spieler aktiv ist.<span class="docInvisibleContent">
     Prüft ob gerade ein Kinoevent für den Spieler aktiv ist.
 
 
@@ -5433,7 +5448,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;boolean&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -5452,34 +5467,6 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_ID&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
          Index in Table
-        &#x3C;/li&#x3E;
-    &#x3C;/ul&#x3E;
-
-
-
-
-
-</span></div><div id="modules.qsb_1_gui.qsb_1_gui.api.setcontrollingplayer" class="result method"><a href="modules/modules.qsb_1_gui.qsb_1_gui.html#API.SetControllingPlayer">API.SetControllingPlayer</a><br>Wechselt die Spieler ID des menschlichen Spielers.<span class="docInvisibleContent">
-    Wechselt die Spieler ID des menschlichen Spielers.
-&#x3C;p&#x3E; Die neue ID muss einen Primärritter haben.
-&#x3C;p&#x3E; &#x3C;h5&#x3E;Multiplayer&#x3C;/h5&#x3E;
- Nicht für Multiplayer geeignet.
-
-
-
-    &#x3C;h3&#x3E;Parameters:&#x3C;/h3&#x3E;
-    &#x3C;ul&#x3E;
-        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_OldPlayerID&#x3C;/span&#x3E;
-            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
-         Alte ID des menschlichen Spielers
-        &#x3C;/li&#x3E;
-        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_NewPlayerID&#x3C;/span&#x3E;
-            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
-         Neue ID des menschlichen Spielers
-        &#x3C;/li&#x3E;
-        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_NewStatisticsName&#x3C;/span&#x3E;
-            &#x3C;span class="types"&#x3E;&#x3C;a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4"&#x3E;string&#x3C;/a&#x3E;&#x3C;/span&#x3E;
-         Name in der Statistik
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
@@ -5710,7 +5697,7 @@ API.AddNamePlaceholder(&#x3C;span class="string"&#x3E;"Scriptname"&#x3C;/span&#x
 
 
 
-</span></div><div id="modules.qsb_1_gui.qsb_1_gui.api.startcinematicevent" class="result method"><a href="modules/modules.qsb_1_gui.qsb_1_gui.html#API.StartCinematicEvent">API.StartCinematicEvent</a><br>Propagiert den Beginn des Kinoevent und bindet es an den Spieler.<span class="docInvisibleContent">
+</span></div><div id="modules.qsb_1_gui.qsb_1_gui.api.startcinematicelement" class="result method"><a href="modules/modules.qsb_1_gui.qsb_1_gui.html#API.StartCinematicElement">API.StartCinematicElement</a><br>Propagiert den Beginn des Kinoevent und bindet es an den Spieler.<span class="docInvisibleContent">
     Propagiert den Beginn des Kinoevent und bindet es an den Spieler.
 &#x3C;p&#x3E; &#x3C;b&#x3E;Hinweis:&#x3C;/b&#x3E;Während des aktiven Kinoevent kann nicht gespeichert werden.
 
@@ -6267,16 +6254,39 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
         &#x3C;pre class="example"&#x3E;API.StopVoice();&#x3C;/pre&#x3E;
     &#x3C;/ul&#x3E;
 
+</span></div><div id="modules.qsb_1_trade.qsb_1_trade.qsb.tradertypes" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#QSB.TraderTypes">QSB.TraderTypes</a><br>Typen der Händler<span class="docInvisibleContent">
+    Typen der Händler
+
+
+    &#x3C;ul&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;GoodTrader&#x3C;/span&#x3E;
+                Es werden Güter verkauft
+        &#x3C;/li&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;MercenaryTrader&#x3C;/span&#x3E;
+           Es werden Söldner verkauft
+        &#x3C;/li&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;EntertainerTrader&#x3C;/span&#x3E;
+         Es werden Entertainer verkauft
+        &#x3C;/li&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;Unknown&#x3C;/span&#x3E;
+                   Unbekannter Typ (Fehler)
+        &#x3C;/li&#x3E;
+    &#x3C;/ul&#x3E;
+
+
+
+
+
 </span></div><div id="modules.qsb_1_trade.qsb_1_trade.qsb.scriptevents" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#QSB.ScriptEvents">QSB.ScriptEvents</a><br>Events, auf die reagiert werden kann.<span class="docInvisibleContent">
     Events, auf die reagiert werden kann.
 
 
     &#x3C;ul&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;GoodsPurchased&#x3C;/span&#x3E;
-         Güter werden bei einem Händler gekauft (Parameter: TraderType, OfferIndex, GoodType, PlayerID, TraderPlayerID, OfferGoodAmount, Price)
+         Güter werden bei einem Händler gekauft (Parameter: OfferID, TraderType, GoodType, OfferGoodAmount, Price, PlayerID, TraderPlayerID)
         &#x3C;/li&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;GoodsSold&#x3C;/span&#x3E;
-              Güter werden im eigenen Lagerhaus verkauft (Parameter: GoodType, PlayerID, TargetPlayerID, GoodAmount, Price)
+              Güter werden im eigenen Lagerhaus verkauft (Parameter: TraderType, GoodType, GoodAmount, Price, PlayerID, TargetPlayerID)
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
@@ -6391,7 +6401,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -6421,7 +6431,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5"&#x3E;table&#x3C;/a&#x3E;&#x3C;/span&#x3E;
@@ -6463,7 +6473,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -6495,7 +6505,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;boolean&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -6556,7 +6566,8 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 &#x3C;p&#x3E; Parameter der Funktion:
  &#x3C;table border="1"&#x3E;
  &#x3C;tr&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Parameter&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Typ&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Beschreibung&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Händler&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Good&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID1&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Käufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID2&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Verkäufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;/table&#x3E;
@@ -6570,7 +6581,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
     &#x3C;ul&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_PlayerID&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
-         ID des Spielers
+         Player ID des Händlers
         &#x3C;/li&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_Function&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -6593,11 +6604,11 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 &#x3C;p&#x3E; Parameter der Funktion:
  &#x3C;table border="1"&#x3E;
  &#x3C;tr&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Parameter&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Typ&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Beschreibung&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Händler&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Good&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Amount&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Verkaufte Menge&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID1&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Käufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID2&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Verkäufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_Amount&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Verkaufte Menge&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_UnitPrice&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Stückpreis&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;/table&#x3E;
 &#x3C;p&#x3E; &#x3C;b&#x3E;Hinweis:&#x3C;/b&#x3E; Die Funktion kann nur im lokalen Skript verwendet werden!
 &#x3C;p&#x3E; &#x3C;b&#x3E;Hinweis&#x3C;/b&#x3E;: Um den Standard wiederherzustellen, muss nil als Funktion
@@ -6609,7 +6620,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
     &#x3C;ul&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_PlayerID&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
-         ID des Spielers
+         Player ID des Händlers
         &#x3C;/li&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_Function&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -6631,8 +6642,8 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 &#x3C;p&#x3E; Parameter der Funktion:
  &#x3C;table border="1"&#x3E;
  &#x3C;tr&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Parameter&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Typ&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Beschreibung&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_PurchaseCount&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Zahl bereits gekaufter Angebote&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_Price&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;&#x3C;/td&#x3E;Aktueller Preis&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Händler&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Good&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID1&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Käufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID2&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Verkäufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;/table&#x3E;
@@ -6662,11 +6673,11 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 &#x3C;p&#x3E; Parameter der Funktion:
  &#x3C;table border="1"&#x3E;
  &#x3C;tr&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Parameter&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Typ&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Beschreibung&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Händler&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Good&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Amount&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Verkaufte Menge&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID1&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Käufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID2&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Verkäufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_Amount&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Verkaufte Menge&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_UnitPrice&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Stückpreis&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;/table&#x3E;
 &#x3C;p&#x3E; &#x3C;b&#x3E;Hinweis:&#x3C;/b&#x3E; Die Funktion kann nur im lokalen Skript verwendet werden!
 
@@ -6694,11 +6705,12 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 &#x3C;p&#x3E; Parameter der Funktion:
  &#x3C;table border="1"&#x3E;
  &#x3C;tr&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Parameter&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Typ&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Beschreibung&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Händler&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Good&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Amount&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Anzahl bereits gekaufter Angebote&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Price&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;&#x3C;/td&#x3E;Einkaufspreis&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID1&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Käufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID2&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Verkäufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_Amount&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Verkaufte Menge&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_UnitPrice&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Stückpreis&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;/table&#x3E;
 &#x3C;p&#x3E; &#x3C;b&#x3E;Hinweis:&#x3C;/b&#x3E; Die Funktion kann nur im lokalen Skript verwendet werden!
 
@@ -6720,13 +6732,15 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
         &#x3C;pre class="example"&#x3E;API.PurchaseSetDefaultInflation(MyCalculationFunction);&#x3C;/pre&#x3E;
     &#x3C;/ul&#x3E;
 
-</span></div><div id="modules.qsb_1_trade.qsb_1_trade.api.purchasesetdefaulttraderability" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#API.PurchaseSetDefaultTraderAbility">API.PurchaseSetDefaultTraderAbility</a><br>Setzt die allgemeine Funktion zur Kalkulation des Preisfaktors des Helden.<span class="docInvisibleContent">
-    Setzt die allgemeine Funktion zur Kalkulation des Preisfaktors des Helden.
- Die Funktion muss den angepassten Preis zurückgeben.
+</span></div><div id="modules.qsb_1_trade.qsb_1_trade.api.purchasesetdefaulttraderability" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#API.PurchaseSetDefaultTraderAbility">API.PurchaseSetDefaultTraderAbility</a><br>Setzt die allgemeine Funktion zur Kalkulation des Einkaufspreisfaktors des Helden.<span class="docInvisibleContent">
+    Setzt die allgemeine Funktion zur Kalkulation des Einkaufspreisfaktors des
+ Helden.  Die Funktion muss den angepassten Preis zurückgeben.
 &#x3C;p&#x3E; Parameter der Funktion:
  &#x3C;table border="1"&#x3E;
  &#x3C;tr&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Parameter&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Typ&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Beschreibung&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_Price&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;&#x3C;/td&#x3E;Basispreis&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Händler&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Good&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_BasePrice&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;&#x3C;/td&#x3E;Basispreis&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID1&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Käufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID2&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Verkäufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;/table&#x3E;
@@ -6757,8 +6771,10 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 &#x3C;p&#x3E; Parameter der Funktion:
  &#x3C;table border="1"&#x3E;
  &#x3C;tr&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Parameter&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Typ&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Beschreibung&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_PurchaseCount&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Zahl bereits gekaufter Angebote&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_Price&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;&#x3C;/td&#x3E;Aktueller Preis&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Händler&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Good&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Amount&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Anzahl bereits gekaufter Angebote&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Price&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;&#x3C;/td&#x3E;Einkaufspreis&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID1&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Käufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID2&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Verkäufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;/table&#x3E;
@@ -6772,7 +6788,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
     &#x3C;ul&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_PlayerID&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
-         ID des Spielers
+         Player ID des Händlers
         &#x3C;/li&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_Function&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -6788,14 +6804,16 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
         &#x3C;pre class="example"&#x3E;API.PurchaseSetInflationForPlayer(&#x3C;span class="number"&#x3E;2&#x3C;/span&#x3E;, MyCalculationFunction);&#x3C;/pre&#x3E;
     &#x3C;/ul&#x3E;
 
-</span></div><div id="modules.qsb_1_trade.qsb_1_trade.api.purchasesettraderabilityforplayer" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#API.PurchaseSetTraderAbilityForPlayer">API.PurchaseSetTraderAbilityForPlayer</a><br>Setzt die Funktion zur Kalkulation des Preisfaktors des Helden.<span class="docInvisibleContent">
-    Setzt die Funktion zur Kalkulation des Preisfaktors des Helden.  Die Änderung
- betrifft nur den angegebenen Spieler.
+</span></div><div id="modules.qsb_1_trade.qsb_1_trade.api.purchasesettraderabilityforplayer" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#API.PurchaseSetTraderAbilityForPlayer">API.PurchaseSetTraderAbilityForPlayer</a><br>Setzt die Funktion zur Kalkulation des Einkaufspreisfaktors des Helden.<span class="docInvisibleContent">
+    Setzt die Funktion zur Kalkulation des Einkaufspreisfaktors des Helden.  Die
+ Änderung betrifft nur den angegebenen Spieler.
  Die Funktion muss den angepassten Preis zurückgeben.
 &#x3C;p&#x3E; Parameter der Funktion:
  &#x3C;table border="1"&#x3E;
  &#x3C;tr&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Parameter&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Typ&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Beschreibung&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_Price&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;&#x3C;/td&#x3E;Basispreis&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Händler&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Good&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_BasePrice&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;&#x3C;/td&#x3E;Basispreis&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID1&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Käufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID2&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Verkäufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;/table&#x3E;
@@ -6809,7 +6827,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
     &#x3C;ul&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_PlayerID&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
-         ID des Spielers
+         Player ID des Händlers
         &#x3C;/li&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_Function&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -6859,7 +6877,8 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 &#x3C;p&#x3E; Parameter der Funktion:
  &#x3C;table border="1"&#x3E;
  &#x3C;tr&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Parameter&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Typ&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Beschreibung&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Warentyp&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Händler&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Good&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID1&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Verkäufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID2&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Käufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;/table&#x3E;
@@ -6873,7 +6892,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
     &#x3C;ul&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_PlayerID&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
-         ID des Spielers
+         Player ID des Händlers
         &#x3C;/li&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_Function&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -6896,10 +6915,11 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 &#x3C;p&#x3E; Parameter der Funktion:
  &#x3C;table border="1"&#x3E;
  &#x3C;tr&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Parameter&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Typ&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Beschreibung&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Händler&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Good&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Amount&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Verkaufte Menge&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID1&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Verkäufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID2&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Käufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_Amount&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Verkaufte Menge&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_UnitPrice&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Preis pro Stück&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;/table&#x3E;
 &#x3C;p&#x3E; &#x3C;b&#x3E;Hinweis:&#x3C;/b&#x3E; Die Funktion kann nur im lokalen Skript verwendet werden!
 &#x3C;p&#x3E; &#x3C;b&#x3E;Hinweis&#x3C;/b&#x3E;: Um den Standard wiederherzustellen, muss nil als Funktion
@@ -6911,7 +6931,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
     &#x3C;ul&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_PlayerID&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
-         ID des Spielers
+         Player ID des Händlers
         &#x3C;/li&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_Function&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -6933,7 +6953,8 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 &#x3C;p&#x3E; Parameter der Funktion:
  &#x3C;table border="1"&#x3E;
  &#x3C;tr&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Parameter&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Typ&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Beschreibung&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Warentyp&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Händler&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Good&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID1&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Verkäufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID2&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Käufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;/table&#x3E;
@@ -6963,10 +6984,11 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 &#x3C;p&#x3E; Parameter der Funktion:
  &#x3C;table border="1"&#x3E;
  &#x3C;tr&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Parameter&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Typ&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Beschreibung&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Händler&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Good&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Amount&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Verkaufte Menge&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID1&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Verkäufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID2&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Käufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_Amount&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Verkaufte Menge&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
- &#x3C;tr&#x3E;&#x3C;td&#x3E;_UnitPrice&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Preis pro Stück&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;/table&#x3E;
 &#x3C;p&#x3E; &#x3C;b&#x3E;Hinweis:&#x3C;/b&#x3E; Die Funktion kann nur im lokalen Skript verwendet werden!
 
@@ -6994,6 +7016,9 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 &#x3C;p&#x3E; Parameter der Funktion:
  &#x3C;table border="1"&#x3E;
  &#x3C;tr&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Parameter&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Typ&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Beschreibung&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Händler&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Good&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_SaleCount&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Amount of sold waggons&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_Price&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Verkaufspreis&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID1&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Verkäufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID2&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Käufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
@@ -7018,6 +7043,38 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
         &#x3C;pre class="example"&#x3E;API.SaleSetDefaultDeflation(MyCalculationFunction);&#x3C;/pre&#x3E;
     &#x3C;/ul&#x3E;
 
+</span></div><div id="modules.qsb_1_trade.qsb_1_trade.api.salesetdefaulttraderability" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#API.SaleSetDefaultTraderAbility">API.SaleSetDefaultTraderAbility</a><br>Setzt die allgemeine Funktion zur Kalkulation des Verkreisfaktors des Helden.<span class="docInvisibleContent">
+    Setzt die allgemeine Funktion zur Kalkulation des Verkreisfaktors des Helden.
+ Die Funktion muss den angepassten Preis zurückgeben.
+&#x3C;p&#x3E; Parameter der Funktion:
+ &#x3C;table border="1"&#x3E;
+ &#x3C;tr&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Parameter&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Typ&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Beschreibung&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;&#x3C;/td&#x3E;Typ des Händlers&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Good&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;&#x3C;/td&#x3E;Typ des Angebot&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_BasePrice&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;&#x3C;/td&#x3E;Basispreis&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID1&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Käufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID2&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Verkäufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;/table&#x3E;
+&#x3C;p&#x3E; &#x3C;b&#x3E;Hinweis:&#x3C;/b&#x3E; Die Funktion kann nur im lokalen Skript verwendet werden!
+
+
+
+    &#x3C;h3&#x3E;Parameters:&#x3C;/h3&#x3E;
+    &#x3C;ul&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_Function&#x3C;/span&#x3E;
+            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
+         Kalkulationsfunktion
+        &#x3C;/li&#x3E;
+    &#x3C;/ul&#x3E;
+
+
+
+
+    &#x3C;h3&#x3E;Beispiel:&#x3C;/h3&#x3E;
+    &#x3C;ul&#x3E;
+        &#x3C;pre class="example"&#x3E;API.SaleSetDefaultTraderAbility(MyCalculationFunction);&#x3C;/pre&#x3E;
+    &#x3C;/ul&#x3E;
+
 </span></div><div id="modules.qsb_1_trade.qsb_1_trade.api.salesetdeflationforplayer" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#API.SaleSetDeflationForPlayer">API.SaleSetDeflationForPlayer</a><br>Setzt die Funktion zur Berechnung des minimalen Verkaufserlös.<span class="docInvisibleContent">
     Setzt die Funktion zur Berechnung des minimalen Verkaufserlös.  Die Änderung
  betrifft nur den angegebenen Spieler.
@@ -7025,6 +7082,9 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
 &#x3C;p&#x3E; Parameter der Funktion:
  &#x3C;table border="1"&#x3E;
  &#x3C;tr&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Parameter&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Typ&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Beschreibung&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Händler&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Good&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Typ des Angebot&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_SaleCount&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Amount of sold waggons&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_Price&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;Verkaufspreis&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID1&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Verkäufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
  &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID2&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Käufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
@@ -7039,7 +7099,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
     &#x3C;ul&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_PlayerID&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
-         ID des Spielers
+         Player ID des Händlers
         &#x3C;/li&#x3E;
         &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_Function&#x3C;/span&#x3E;
             &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -7053,6 +7113,45 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
     &#x3C;h3&#x3E;Beispiel:&#x3C;/h3&#x3E;
     &#x3C;ul&#x3E;
         &#x3C;pre class="example"&#x3E;API.SaleSetDeflationForPlayer(&#x3C;span class="number"&#x3E;2&#x3C;/span&#x3E;, MyCalculationFunction);&#x3C;/pre&#x3E;
+    &#x3C;/ul&#x3E;
+
+</span></div><div id="modules.qsb_1_trade.qsb_1_trade.api.salesettraderabilityforplayer" class="result method"><a href="modules/modules.qsb_1_trade.qsb_1_trade.html#API.SaleSetTraderAbilityForPlayer">API.SaleSetTraderAbilityForPlayer</a><br>Setzt die Funktion zur Kalkulation des Verkreisfaktors des Helden.<span class="docInvisibleContent">
+    Setzt die Funktion zur Kalkulation des Verkreisfaktors des Helden.  Die
+ Änderung betrifft nur den angegebenen Spieler.
+ Die Funktion muss den angepassten Preis zurückgeben.
+&#x3C;p&#x3E; Parameter der Funktion:
+ &#x3C;table border="1"&#x3E;
+ &#x3C;tr&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Parameter&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Typ&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;th&#x3E;&#x3C;b&#x3E;Beschreibung&#x3C;/b&#x3E;&#x3C;/th&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Type&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;&#x3C;/td&#x3E;Typ des Händlers&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_Good&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;&#x3C;/td&#x3E;Typ des Angebot&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_BasePrice&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;&#x3C;/td&#x3E;Basispreis&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID1&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Käufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;tr&#x3E;&#x3C;td&#x3E;_PlayerID2&#x3C;/td&#x3E;&#x3C;td&#x3E;number&#x3C;/td&#x3E;&#x3C;td&#x3E;ID des Verkäufers&#x3C;/td&#x3E;&#x3C;/tr&#x3E;
+ &#x3C;/table&#x3E;
+&#x3C;p&#x3E; &#x3C;b&#x3E;Hinweis:&#x3C;/b&#x3E; Die Funktion kann nur im lokalen Skript verwendet werden!
+&#x3C;p&#x3E; &#x3C;b&#x3E;Hinweis&#x3C;/b&#x3E;: Um den Standard wiederherzustellen, muss nil als Funktion
+ übergeben werden.
+
+
+
+    &#x3C;h3&#x3E;Parameters:&#x3C;/h3&#x3E;
+    &#x3C;ul&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_PlayerID&#x3C;/span&#x3E;
+            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
+         Player ID des Händlers
+        &#x3C;/li&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;_Function&#x3C;/span&#x3E;
+            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
+         Kalkulationsfunktion
+        &#x3C;/li&#x3E;
+    &#x3C;/ul&#x3E;
+
+
+
+
+    &#x3C;h3&#x3E;Beispiel:&#x3C;/h3&#x3E;
+    &#x3C;ul&#x3E;
+        &#x3C;pre class="example"&#x3E;API.SaleSetTraderAbilityForPlayer(&#x3C;span class="number"&#x3E;2&#x3C;/span&#x3E;, MyCalculationFunction);&#x3C;/pre&#x3E;
     &#x3C;/ul&#x3E;
 
 </span></div><div id="modules.qsb_2_quest.qsb_2_quest.qsb.segmentresult" class="result method"><a href="modules/modules.qsb_2_quest.qsb_2_quest.html#QSB.SegmentResult">QSB.SegmentResult</a><br>Die Abschlussarten eines Quest Segment.<span class="docInvisibleContent">
@@ -7110,7 +7209,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4"&#x3E;string&#x3C;/a&#x3E;&#x3C;/span&#x3E;
@@ -7199,7 +7298,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
         &#x3C;li&#x3E;
            &#x3C;span class="types"&#x3E;&#x3C;a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4"&#x3E;string&#x3C;/a&#x3E;&#x3C;/span&#x3E;
@@ -7269,7 +7368,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -7339,7 +7438,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -7407,7 +7506,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -7458,7 +7557,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -7501,7 +7600,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
@@ -7552,7 +7651,7 @@ API.TextWindow(&#x3C;span class="string"&#x3E;"Überschrift"&#x3C;/span&#x3E;, T
         &#x3C;/li&#x3E;
     &#x3C;/ul&#x3E;
 
-    &#x3C;h3&#x3E;Returns:&#x3C;/h3&#x3E;
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
     &#x3C;ol&#x3E;
 
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;

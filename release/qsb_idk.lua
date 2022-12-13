@@ -1554,7 +1554,7 @@ function Revision.Debug:ProcessDebugShortcut(_Type, _Params)
     end
 end
 
-function Revision.Debug:ProcessDebugInput(_ID, _Input, _PlayerID, _DebugAllowed)
+function Revision.Debug:ProcessDebugInput(_Input, _PlayerID, _DebugAllowed)
     if _DebugAllowed then
         if _Input:lower():find("^restartmap") then
             self:ProcessDebugShortcut("RestartMap");
@@ -1650,7 +1650,9 @@ QSB.ScriptEvents = {};
 function Revision.Event:Initalize()
     self:OverrideSoldierPayment();
     if Revision.Environment == QSB.Environment.GLOBAL then
-        self:CreateScriptCommand("Cmd_SendScriptEvent", API.SendScriptEvent);
+        self:CreateScriptCommand("Cmd_SendScriptEvent", function(_Event, ...)
+            API.SendScriptEvent(QSB.ScriptEvents[_Event], unpack(arg));
+        end);
     end
 end
 
@@ -1829,7 +1831,7 @@ function Revision.Event:DispatchScriptEvent(_ID, ...)
     if self.ScriptEventListener[_ID] then
         for k, v in pairs(self.ScriptEventListener[_ID]) do
             if tonumber(k) then
-                v(_ID, unpack(arg));
+                v(unpack(arg));
             end
         end
     end
@@ -1914,21 +1916,21 @@ end
 --
 -- Das Event wird synchron für alle Spieler gesendet.
 --
--- @param[type=number] _EventID ID des Event
+-- @param[type=number] _EventName Name des Event
 -- @param              ... Optionale Parameter (nil, string, number, boolean, (array) table)
 -- @within Anwenderfunktionen
 --
 -- @usage
--- API.SendScriptEventToGlobal(SomeEventID, Param1, Param2, ...);
+-- API.SendScriptEventToGlobal("SomeEventName", Param1, Param2, ...);
 --
-function API.BroadcastScriptEventToGlobal(_EventID, ...)
+function API.BroadcastScriptEventToGlobal(_EventName, ...)
     if not GUI then
         return;
     end
     Revision.Event:DispatchScriptCommand(
         QSB.ScriptCommands.SendScriptEvent,
         0,
-        _EventID,
+        _EventName,
         unpack(arg)
     );
 end
@@ -1938,21 +1940,21 @@ end
 --
 -- Das Event wird asynchron für den kontrollierenden Spieler gesendet.
 --
--- @param[type=number] _EventID ID des Event
+-- @param[type=number] _EventName Name des Event
 -- @param              ... Optionale Parameter (nil, string, number, boolean, (array) table)
 -- @within Anwenderfunktionen
 --
 -- @usage
--- API.SendScriptEventToGlobal(SomeEventID, Param1, Param2, ...);
+-- API.SendScriptEventToGlobal("SomeEventName", Param1, Param2, ...);
 --
-function API.SendScriptEventToGlobal(_EventID, ...)
+function API.SendScriptEventToGlobal(_EventName, ...)
     if not GUI then
         return;
     end
     Revision.Event:DispatchScriptCommand(
         QSB.ScriptCommands.SendScriptEvent,
         GUI.GetPlayerID(),
-        _EventID,
+        _EventName,
         unpack(arg)
     );
 end
@@ -1970,6 +1972,7 @@ end
 -- @param[type=function] _Function Listener Funktion
 -- @return[type=number] ID des Listener
 -- @within Anwenderfunktionen
+-- @see API.RemoveScriptEventListener
 --
 -- @usage
 -- local ListenerID = API.AddScriptEventListener(QSB.ScriptEvents.SaveGameLoaded, function()
@@ -1995,6 +1998,7 @@ end
 -- @param[type=number] _EventID ID des Event
 -- @param[type=number] _ID      ID des Listener
 -- @within Anwenderfunktionen
+-- @see API.AddScriptEventListener
 --
 function API.RemoveScriptEventListener(_EventID, _ID)
     if Revision.Event.ScriptEventListener[_EventID] then
@@ -2472,7 +2476,7 @@ function Revision.Save:DisableSaving(_Flag)
             tostring(_Flag)
         ))
     else
-        self:UpdateLoadButtons();
+        self:UpdateSaveButtons();
     end
 end
 
@@ -3022,13 +3026,10 @@ end
 function API.Note(_Text)
     _Text = Revision.Text:ConvertPlaceholders(Revision.Text:Localize(_Text));
     if not GUI then
-        Logic.ExecuteInLuaLocalState(string.format(
-            [[API.AddNote("%s")]],
-            _Text
-        ));
+        Logic.DEBUG_AddNote(_Text);
         return;
     end
-    API.AddNote(_Text);
+    GUI.AddNote(_Text);
 end
 
 ---
@@ -3050,12 +3051,12 @@ function API.StaticNote(_Text)
     _Text = Revision.Text:ConvertPlaceholders(Revision.Text:Localize(_Text));
     if not GUI then
         Logic.ExecuteInLuaLocalState(string.format(
-            [[API.AddStaticNote("%s")]],
+            [[GUI.AddStaticNote("%s")]],
             _Text
         ));
         return;
     end
-    API.AddStaticNote(_Text);
+    GUI.AddStaticNote(_Text);
 end
 
 ---
@@ -3067,11 +3068,17 @@ end
 --
 -- <b>Hinweis:</b> Texte werden automatisch lokalisiert und Platzhalter ersetzt.
 --
--- @param[type=string] _Text Anzeigetext
+-- @param[type=string] _Text  Anzeigetext
+-- @param[type=string] _Sound (Optional) Soundeffekt der Nachricht
 -- @within Anwenderfunktionen
 --
 -- @usage
+-- -- Beispiel #1: Einfache Nachricht
 -- API.Message("Das ist eine Nachricht!");
+--
+-- @usage
+-- -- Beispiel #2: Nachricht und Ton
+-- API.Message("Das ist eine WERTVOLLE Nachricht!", "ui/menu_left_gold_pay");
 --
 function API.Message(_Text, _Sound)
     _Text = Revision.Text:ConvertPlaceholders(Revision.Text:Localize(_Text));
@@ -3079,11 +3086,14 @@ function API.Message(_Text, _Sound)
         Logic.ExecuteInLuaLocalState(string.format(
             [[API.Message("%s", %s)]],
             _Text,
-            (_Sound == nil and "nil") or _Sound:gsub("\\", "\\\\\\\\")
+            _Sound
         ));
         return;
     end
     _Text = ModuleRequester:ConvertPlaceholders(API.Localize(_Text));
+    if _Sound then
+        _Sound = _Sound:gsub("/", "\\");
+    end
     Message(_Text, _Sound);
 end
 
@@ -3100,7 +3110,7 @@ function API.ClearNotes()
         Logic.ExecuteInLuaLocalState([[API.ClearNotes()]]);
         return;
     end
-    API.ClearNotes();
+    GUI.ClearNotes();
 end
 
 ---
@@ -4880,7 +4890,7 @@ function Revision.Debug:ProcessDebugShortcut(_Type, _Params)
     end
 end
 
-function Revision.Debug:ProcessDebugInput(_ID, _Input, _PlayerID, _DebugAllowed)
+function Revision.Debug:ProcessDebugInput(_Input, _PlayerID, _DebugAllowed)
     if _DebugAllowed then
         if _Input:lower():find("^restartmap") then
             self:ProcessDebugShortcut("RestartMap");
@@ -14127,12 +14137,12 @@ ModuleGUI = {
     },
 
     Global = {
-        CinematicEventID = 0,
-        CinematicEventStatus = {},
-        CinematicEventQueue = {},
+        CinematicElementID = 0,
+        CinematicElementStatus = {},
+        CinematicElementQueue = {},
     },
     Local = {
-        CinematicEventStatus = {},
+        CinematicElementStatus = {},
         ChatOptionsWasShown = false,
         MessageLogWasShown = false,
         PauseScreenShown = false,
@@ -14147,25 +14157,25 @@ ModuleGUI = {
 }
 
 QSB.FarClipDefault = {MIN = 0, MAX = 0};
-QSB.CinematicEvent = {};
-QSB.CinematicEventTypes = {};
+QSB.CinematicElement = {};
+QSB.CinematicElementTypes = {};
 QSB.PlayerNames = {};
 
 -- Global ------------------------------------------------------------------- --
 
 function ModuleGUI.Global:OnGameStart()
-    QSB.ScriptEvents.CinematicActivated = API.RegisterScriptEvent("Event_CinematicEventActivated");
-    QSB.ScriptEvents.CinematicConcluded = API.RegisterScriptEvent("Event_CinematicEventConcluded");
+    QSB.ScriptEvents.CinematicActivated = API.RegisterScriptEvent("Event_CinematicElementActivated");
+    QSB.ScriptEvents.CinematicConcluded = API.RegisterScriptEvent("Event_CinematicElementConcluded");
     QSB.ScriptEvents.BorderScrollLocked = API.RegisterScriptEvent("Event_BorderScrollLocked");
     QSB.ScriptEvents.BorderScrollReset = API.RegisterScriptEvent("Event_BorderScrollReset");
     QSB.ScriptEvents.GameInterfaceShown = API.RegisterScriptEvent("Event_GameInterfaceShown");
     QSB.ScriptEvents.GameInterfaceHidden = API.RegisterScriptEvent("Event_GameInterfaceHidden");
-    QSB.ScriptEvents.BlackScreenShown = API.RegisterScriptEvent("Event_BlackScreenShown");
-    QSB.ScriptEvents.BlackScreenHidden = API.RegisterScriptEvent("Event_BlackScreenHidden");
+    QSB.ScriptEvents.ImageScreenShown = API.RegisterScriptEvent("Event_ImageScreenShown");
+    QSB.ScriptEvents.ImageScreenHidden = API.RegisterScriptEvent("Event_ImageScreenHidden");
 
     for i= 1, 8 do
-        self.CinematicEventStatus[i] = {};
-        self.CinematicEventQueue[i] = {};
+        self.CinematicElementStatus[i] = {};
+        self.CinematicElementQueue[i] = {};
     end
 
     self:ShowInitialBlackscreen();
@@ -14176,7 +14186,7 @@ function ModuleGUI.Global:OnEvent(_ID, ...)
         self.LoadscreenClosed = true;
     elseif _ID == QSB.ScriptEvents.CinematicActivated then
         -- Save cinematic state
-        self.CinematicEventStatus[arg[2]][arg[1]] = 1;
+        self.CinematicElementStatus[arg[2]][arg[1]] = 1;
         -- deactivate black background
         Logic.ExecuteInLuaLocalState(string.format(
             "ModuleGUI.Local:InterfaceDeactivateImageBackground(%d)",
@@ -14189,10 +14199,10 @@ function ModuleGUI.Global:OnEvent(_ID, ...)
         ));
     elseif _ID == QSB.ScriptEvents.CinematicConcluded then
         -- Save cinematic state
-        if self.CinematicEventStatus[arg[2]][arg[1]] then
-            self.CinematicEventStatus[arg[2]][arg[1]] = 2;
+        if self.CinematicElementStatus[arg[2]][arg[1]] then
+            self.CinematicElementStatus[arg[2]][arg[1]] = 2;
         end
-        if #self.CinematicEventQueue[arg[2]] > 0 then
+        if #self.CinematicElementQueue[arg[2]] > 0 then
             -- activate black background
             Logic.ExecuteInLuaLocalState(string.format(
                 [[ModuleGUI.Local:InterfaceActivateImageBackground(%d, "", 0, 0, 0, 255)]],
@@ -14207,38 +14217,38 @@ function ModuleGUI.Global:OnEvent(_ID, ...)
     end
 end
 
-function ModuleGUI.Global:PushCinematicEventToQueue(_PlayerID, _Type, _Name, _Data)
-    table.insert(self.CinematicEventQueue[_PlayerID], {_Type, _Name, _Data});
+function ModuleGUI.Global:PushCinematicElementToQueue(_PlayerID, _Type, _Name, _Data)
+    table.insert(self.CinematicElementQueue[_PlayerID], {_Type, _Name, _Data});
 end
 
 function ModuleGUI.Global:LookUpCinematicInQueue(_PlayerID)
-    if #self.CinematicEventQueue[_PlayerID] > 0 then
-        return self.CinematicEventQueue[_PlayerID][1];
+    if #self.CinematicElementQueue[_PlayerID] > 0 then
+        return self.CinematicElementQueue[_PlayerID][1];
     end
 end
 
-function ModuleGUI.Global:PopCinematicEventFromQueue(_PlayerID)
-    if #self.CinematicEventQueue[_PlayerID] > 0 then
-        return table.remove(self.CinematicEventQueue[_PlayerID], 1);
+function ModuleGUI.Global:PopCinematicElementFromQueue(_PlayerID)
+    if #self.CinematicElementQueue[_PlayerID] > 0 then
+        return table.remove(self.CinematicElementQueue[_PlayerID], 1);
     end
 end
 
-function ModuleGUI.Global:GetNewCinematicEventID()
-    self.CinematicEventID = self.CinematicEventID +1;
-    return self.CinematicEventID;
+function ModuleGUI.Global:GetNewCinematicElementID()
+    self.CinematicElementID = self.CinematicElementID +1;
+    return self.CinematicElementID;
 end
 
-function ModuleGUI.Global:GetCinematicEventStatus(_InfoID)
+function ModuleGUI.Global:GetCinematicElementStatus(_InfoID)
     for i= 1, 8 do
-        if self.CinematicEventStatus[i][_InfoID] then
-            return self.CinematicEventStatus[i][_InfoID];
+        if self.CinematicElementStatus[i][_InfoID] then
+            return self.CinematicElementStatus[i][_InfoID];
         end
     end
     return 0;
 end
 
-function ModuleGUI.Global:ActivateCinematicEvent(_PlayerID)
-    local ID = self:GetNewCinematicEventID();
+function ModuleGUI.Global:ActivateCinematicElement(_PlayerID)
+    local ID = self:GetNewCinematicElementID();
     Logic.ExecuteInLuaLocalState(string.format(
         [[API.SendScriptEvent(QSB.ScriptEvents.CinematicActivated, %d, %d);
           if GUI.GetPlayerID() == %d then
@@ -14253,7 +14263,7 @@ function ModuleGUI.Global:ActivateCinematicEvent(_PlayerID)
     return ID;
 end
 
-function ModuleGUI.Global:ConcludeCinematicEvent(_ID, _PlayerID)
+function ModuleGUI.Global:ConcludeCinematicElement(_ID, _PlayerID)
     Logic.ExecuteInLuaLocalState(string.format(
         [[API.SendScriptEvent(QSB.ScriptEvents.CinematicConcluded, %d, %d);
           if GUI.GetPlayerID() == %d then
@@ -14283,17 +14293,17 @@ end
 -- Local -------------------------------------------------------------------- --
 
 function ModuleGUI.Local:OnGameStart()
-    QSB.ScriptEvents.CinematicActivated = API.RegisterScriptEvent("Event_CinematicEventActivated");
-    QSB.ScriptEvents.CinematicConcluded = API.RegisterScriptEvent("Event_CinematicEventConcluded");
+    QSB.ScriptEvents.CinematicActivated = API.RegisterScriptEvent("Event_CinematicElementActivated");
+    QSB.ScriptEvents.CinematicConcluded = API.RegisterScriptEvent("Event_CinematicElementConcluded");
     QSB.ScriptEvents.BorderScrollLocked = API.RegisterScriptEvent("Event_BorderScrollLocked");
     QSB.ScriptEvents.BorderScrollReset  = API.RegisterScriptEvent("Event_BorderScrollReset");
     QSB.ScriptEvents.GameInterfaceShown = API.RegisterScriptEvent("Event_GameInterfaceShown");
     QSB.ScriptEvents.GameInterfaceHidden = API.RegisterScriptEvent("Event_GameInterfaceHidden");
-    QSB.ScriptEvents.BlackScreenShown = API.RegisterScriptEvent("Event_BlackScreenShown");
-    QSB.ScriptEvents.BlackScreenHidden = API.RegisterScriptEvent("Event_BlackScreenHidden");
+    QSB.ScriptEvents.ImageScreenShown = API.RegisterScriptEvent("Event_ImageScreenShown");
+    QSB.ScriptEvents.ImageScreenHidden = API.RegisterScriptEvent("Event_ImageScreenHidden");
 
     for i= 1, 8 do
-        self.CinematicEventStatus[i] = {};
+        self.CinematicElementStatus[i] = {};
     end
     self:OverrideInterfaceUpdateForCinematicMode();
     self:OverrideInterfaceThroneroomForCinematicMode();
@@ -14311,11 +14321,11 @@ function ModuleGUI.Local:OnEvent(_ID, ...)
             API.ActivateNormalInterface(GUI.GetPlayerID());
         end
     elseif _ID == QSB.ScriptEvents.CinematicActivated then
-        self.CinematicEventStatus[arg[2]][arg[1]] = 1;
+        self.CinematicElementStatus[arg[2]][arg[1]] = 1;
     elseif _ID == QSB.ScriptEvents.CinematicConcluded then
         for i= 1, 8 do
-            if self.CinematicEventStatus[i][arg[1]] then
-                self.CinematicEventStatus[i][arg[1]] = 2;
+            if self.CinematicElementStatus[i][arg[1]] then
+                self.CinematicElementStatus[i][arg[1]] = 2;
             end
         end
     elseif _ID == QSB.ScriptEvents.SaveGameLoaded then
@@ -14639,10 +14649,10 @@ function ModuleGUI.Local:ResetFarClipPlane()
     );
 end
 
-function ModuleGUI.Local:GetCinematicEventStatus(_InfoID)
+function ModuleGUI.Local:GetCinematicElementStatus(_InfoID)
     for i= 1, 8 do
-        if self.CinematicEventStatus[i][_InfoID] then
-            return self.CinematicEventStatus[i][_InfoID];
+        if self.CinematicElementStatus[i][_InfoID] then
+            return self.CinematicElementStatus[i][_InfoID];
         end
     end
     return 0;
@@ -14728,7 +14738,7 @@ function ModuleGUI.Local:OverrideInterfaceThroneroomForCinematicMode()
 end
 
 function ModuleGUI.Local:InterfaceActivateImageBackground(_PlayerID, _Graphic, _R, _G, _B, _A)
-    if self.PauseScreenShown then
+    if _PlayerID ~= GUI.GetPlayerID() or self.PauseScreenShown then
         return;
     end
     self.PauseScreenShown = true;
@@ -14746,12 +14756,12 @@ function ModuleGUI.Local:InterfaceActivateImageBackground(_PlayerID, _Graphic, _
         XGUIEng.SetMaterialUV("/InGame/Root/Normal/PauseScreen", 0, u0, v0, u1, v1);
     end
     XGUIEng.SetMaterialColor("/InGame/Root/Normal/PauseScreen", 0, _R, _G, _B, _A);
-    API.SendScriptEventToGlobal( QSB.ScriptEvents.BlackScreenShown, GUI.GetPlayerID());
-    API.SendScriptEvent(QSB.ScriptEvents.BlackScreenShown, GUI.GetPlayerID());
+    API.SendScriptEventToGlobal("ImageScreenShown", _PlayerID);
+    API.SendScriptEvent(QSB.ScriptEvents.ImageScreenShown, _PlayerID);
 end
 
 function ModuleGUI.Local:InterfaceDeactivateImageBackground(_PlayerID)
-    if not self.PauseScreenShown then
+    if _PlayerID ~= GUI.GetPlayerID() or not self.PauseScreenShown then
         return;
     end
     self.PauseScreenShown = false;
@@ -14760,12 +14770,12 @@ function ModuleGUI.Local:InterfaceDeactivateImageBackground(_PlayerID)
     XGUIEng.SetMaterialTexture("/InGame/Root/Normal/PauseScreen", 0, "");
     XGUIEng.SetMaterialColor("/InGame/Root/Normal/PauseScreen", 0, 40, 40, 40, 180);
     XGUIEng.PopPage();
-    API.SendScriptEventToGlobal( QSB.ScriptEvents.BlackScreenHidden, GUI.GetPlayerID());
-    API.SendScriptEvent(QSB.ScriptEvents.BlackScreenHidden, GUI.GetPlayerID());
+    API.SendScriptEventToGlobal("ImageScreenHidden", _PlayerID);
+    API.SendScriptEvent(QSB.ScriptEvents.ImageScreenHidden, _PlayerID);
 end
 
 function ModuleGUI.Local:InterfaceDeactivateBorderScroll(_PlayerID, _PositionID)
-    if self.BorderScrollDeactivated then
+    if _PlayerID ~= GUI.GetPlayerID() or self.BorderScrollDeactivated then
         return;
     end
     self.BorderScrollDeactivated = true;
@@ -14775,16 +14785,12 @@ function ModuleGUI.Local:InterfaceDeactivateBorderScroll(_PlayerID, _PositionID)
     Camera.RTS_SetBorderScrollSize(0);
     Camera.RTS_SetZoomWheelSpeed(0);
 
-    API.SendScriptEventToGlobal(
-        QSB.ScriptEvents.BorderScrollLocked,
-        GUI.GetPlayerID(),
-        (_PositionID or 0)
-    );
-    API.SendScriptEvent(QSB.ScriptEvents.BorderScrollLocked, GUI.GetPlayerID(), _PositionID);
+    API.SendScriptEventToGlobal("BorderScrollLocked", _PlayerID, (_PositionID or 0));
+    API.SendScriptEvent(QSB.ScriptEvents.BorderScrollLocked, _PlayerID, _PositionID);
 end
 
 function ModuleGUI.Local:InterfaceActivateBorderScroll(_PlayerID)
-    if not self.BorderScrollDeactivated then
+    if _PlayerID ~= GUI.GetPlayerID() or not self.BorderScrollDeactivated then
         return;
     end
     self.BorderScrollDeactivated = false;
@@ -14792,8 +14798,8 @@ function ModuleGUI.Local:InterfaceActivateBorderScroll(_PlayerID)
     Camera.RTS_SetBorderScrollSize(3.0);
     Camera.RTS_SetZoomWheelSpeed(4.2);
 
-    API.SendScriptEventToGlobal(QSB.ScriptEvents.BorderScrollReset, GUI.GetPlayerID());
-    API.SendScriptEvent(QSB.ScriptEvents.BorderScrollReset, GUI.GetPlayerID());
+    API.SendScriptEventToGlobal("BorderScrollReset", _PlayerID);
+    API.SendScriptEvent(QSB.ScriptEvents.BorderScrollReset, _PlayerID);
 end
 
 function ModuleGUI.Local:InterfaceDeactivateNormalInterface(_PlayerID)
@@ -14837,7 +14843,7 @@ function ModuleGUI.Local:InterfaceDeactivateNormalInterface(_PlayerID)
         XGUIEng.ShowWidget("/InGame/Root/Normal/Selected_Tradepost", 0);
     end
 
-    API.SendScriptEventToGlobal(QSB.ScriptEvents.GameInterfaceHidden, GUI.GetPlayerID());
+    API.SendScriptEventToGlobal("GameInterfaceHidden", GUI.GetPlayerID());
     API.SendScriptEvent(QSB.ScriptEvents.GameInterfaceHidden, GUI.GetPlayerID());
 end
 
@@ -14890,7 +14896,7 @@ function ModuleGUI.Local:InterfaceActivateNormalInterface(_PlayerID)
         XGUIEng.ShowWidget("/InGame/Root/Normal/Selected_Tradepost", 1);
     end
 
-    API.SendScriptEventToGlobal(QSB.ScriptEvents.GameInterfaceShown, GUI.GetPlayerID());
+    API.SendScriptEventToGlobal("GameInterfaceShown", GUI.GetPlayerID());
     API.SendScriptEvent(QSB.ScriptEvents.GameInterfaceShown, GUI.GetPlayerID());
 end
 
@@ -14907,7 +14913,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ]]
 
 ---
--- Dieses Modul bietet rudimentäre Funktionen zur Veränderung des Interface.
+-- Funktionen zur Veränderung der Benutzeroberfläche.
 --
 -- <h5>Cinematic Event</h5>
 -- <b>Ein Kinoevent hat nichts mit den Script Events zu tun!</b> <br>
@@ -14933,9 +14939,9 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @set sort=true
 --
 
-QSB.CinematicEvent = {};
+QSB.CinematicElement = {};
 
-CinematicEvent = {
+CinematicElement = {
     NotTriggered = 0,
     Active = 1,
     Concluded = 2,
@@ -14944,14 +14950,14 @@ CinematicEvent = {
 ---
 -- Events, auf die reagiert werden kann.
 --
--- @field CinematicActivated Ein Kinoevent wurde aktiviert (Parameter: KinoEventID, PlayerID)
--- @field CinematicConcluded Ein Kinoevent wurde deaktiviert (Parameter: KinoEventID, PlayerID)
--- @field BorderScrollLocked Scrollen am Bildschirmrand wurde gesperrt (Parameter: PlayerID)
--- @field BorderScrollReset Scrollen am Bildschirmrand wurde freigegeben (Parameter: PlayerID)
--- @field GameInterfaceShown Die Spieloberfläche wird angezeigt (Parameter: PlayerID)
+-- @field CinematicActivated  Ein Kinoevent wurde aktiviert (Parameter: KinoEventID, PlayerID)
+-- @field CinematicConcluded  Ein Kinoevent wurde deaktiviert (Parameter: KinoEventID, PlayerID)
+-- @field BorderScrollLocked  Scrollen am Bildschirmrand wurde gesperrt (Parameter: PlayerID)
+-- @field BorderScrollReset   Scrollen am Bildschirmrand wurde freigegeben (Parameter: PlayerID)
+-- @field GameInterfaceShown  Die Spieloberfläche wird angezeigt (Parameter: PlayerID)
 -- @field GameInterfaceHidden Die Spieloberfläche wird ausgeblendet (Parameter: PlayerID)
--- @field BlackScreenShown Der schwarze Hintergrund wird angezeigt (Parameter: PlayerID)
--- @field BlackScreenHidden Der schwarze Hintergrund wird ausgeblendet (Parameter: PlayerID)
+-- @field ImageScreenShown    Der schwarze Hintergrund wird angezeigt (Parameter: PlayerID)
+-- @field ImageScreenHidden   Der schwarze Hintergrund wird ausgeblendet (Parameter: PlayerID)
 --
 -- @within Event
 --
@@ -15119,14 +15125,14 @@ end
 -- @param[type=number] _PlayerID ID des Spielers
 -- @within Anwenderfunktionen
 --
-function API.StartCinematicEvent(_Name, _PlayerID)
+function API.StartCinematicElement(_Name, _PlayerID)
     if GUI then
         return;
     end
     assert(_PlayerID and _PlayerID >= 1 and _PlayerID <= 8);
-    QSB.CinematicEvent[_PlayerID] = QSB.CinematicEvent[_PlayerID] or {};
-    local ID = ModuleGUI.Global:ActivateCinematicEvent(_PlayerID);
-    QSB.CinematicEvent[_PlayerID][_Name] = ID;
+    QSB.CinematicElement[_PlayerID] = QSB.CinematicElement[_PlayerID] or {};
+    local ID = ModuleGUI.Global:ActivateCinematicElement(_PlayerID);
+    QSB.CinematicElement[_PlayerID][_Name] = ID;
 end
 
 ---
@@ -15135,14 +15141,14 @@ end
 -- @param[type=string] _Name Bezeichner
 -- @within Anwenderfunktionen
 --
-function API.FinishCinematicEvent(_Name, _PlayerID)
+function API.FinishCinematicElement(_Name, _PlayerID)
     if GUI then
         return;
     end
     assert(_PlayerID and _PlayerID >= 1 and _PlayerID <= 8);
-    QSB.CinematicEvent[_PlayerID] = QSB.CinematicEvent[_PlayerID] or {};
-    if QSB.CinematicEvent[_PlayerID][_Name] then
-        ModuleGUI.Global:ConcludeCinematicEvent(QSB.CinematicEvent[_PlayerID][_Name], _PlayerID);
+    QSB.CinematicElement[_PlayerID] = QSB.CinematicElement[_PlayerID] or {};
+    if QSB.CinematicElement[_PlayerID][_Name] then
+        ModuleGUI.Global:ConcludeCinematicElement(QSB.CinematicElement[_PlayerID][_Name], _PlayerID);
     end
 end
 
@@ -15153,22 +15159,22 @@ end
 -- @return[type=number] Zustand des Kinoevent
 -- @within Anwenderfunktionen
 --
-function API.GetCinematicEvent(_Identifier, _PlayerID)
+function API.GetCinematicElement(_Identifier, _PlayerID)
     assert(_PlayerID and _PlayerID >= 1 and _PlayerID <= 8);
-    QSB.CinematicEvent[_PlayerID] = QSB.CinematicEvent[_PlayerID] or {};
+    QSB.CinematicElement[_PlayerID] = QSB.CinematicElement[_PlayerID] or {};
     if type(_Identifier) == "number" then
         if GUI then
-            return ModuleGUI.Local:GetCinematicEvent(_Identifier);
+            return ModuleGUI.Local:GetCinematicElement(_Identifier);
         end
-        return ModuleGUI.Global:GetCinematicEvent(_Identifier);
+        return ModuleGUI.Global:GetCinematicElement(_Identifier);
     end
-    if QSB.CinematicEvent[_PlayerID][_Identifier] then
+    if QSB.CinematicElement[_PlayerID][_Identifier] then
         if GUI then
-            return ModuleGUI.Local:GetCinematicEvent(QSB.CinematicEvent[_PlayerID][_Identifier]);
+            return ModuleGUI.Local:GetCinematicElement(QSB.CinematicElement[_PlayerID][_Identifier]);
         end
-        return ModuleGUI.Global:GetCinematicEvent(QSB.CinematicEvent[_PlayerID][_Identifier]);
+        return ModuleGUI.Global:GetCinematicElement(QSB.CinematicElement[_PlayerID][_Identifier]);
     end
-    return CinematicEvent.NotTriggered;
+    return CinematicElement.NotTriggered;
 end
 
 ---
@@ -15178,11 +15184,11 @@ end
 -- @return[type=boolean] Kinoevent ist aktiv
 -- @within Anwenderfunktionen
 --
-function API.IsCinematicEventActive(_PlayerID)
+function API.IsCinematicElementActive(_PlayerID)
     assert(_PlayerID and _PlayerID >= 1 and _PlayerID <= 8);
-    QSB.CinematicEvent[_PlayerID] = QSB.CinematicEvent[_PlayerID] or {};
-    for k, v in pairs(QSB.CinematicEvent[_PlayerID]) do
-        if API.GetCinematicEvent(k, _PlayerID) == CinematicEvent.Active then
+    QSB.CinematicElement[_PlayerID] = QSB.CinematicElement[_PlayerID] or {};
+    for k, v in pairs(QSB.CinematicElement[_PlayerID]) do
+        if API.GetCinematicElement(k, _PlayerID) == CinematicElement.Active then
             return true;
         end
     end
@@ -15338,26 +15344,6 @@ function API.GetPlayerName(_PlayerID)
 end
 GetPlayerName_OrigName = GetPlayerName;
 GetPlayerName = API.GetPlayerName;
-
----
--- Wechselt die Spieler ID des menschlichen Spielers.
---
--- Die neue ID muss einen Primärritter haben.
---
--- <h5>Multiplayer</h5>
--- Nicht für Multiplayer geeignet.
---
--- @param[type=number] _OldPlayerID Alte ID des menschlichen Spielers
--- @param[type=number] _NewPlayerID Neue ID des menschlichen Spielers
--- @param[type=string] _NewStatisticsName Name in der Statistik
--- @within Anwenderfunktionen
---
-function API.SetControllingPlayer(_OldPlayerID, _NewPlayerID, _NewStatisticsName)
-    if Framework.IsNetworkGame() then
-        return;
-    end
-    ModuleGUI.Global:SetControllingPlayer(_OldPlayerID, _NewPlayerID, _NewStatisticsName);
-end
 
 ---
 -- Gibt dem Spieler einen neuen Namen.
@@ -16276,7 +16262,13 @@ You may use and modify this file unter the terms of the MIT licence.
 ]]
 
 ---
--- TODO
+-- Stellt verschiedene Dialogfenster zur Verfügung.
+--
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
+-- </ul>
+--
 -- @within Beschreibung
 -- @set sort=true
 --
@@ -16623,8 +16615,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ]]
 
 ---
--- Dieses Modul bietet die Möglichkeit die Lautstärke im Spiel zu regeln.
--- Außerdem kannst du Stimmen und Playlists abspielen und stoppen.
+-- Steuerung der Lautstärke und der Sound-Ausgabe.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
@@ -17008,6 +16999,7 @@ ModuleTrade = {
             PurchaseBasePrice     = {},
             PurchaseInflation     = {},
             PurchaseAllowed       = {},
+            SaleTraderAbility     = {},
             SaleBasePrice         = {},
             SaleDeflation         = {},
             SaleAllowed           = {},
@@ -17044,8 +17036,8 @@ function ModuleTrade.Global:OnEvent(_ID, ...)
         self:PerformFakeTrade(arg[1], arg[2], arg[3], arg[4], arg[5], arg[6], arg[7]);
     elseif _ID == QSB.ScriptEvents.GoodsSold then
         Logic.ExecuteInLuaLocalState(string.format(
-            [[API.SendScriptEvent(QSB.ScriptEvents.GoodsSold, g_Trade.GoodType, PlayerID, TargetID, g_Trade.GoodAmount, Price)]],
-            arg[1], arg[2], arg[3], arg[4], arg[5]
+            [[API.SendScriptEvent(QSB.ScriptEvents.GoodsSold, %d, %d, %d, %d, %d, %d)]],
+            arg[1], arg[2], arg[3], arg[4], arg[5], arg[6]
         ))
     end
 end
@@ -17078,7 +17070,7 @@ function ModuleTrade.Global:OverwriteBasePricesAndRefreshRates()
     end
 end
 
-function ModuleTrade.Global:PerformFakeTrade(_TraderType, _OfferID, _Good, _P1, _P2, _Amount, _Price)
+function ModuleTrade.Global:PerformFakeTrade(_OfferID, _TraderType, _Good, _Amount, _Price, _P1, _P2)
     local StoreHouse1 = Logic.GetStoreHouse(_P1);
     local StoreHouse2 = Logic.GetStoreHouse(_P2);
 
@@ -17262,6 +17254,18 @@ function ModuleTrade.Local:OnEvent(_ID, ...)
     end
 end
 
+function ModuleTrade.Local:GetTraderType(_BuildingID, _TraderID)
+    if Logic.IsGoodTrader(_BuildingID, _TraderID) == true then
+        return QSB.TraderTypes.GoodTrader;
+    elseif Logic.IsMercenaryTrader(_BuildingID, _TraderID) == true then
+        return QSB.TraderTypes.MercenaryTrader;
+    elseif Logic.IsEntertainerTrader(_BuildingID, _TraderID) == true then
+        return QSB.TraderTypes.EntertainerTrader;
+    else
+        return QSB.TraderTypes.Unknown;
+    end
+end
+
 function ModuleTrade.Local:OverrideMerchantPurchaseOfferUpdate()
     GUI_Merchant.OfferUpdate = function(_ButtonIndex)
         local CurrentWidgetID   = XGUIEng.GetCurrentWidgetID();
@@ -17326,14 +17330,14 @@ end
 
 function ModuleTrade.Local:OverrideMerchantPurchaseOfferClicked()
     -- Set special conditions
-    local PurchaseAllowedLambda = function(_P1, _P2, _Type, _Good, _Amount, _Price)
+    local PurchaseAllowedLambda = function(_Type, _Good, _Amount, _Price, _P1, _P2)
         return true;
     end
     self.Lambda.PurchaseAllowed.Default = PurchaseAllowedLambda;
 
     local BuyLock = {Locked = false};
 
-    GameCallback_MerchantInteraction = function( _BuildingID, _PlayerID, _OfferID )
+    GameCallback_MerchantInteraction = function(_BuildingID, _PlayerID, _OfferID)
         if _PlayerID == GUI.GetPlayerID() then
             BuyLock.Locked = false;
         end
@@ -17403,9 +17407,9 @@ function ModuleTrade.Local:OverrideMerchantPurchaseOfferClicked()
         -- Special sales conditions
         if CanBeBought then
             if ModuleTrade.Local.Lambda.PurchaseAllowed[TraderPlayerID] then
-                CanBeBought = ModuleTrade.Local.Lambda.PurchaseAllowed[TraderPlayerID](TraderType, GoodType, PlayerID, TraderPlayerID, OfferGoodAmount, AmountPrices);
+                CanBeBought = ModuleTrade.Local.Lambda.PurchaseAllowed[TraderPlayerID](TraderType, GoodType, OfferGoodAmount, PlayerID, TraderPlayerID);
             else
-                CanBeBought = ModuleTrade.Local.Lambda.PurchaseAllowed.Default(TraderType, GoodType, PlayerID, TraderPlayerID, OfferGoodAmount, AmountPrices);
+                CanBeBought = ModuleTrade.Local.Lambda.PurchaseAllowed.Default(TraderType, GoodType, OfferGoodAmount, PlayerID, TraderPlayerID);
             end
             if not CanBeBought then
                 local MessageText = XGUIEng.GetStringTableText("Feedback_TextLines/TextLine_GenericNotReadyYet");
@@ -17437,14 +17441,14 @@ function ModuleTrade.Local:OverrideMerchantPurchaseOfferClicked()
                 g_Merchant.BuyFromPlayer[TraderPlayerID][GoodType] = (g_Merchant.BuyFromPlayer[TraderPlayerID][GoodType] or 0) +1;
 
                 API.BroadcastScriptEventToGlobal(
-                    QSB.ScriptEvents.GoodsPurchased,
-                    TraderType,
+                    "GoodsPurchased",
                     OfferIndex,
+                    TraderType,
                     GoodType,
-                    PlayerID,
-                    TraderPlayerID,
                     OfferGoodAmount,
-                    Price
+                    Price,
+                    PlayerID,
+                    TraderPlayerID
                 );
             else
                 local MessageText = XGUIEng.GetStringTableText("Feedback_TextLines/TextLine_NotEnough_G_Gold");
@@ -17456,7 +17460,7 @@ end
 
 function ModuleTrade.Local:OverrideMerchantSellGoodsClicked()
     -- Set special conditions
-    local SaleAllowedLambda = function(_P1, _P2, _Good, _Amount, _Price)
+    local SaleAllowedLambda = function(_Type, _Good, _Amount, _Price, _P1, _P2)
         return true;
     end
     self.Lambda.SaleAllowed.Default = SaleAllowedLambda;
@@ -17500,21 +17504,13 @@ function ModuleTrade.Local:OverrideMerchantSellGoodsClicked()
                 return;
             end
         end
-    
-        local Price;
-        if Logic.PlayerGetIsHumanFlag(TargetID) then
-            Price = 0;
-        else
-            Price = GUI_Trade.ComputeSellingPrice(TargetID, g_Trade.GoodType, g_Trade.GoodAmount);
-            Price = Price / g_Trade.GoodAmount;
-        end
 
         -- Special sales conditions
         local CanBeSold = true;
         if ModuleTrade.Local.Lambda.SaleAllowed[TargetID] then
-            CanBeSold = ModuleTrade.Local.Lambda.SaleAllowed[TargetID](PlayerID, TargetID, g_Trade.GoodType, g_Trade.GoodAmount, Price);
+            CanBeSold = ModuleTrade.Local.Lambda.SaleAllowed[TargetID](g_Merchant.GoodTrader, g_Trade.GoodType, g_Trade.GoodAmount, PlayerID, TargetID);
         else
-            CanBeSold = ModuleTrade.Local.Lambda.SaleAllowed.Default(PlayerID, TargetID, g_Trade.GoodType, g_Trade.GoodAmount, Price);
+            CanBeSold = ModuleTrade.Local.Lambda.SaleAllowed.Default(g_Merchant.GoodTrader, g_Trade.GoodType, g_Trade.GoodAmount, PlayerID, TargetID);
         end
         if not CanBeSold then
             local MessageText = XGUIEng.GetStringTableText("Feedback_TextLines/TextLine_GenericNotReadyYet");
@@ -17522,11 +17518,21 @@ function ModuleTrade.Local:OverrideMerchantSellGoodsClicked()
             return;
         end
 
-        GUI.StartTradeGoodGathering(PlayerID, TargetID, g_Trade.GoodType, g_Trade.GoodAmount, Price);
+        local Price;
+        local PricePerUnit;
+        if Logic.PlayerGetIsHumanFlag(TargetID) then
+            Price = 0;
+            PricePerUnit = 0;
+        else
+            Price = GUI_Trade.ComputeSellingPrice(TargetID, g_Trade.GoodType, g_Trade.GoodAmount);
+            PricePerUnit = Price / g_Trade.GoodAmount;
+        end
+
+        GUI.StartTradeGoodGathering(PlayerID, TargetID, g_Trade.GoodType, g_Trade.GoodAmount, PricePerUnit);
         GUI_FeedbackSpeech.Add("SpeechOnly_CartsSent", g_FeedbackSpeech.Categories.CartsUnderway, nil, nil);
         StartKnightVoiceForPermanentSpecialAbility(Entities.U_KnightTrading);
 
-        if Price ~= 0 then
+        if PricePerUnit ~= 0 then
             if g_Trade.SellToPlayers[TargetID] == nil then
                 g_Trade.SellToPlayers[TargetID] = {};
             end
@@ -17536,12 +17542,13 @@ function ModuleTrade.Local:OverrideMerchantSellGoodsClicked()
                 g_Trade.SellToPlayers[TargetID][g_Trade.GoodType] = g_Trade.SellToPlayers[TargetID][g_Trade.GoodType] + g_Trade.GoodAmount;
             end
             API.BroadcastScriptEventToGlobal(
-                QSB.ScriptEvents.GoodsSold,
+                "GoodsSold",
+                g_Merchant.GoodTrader,
                 g_Trade.GoodType,
-                PlayerID,
-                TargetID,
                 g_Trade.GoodAmount,
-                Price
+                Price,
+                PlayerID,
+                TargetID
             );
         end
     end
@@ -17549,21 +17556,21 @@ end
 
 function ModuleTrade.Local:OverrideMerchantComputePurchasePrice()
     -- Override factor of hero ability
-    local AbilityTraderLambda = function(_BasePrice, _PlayerID, _TraderPlayerID)
+    local AbilityTraderLambda = function(_TraderType, _OfferType, _BasePrice, _PlayerID, _TraderPlayerID)
         local Modifier = Logic.GetKnightTraderAbilityModifier(_PlayerID);
         return math.ceil(_BasePrice / Modifier);
     end
     self.Lambda.PurchaseTraderAbility.Default = AbilityTraderLambda;
 
     -- Override base price calculation
-    local BasePriceLambda = function(_GoodType, _PlayerID, _TraderPlayerID)
-        local BasePrice = MerchantSystem.BasePrices[_GoodType];
+    local BasePriceLambda = function(_TraderType, _OfferType, _PlayerID, _TraderPlayerID)
+        local BasePrice = MerchantSystem.BasePrices[_OfferType];
         return (BasePrice == nil and 3) or BasePrice;
     end
     self.Lambda.PurchaseBasePrice.Default = BasePriceLambda;
 
     -- Override max inflation
-    local InflationLambda = function(_OfferCount, _Price, _PlayerID, _TraderPlayerID)
+    local InflationLambda = function(_TraderType, _GoodType, _OfferCount, _Price, _PlayerID, _TraderPlayerID)
         _OfferCount = (_OfferCount > 8 and 8) or _OfferCount;
         local Result = _Price + (math.ceil(_Price / 4) * _OfferCount);
         return (Result < _Price and _Price) or Result;
@@ -17578,17 +17585,17 @@ function ModuleTrade.Local:OverrideMerchantComputePurchasePrice()
         -- Calculate the base price
         local BasePrice;
         if ModuleTrade.Local.Lambda.PurchaseBasePrice[TraderPlayerID] then
-            BasePrice = ModuleTrade.Local.Lambda.PurchaseBasePrice[TraderPlayerID](Type, PlayerID, TraderPlayerID)
+            BasePrice = ModuleTrade.Local.Lambda.PurchaseBasePrice[TraderPlayerID](TraderType, Type, PlayerID, TraderPlayerID)
         else
-            BasePrice = ModuleTrade.Local.Lambda.PurchaseBasePrice.Default(Type, PlayerID, TraderPlayerID)
+            BasePrice = ModuleTrade.Local.Lambda.PurchaseBasePrice.Default(TraderType, Type, PlayerID, TraderPlayerID)
         end
 
         -- Calculate price
         local Price
         if ModuleTrade.Local.Lambda.PurchaseTraderAbility[TraderPlayerID] then
-            Price = ModuleTrade.Local.Lambda.PurchaseTraderAbility[TraderPlayerID](BasePrice, PlayerID, TraderPlayerID)
+            Price = ModuleTrade.Local.Lambda.PurchaseTraderAbility[TraderPlayerID](TraderType, Type, BasePrice, PlayerID, TraderPlayerID)
         else
-            Price = ModuleTrade.Local.Lambda.PurchaseTraderAbility.Default(BasePrice, PlayerID, TraderPlayerID)
+            Price = ModuleTrade.Local.Lambda.PurchaseTraderAbility.Default(TraderType, Type, BasePrice, PlayerID, TraderPlayerID)
         end
 
         -- Invoke price inflation
@@ -17598,24 +17605,31 @@ function ModuleTrade.Local:OverrideMerchantComputePurchasePrice()
         end
         local FinalPrice;
         if ModuleTrade.Local.Lambda.PurchaseInflation[TraderPlayerID] then
-            FinalPrice = ModuleTrade.Local.Lambda.PurchaseInflation[TraderPlayerID](OfferCount, Price, PlayerID, TraderPlayerID);
+            FinalPrice = ModuleTrade.Local.Lambda.PurchaseInflation[TraderPlayerID](TraderType, Type, OfferCount, Price, PlayerID, TraderPlayerID);
         else
-            FinalPrice = ModuleTrade.Local.Lambda.PurchaseInflation.Default(OfferCount, Price, PlayerID, TraderPlayerID);
+            FinalPrice = ModuleTrade.Local.Lambda.PurchaseInflation.Default(TraderType, Type, OfferCount, Price, PlayerID, TraderPlayerID);
         end
         return FinalPrice;
     end
 end
 
 function ModuleTrade.Local:OverrideMerchantComputeSellingPrice()
+    -- Override factor of hero ability
+    local AbilityTraderLambda = function(_TraderType, _OfferType, _BasePrice, _PlayerID, _TraderPlayerID)
+        -- No change by default
+        return _BasePrice;
+    end
+    self.Lambda.SaleTraderAbility.Default = AbilityTraderLambda;
+
     -- Override base price calculation
-    local BasePriceLambda = function(_GoodType, _PlayerID, _TargetPlayerID)
-        local BasePrice = MerchantSystem.BasePrices[_GoodType];
+    local BasePriceLambda = function(_TraderType, _OfferType, _PlayerID, _TargetPlayerID)
+        local BasePrice = MerchantSystem.BasePrices[_OfferType];
         return (BasePrice == nil and 3) or BasePrice;
     end
     self.Lambda.SaleBasePrice.Default = BasePriceLambda;
 
     -- Override max deflation
-    local DeflationLambda = function(_Price, _PlayerID, _TargetPlayerID)
+    local DeflationLambda = function(_TraderType, _OfferType, _WagonsSold, _Price, _PlayerID, _TargetPlayerID)
         return _Price - math.ceil(_Price / 4);
     end
     self.Lambda.SaleDeflation.Default = DeflationLambda;
@@ -17630,9 +17644,17 @@ function ModuleTrade.Local:OverrideMerchantComputeSellingPrice()
         -- Calculate the base price
         local BasePrice;
         if ModuleTrade.Local.Lambda.SaleBasePrice[_TargetPlayerID] then
-            BasePrice = ModuleTrade.Local.Lambda.SaleBasePrice[_TargetPlayerID](_GoodType, PlayerID, _TargetPlayerID);
+            BasePrice = ModuleTrade.Local.Lambda.SaleBasePrice[_TargetPlayerID](g_Merchant.GoodTrader, _GoodType, PlayerID, _TargetPlayerID);
         else
-            BasePrice = ModuleTrade.Local.Lambda.SaleBasePrice.Default(_GoodType, PlayerID, _TargetPlayerID);
+            BasePrice = ModuleTrade.Local.Lambda.SaleBasePrice.Default(g_Merchant.GoodTrader, _GoodType, PlayerID, _TargetPlayerID);
+        end
+
+        -- Calculate price
+        local Price = BasePrice;
+        if ModuleTrade.Local.Lambda.SaleTraderAbility[_TargetPlayerID] then
+            Price = ModuleTrade.Local.Lambda.SaleTraderAbility[_TargetPlayerID](g_Merchant.GoodTrader, _GoodType, BasePrice, PlayerID, _TargetPlayerID)
+        else
+            Price = ModuleTrade.Local.Lambda.SaleTraderAbility.Default(g_Merchant.GoodTrader, _GoodType, BasePrice, PlayerID, _TargetPlayerID)
         end
 
         local GoodsSoldToTargetPlayer = 0
@@ -17640,18 +17662,17 @@ function ModuleTrade.Local:OverrideMerchantComputeSellingPrice()
         and g_Trade.SellToPlayers[_TargetPlayerID][_GoodType] ~= nil then
             GoodsSoldToTargetPlayer = g_Trade.SellToPlayers[_TargetPlayerID][_GoodType];
         end
-        local Modifier = math.ceil(BasePrice / 4);
+        local Modifier = math.ceil(Price / 4);
+        local WaggonsToSell = math.ceil(_GoodAmount / Waggonload);
+        local WaggonsSold = math.ceil(GoodsSoldToTargetPlayer / Waggonload);
 
         -- Calculate the max deflation
         local MaxToSubstract
         if ModuleTrade.Local.Lambda.SaleDeflation[_TargetPlayerID] then
-            MaxToSubstract = ModuleTrade.Local.Lambda.SaleDeflation[_TargetPlayerID](BasePrice, PlayerID, _TargetPlayerID);
+            MaxToSubstract = ModuleTrade.Local.Lambda.SaleDeflation[_TargetPlayerID](g_Merchant.GoodTrader, _GoodType, WaggonsSold, Price, PlayerID, _TargetPlayerID);
         else
-            MaxToSubstract = ModuleTrade.Local.Lambda.SaleDeflation.Default(BasePrice, PlayerID, _TargetPlayerID);
+            MaxToSubstract = ModuleTrade.Local.Lambda.SaleDeflation.Default(g_Merchant.GoodTrader, _GoodType, WaggonsSold, Price, PlayerID, _TargetPlayerID);
         end
-
-        local WaggonsToSell = math.ceil(_GoodAmount / Waggonload);
-        local WaggonsSold = math.ceil(GoodsSoldToTargetPlayer / Waggonload);
 
         local PriceToSubtract = 0;
         for i = 1, WaggonsToSell do
@@ -17676,7 +17697,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ]]
 
 ---
--- Ein Modul zur Steuerung des Kauf und Verkauf.
+-- Es kann in den Ablauf von Kauf und Verkauf eingegriffen werden.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
@@ -17690,22 +17711,34 @@ You may use and modify this file unter the terms of the MIT licence.
 ---
 -- Events, auf die reagiert werden kann.
 --
--- @field GoodsPurchased Güter werden bei einem Händler gekauft (Parameter: TraderType, OfferIndex, GoodType, PlayerID, TraderPlayerID, OfferGoodAmount, Price)
--- @field GoodsSold      Güter werden im eigenen Lagerhaus verkauft (Parameter: GoodType, PlayerID, TargetPlayerID, GoodAmount, Price)
+-- @field GoodsPurchased Güter werden bei einem Händler gekauft (Parameter: OfferID, TraderType, GoodType, OfferGoodAmount, Price, PlayerID, TraderPlayerID)
+-- @field GoodsSold      Güter werden im eigenen Lagerhaus verkauft (Parameter: TraderType, GoodType, GoodAmount, Price, PlayerID, TargetPlayerID)
 --
 -- @within Event
 --
 QSB.ScriptEvents = QSB.ScriptEvents or {};
 
 ---
--- Setzt die Funktion zur Kalkulation des Preisfaktors des Helden. Die Änderung
--- betrifft nur den angegebenen Spieler.
+-- Typen der Händler
+--
+-- @field GoodTrader        Es werden Güter verkauft
+-- @field MercenaryTrader   Es werden Söldner verkauft
+-- @field EntertainerTrader Es werden Entertainer verkauft
+-- @field Unknown           Unbekannter Typ (Fehler)
+--
+QSB.TraderTypes = QSB.TraderTypes or {};
+
+---
+-- Setzt die Funktion zur Kalkulation des Einkaufspreisfaktors des Helden. Die
+-- Änderung betrifft nur den angegebenen Spieler.
 -- Die Funktion muss den angepassten Preis zurückgeben.
 --
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
--- <tr><td>_Price</td><td>number</td><td></td>Basispreis</tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_BasePrice</td><td>number</td><td></td>Basispreis</tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- </table>
@@ -17715,7 +17748,7 @@ QSB.ScriptEvents = QSB.ScriptEvents or {};
 -- <b>Hinweis</b>: Um den Standard wiederherzustellen, muss nil als Funktion
 -- übergeben werden.
 --
--- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _PlayerID Player ID des Händlers
 -- @param[type=number] _Function Kalkulationsfunktion
 -- @within Anwenderfunktionen
 --
@@ -17734,13 +17767,15 @@ function API.PurchaseSetTraderAbilityForPlayer(_PlayerID, _Function)
 end
 
 ---
--- Setzt die allgemeine Funktion zur Kalkulation des Preisfaktors des Helden.
--- Die Funktion muss den angepassten Preis zurückgeben.
+-- Setzt die allgemeine Funktion zur Kalkulation des Einkaufspreisfaktors des
+-- Helden. Die Funktion muss den angepassten Preis zurückgeben.
 --
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
--- <tr><td>_Price</td><td>number</td><td></td>Basispreis</tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_BasePrice</td><td>number</td><td></td>Basispreis</tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- </table>
@@ -17765,7 +17800,8 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
--- <tr><td>_Type</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- </table>
@@ -17775,7 +17811,7 @@ end
 -- <b>Hinweis</b>: Um den Standard wiederherzustellen, muss nil als Funktion
 -- übergeben werden.
 --
--- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _PlayerID Player ID des Händlers
 -- @param[type=number] _Function Kalkulationsfunktion
 -- @within Anwenderfunktionen
 --
@@ -17800,8 +17836,8 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
--- <tr><td>_PurchaseCount</td><td>number</td><td>Zahl bereits gekaufter Angebote</td></tr>
--- <tr><td>_Price</td><td>number</td><td></td>Aktueller Preis</tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- </table>
@@ -17826,8 +17862,10 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
--- <tr><td>_PurchaseCount</td><td>number</td><td>Zahl bereits gekaufter Angebote</td></tr>
--- <tr><td>_Price</td><td>number</td><td></td>Aktueller Preis</tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_Amount</td><td>number</td><td>Anzahl bereits gekaufter Angebote</td></tr>
+-- <tr><td>_Price</td><td>number</td><td></td>Einkaufspreis</tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- </table>
@@ -17837,7 +17875,7 @@ end
 -- <b>Hinweis</b>: Um den Standard wiederherzustellen, muss nil als Funktion
 -- übergeben werden.
 --
--- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _PlayerID Player ID des Händlers
 -- @param[type=number] _Function Kalkulationsfunktion
 -- @within Anwenderfunktionen
 --
@@ -17862,11 +17900,12 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_Amount</td><td>number</td><td>Anzahl bereits gekaufter Angebote</td></tr>
+-- <tr><td>_Price</td><td>number</td><td></td>Einkaufspreis</tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
--- <tr><td>_Type</td><td>number</td><td>Typ des Angebot</td></tr>
--- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
--- <tr><td>_UnitPrice</td><td>number</td><td>Stückpreis</td></tr>
 -- </table>
 --
 -- <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
@@ -17889,11 +17928,11 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
--- <tr><td>_Type</td><td>number</td><td>Typ des Angebot</td></tr>
--- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
--- <tr><td>_UnitPrice</td><td>number</td><td>Stückpreis</td></tr>
 -- </table>
 --
 -- <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
@@ -17901,7 +17940,7 @@ end
 -- <b>Hinweis</b>: Um den Standard wiederherzustellen, muss nil als Funktion
 -- übergeben werden.
 --
--- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _PlayerID Player ID des Händlers
 -- @param[type=number] _Function Evaluationsfunktion
 -- @within Anwenderfunktionen
 --
@@ -17926,11 +17965,11 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
--- <tr><td>_Type</td><td>number</td><td>Typ des Angebot</td></tr>
--- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
--- <tr><td>_UnitPrice</td><td>number</td><td>Stückpreis</td></tr>
 -- </table>
 --
 -- <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
@@ -17946,6 +17985,70 @@ function API.PurchaseSetDefaultCondition(_Function)
 end
 
 ---
+-- Setzt die Funktion zur Kalkulation des Verkreisfaktors des Helden. Die
+-- Änderung betrifft nur den angegebenen Spieler.
+-- Die Funktion muss den angepassten Preis zurückgeben.
+--
+-- Parameter der Funktion:
+-- <table border="1">
+-- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td></td>Typ des Händlers</tr>
+-- <tr><td>_Good</td><td>number</td><td></td>Typ des Angebot</tr>
+-- <tr><td>_BasePrice</td><td>number</td><td></td>Basispreis</tr>
+-- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
+-- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
+-- </table>
+--
+-- <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
+--
+-- <b>Hinweis</b>: Um den Standard wiederherzustellen, muss nil als Funktion
+-- übergeben werden.
+--
+-- @param[type=number] _PlayerID Player ID des Händlers
+-- @param[type=number] _Function Kalkulationsfunktion
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.SaleSetTraderAbilityForPlayer(2, MyCalculationFunction);
+--
+function API.SaleSetTraderAbilityForPlayer(_PlayerID, _Function)
+    if not GUI then
+        return;
+    end
+    if _PlayerID then
+        ModuleTrade.Local.Lambda.SaleTraderAbility[_PlayerID] = _Function;
+    else
+        ModuleTrade.Local.Lambda.SaleTraderAbility.Default = _Function;
+    end
+end
+
+---
+-- Setzt die allgemeine Funktion zur Kalkulation des Verkreisfaktors des Helden.
+-- Die Funktion muss den angepassten Preis zurückgeben.
+--
+-- Parameter der Funktion:
+-- <table border="1">
+-- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td></td>Typ des Händlers</tr>
+-- <tr><td>_Good</td><td>number</td><td></td>Typ des Angebot</tr>
+-- <tr><td>_BasePrice</td><td>number</td><td></td>Basispreis</tr>
+-- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
+-- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
+-- </table>
+--
+-- <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
+--
+-- @param[type=number] _Function Kalkulationsfunktion
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.SaleSetDefaultTraderAbility(MyCalculationFunction);
+--
+function API.SaleSetDefaultTraderAbility(_Function)
+    API.SaleSetTraderAbilityForPlayer(nil, _Function);
+end
+
+---
 -- Setzt die Funktion zur Bestimmung des Basispreis. Die Änderung betrifft nur
 -- den angegebenen Spieler.
 -- Die Funktion muss den Basispreis der Ware zurückgeben.
@@ -17953,7 +18056,8 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
--- <tr><td>_Type</td><td>number</td><td>Warentyp</td></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Käufers</td></tr>
 -- </table>
@@ -17963,7 +18067,7 @@ end
 -- <b>Hinweis</b>: Um den Standard wiederherzustellen, muss nil als Funktion
 -- übergeben werden.
 --
--- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _PlayerID Player ID des Händlers
 -- @param[type=number] _Function Kalkulationsfunktion
 -- @within Anwenderfunktionen
 --
@@ -17988,7 +18092,8 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
--- <tr><td>_Type</td><td>number</td><td>Warentyp</td></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Käufers</td></tr>
 -- </table>
@@ -18013,6 +18118,9 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_SaleCount</td><td>number</td><td>Amount of sold waggons</td></tr>
 -- <tr><td>_Price</td><td>number</td><td>Verkaufspreis</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Käufers</td></tr>
@@ -18023,7 +18131,7 @@ end
 -- <b>Hinweis</b>: Um den Standard wiederherzustellen, muss nil als Funktion
 -- übergeben werden.
 --
--- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _PlayerID Player ID des Händlers
 -- @param[type=number] _Function Kalkulationsfunktion
 -- @within Anwenderfunktionen
 --
@@ -18048,6 +18156,9 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_SaleCount</td><td>number</td><td>Amount of sold waggons</td></tr>
 -- <tr><td>_Price</td><td>number</td><td>Verkaufspreis</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Käufers</td></tr>
@@ -18073,10 +18184,11 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Käufers</td></tr>
--- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
--- <tr><td>_UnitPrice</td><td>number</td><td>Preis pro Stück</td></tr>
 -- </table>
 --
 -- <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
@@ -18084,7 +18196,7 @@ end
 -- <b>Hinweis</b>: Um den Standard wiederherzustellen, muss nil als Funktion
 -- übergeben werden.
 --
--- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _PlayerID Player ID des Händlers
 -- @param[type=number] _Function Evaluationsfunktion
 -- @within Anwenderfunktionen
 --
@@ -18109,10 +18221,11 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Käufers</td></tr>
--- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
--- <tr><td>_UnitPrice</td><td>number</td><td>Preis pro Stück</td></tr>
 -- </table>
 --
 -- <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
@@ -18459,10 +18572,21 @@ ModuleQuest = {
         Version = "4.0.0 (ALPHA 1.0.0)",
     },
 
-    Global = {},
+    Global = {
+        ExternalTriggerConditions = {},
+        ExternalTimerConditions = {},
+        ExternalDecisionConditions = {},
+        SegmentsOfQuest = {},
+    },
     Local  = {},
 
     Shared = {},
+}
+
+QSB.SegmentResult = {
+    Success = 1,
+    Failure = 2,
+    Ignore  = 3,
 }
 
 -- -------------------------------------------------------------------------- --
@@ -19026,8 +19150,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ]]
 
 ---
--- Dieses Modul ermöglicht es einen Quest, bzw. Auftrag, per Skript zu 
--- erstellen.
+-- Aufträge können über das Skript erstellt werden.
 --
 -- Normaler Weise werden Aufträge im Questassistenten erzeugt. Dies ist aber
 -- statisch und das Kopieren von Aufträgen ist nicht möglich. Wenn Aufträge

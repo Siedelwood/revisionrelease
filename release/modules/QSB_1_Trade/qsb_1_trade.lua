@@ -30,6 +30,7 @@ ModuleTrade = {
             PurchaseBasePrice     = {},
             PurchaseInflation     = {},
             PurchaseAllowed       = {},
+            SaleTraderAbility     = {},
             SaleBasePrice         = {},
             SaleDeflation         = {},
             SaleAllowed           = {},
@@ -66,8 +67,8 @@ function ModuleTrade.Global:OnEvent(_ID, ...)
         self:PerformFakeTrade(arg[1], arg[2], arg[3], arg[4], arg[5], arg[6], arg[7]);
     elseif _ID == QSB.ScriptEvents.GoodsSold then
         Logic.ExecuteInLuaLocalState(string.format(
-            [[API.SendScriptEvent(QSB.ScriptEvents.GoodsSold, g_Trade.GoodType, PlayerID, TargetID, g_Trade.GoodAmount, Price)]],
-            arg[1], arg[2], arg[3], arg[4], arg[5]
+            [[API.SendScriptEvent(QSB.ScriptEvents.GoodsSold, %d, %d, %d, %d, %d, %d)]],
+            arg[1], arg[2], arg[3], arg[4], arg[5], arg[6]
         ))
     end
 end
@@ -100,7 +101,7 @@ function ModuleTrade.Global:OverwriteBasePricesAndRefreshRates()
     end
 end
 
-function ModuleTrade.Global:PerformFakeTrade(_TraderType, _OfferID, _Good, _P1, _P2, _Amount, _Price)
+function ModuleTrade.Global:PerformFakeTrade(_OfferID, _TraderType, _Good, _Amount, _Price, _P1, _P2)
     local StoreHouse1 = Logic.GetStoreHouse(_P1);
     local StoreHouse2 = Logic.GetStoreHouse(_P2);
 
@@ -284,6 +285,18 @@ function ModuleTrade.Local:OnEvent(_ID, ...)
     end
 end
 
+function ModuleTrade.Local:GetTraderType(_BuildingID, _TraderID)
+    if Logic.IsGoodTrader(_BuildingID, _TraderID) == true then
+        return QSB.TraderTypes.GoodTrader;
+    elseif Logic.IsMercenaryTrader(_BuildingID, _TraderID) == true then
+        return QSB.TraderTypes.MercenaryTrader;
+    elseif Logic.IsEntertainerTrader(_BuildingID, _TraderID) == true then
+        return QSB.TraderTypes.EntertainerTrader;
+    else
+        return QSB.TraderTypes.Unknown;
+    end
+end
+
 function ModuleTrade.Local:OverrideMerchantPurchaseOfferUpdate()
     GUI_Merchant.OfferUpdate = function(_ButtonIndex)
         local CurrentWidgetID   = XGUIEng.GetCurrentWidgetID();
@@ -348,14 +361,14 @@ end
 
 function ModuleTrade.Local:OverrideMerchantPurchaseOfferClicked()
     -- Set special conditions
-    local PurchaseAllowedLambda = function(_P1, _P2, _Type, _Good, _Amount, _Price)
+    local PurchaseAllowedLambda = function(_Type, _Good, _Amount, _Price, _P1, _P2)
         return true;
     end
     self.Lambda.PurchaseAllowed.Default = PurchaseAllowedLambda;
 
     local BuyLock = {Locked = false};
 
-    GameCallback_MerchantInteraction = function( _BuildingID, _PlayerID, _OfferID )
+    GameCallback_MerchantInteraction = function(_BuildingID, _PlayerID, _OfferID)
         if _PlayerID == GUI.GetPlayerID() then
             BuyLock.Locked = false;
         end
@@ -425,9 +438,9 @@ function ModuleTrade.Local:OverrideMerchantPurchaseOfferClicked()
         -- Special sales conditions
         if CanBeBought then
             if ModuleTrade.Local.Lambda.PurchaseAllowed[TraderPlayerID] then
-                CanBeBought = ModuleTrade.Local.Lambda.PurchaseAllowed[TraderPlayerID](TraderType, GoodType, PlayerID, TraderPlayerID, OfferGoodAmount, AmountPrices);
+                CanBeBought = ModuleTrade.Local.Lambda.PurchaseAllowed[TraderPlayerID](TraderType, GoodType, OfferGoodAmount, PlayerID, TraderPlayerID);
             else
-                CanBeBought = ModuleTrade.Local.Lambda.PurchaseAllowed.Default(TraderType, GoodType, PlayerID, TraderPlayerID, OfferGoodAmount, AmountPrices);
+                CanBeBought = ModuleTrade.Local.Lambda.PurchaseAllowed.Default(TraderType, GoodType, OfferGoodAmount, PlayerID, TraderPlayerID);
             end
             if not CanBeBought then
                 local MessageText = XGUIEng.GetStringTableText("Feedback_TextLines/TextLine_GenericNotReadyYet");
@@ -459,14 +472,14 @@ function ModuleTrade.Local:OverrideMerchantPurchaseOfferClicked()
                 g_Merchant.BuyFromPlayer[TraderPlayerID][GoodType] = (g_Merchant.BuyFromPlayer[TraderPlayerID][GoodType] or 0) +1;
 
                 API.BroadcastScriptEventToGlobal(
-                    QSB.ScriptEvents.GoodsPurchased,
-                    TraderType,
+                    "GoodsPurchased",
                     OfferIndex,
+                    TraderType,
                     GoodType,
-                    PlayerID,
-                    TraderPlayerID,
                     OfferGoodAmount,
-                    Price
+                    Price,
+                    PlayerID,
+                    TraderPlayerID
                 );
             else
                 local MessageText = XGUIEng.GetStringTableText("Feedback_TextLines/TextLine_NotEnough_G_Gold");
@@ -478,7 +491,7 @@ end
 
 function ModuleTrade.Local:OverrideMerchantSellGoodsClicked()
     -- Set special conditions
-    local SaleAllowedLambda = function(_P1, _P2, _Good, _Amount, _Price)
+    local SaleAllowedLambda = function(_Type, _Good, _Amount, _Price, _P1, _P2)
         return true;
     end
     self.Lambda.SaleAllowed.Default = SaleAllowedLambda;
@@ -522,21 +535,13 @@ function ModuleTrade.Local:OverrideMerchantSellGoodsClicked()
                 return;
             end
         end
-    
-        local Price;
-        if Logic.PlayerGetIsHumanFlag(TargetID) then
-            Price = 0;
-        else
-            Price = GUI_Trade.ComputeSellingPrice(TargetID, g_Trade.GoodType, g_Trade.GoodAmount);
-            Price = Price / g_Trade.GoodAmount;
-        end
 
         -- Special sales conditions
         local CanBeSold = true;
         if ModuleTrade.Local.Lambda.SaleAllowed[TargetID] then
-            CanBeSold = ModuleTrade.Local.Lambda.SaleAllowed[TargetID](PlayerID, TargetID, g_Trade.GoodType, g_Trade.GoodAmount, Price);
+            CanBeSold = ModuleTrade.Local.Lambda.SaleAllowed[TargetID](g_Merchant.GoodTrader, g_Trade.GoodType, g_Trade.GoodAmount, PlayerID, TargetID);
         else
-            CanBeSold = ModuleTrade.Local.Lambda.SaleAllowed.Default(PlayerID, TargetID, g_Trade.GoodType, g_Trade.GoodAmount, Price);
+            CanBeSold = ModuleTrade.Local.Lambda.SaleAllowed.Default(g_Merchant.GoodTrader, g_Trade.GoodType, g_Trade.GoodAmount, PlayerID, TargetID);
         end
         if not CanBeSold then
             local MessageText = XGUIEng.GetStringTableText("Feedback_TextLines/TextLine_GenericNotReadyYet");
@@ -544,11 +549,21 @@ function ModuleTrade.Local:OverrideMerchantSellGoodsClicked()
             return;
         end
 
-        GUI.StartTradeGoodGathering(PlayerID, TargetID, g_Trade.GoodType, g_Trade.GoodAmount, Price);
+        local Price;
+        local PricePerUnit;
+        if Logic.PlayerGetIsHumanFlag(TargetID) then
+            Price = 0;
+            PricePerUnit = 0;
+        else
+            Price = GUI_Trade.ComputeSellingPrice(TargetID, g_Trade.GoodType, g_Trade.GoodAmount);
+            PricePerUnit = Price / g_Trade.GoodAmount;
+        end
+
+        GUI.StartTradeGoodGathering(PlayerID, TargetID, g_Trade.GoodType, g_Trade.GoodAmount, PricePerUnit);
         GUI_FeedbackSpeech.Add("SpeechOnly_CartsSent", g_FeedbackSpeech.Categories.CartsUnderway, nil, nil);
         StartKnightVoiceForPermanentSpecialAbility(Entities.U_KnightTrading);
 
-        if Price ~= 0 then
+        if PricePerUnit ~= 0 then
             if g_Trade.SellToPlayers[TargetID] == nil then
                 g_Trade.SellToPlayers[TargetID] = {};
             end
@@ -558,12 +573,13 @@ function ModuleTrade.Local:OverrideMerchantSellGoodsClicked()
                 g_Trade.SellToPlayers[TargetID][g_Trade.GoodType] = g_Trade.SellToPlayers[TargetID][g_Trade.GoodType] + g_Trade.GoodAmount;
             end
             API.BroadcastScriptEventToGlobal(
-                QSB.ScriptEvents.GoodsSold,
+                "GoodsSold",
+                g_Merchant.GoodTrader,
                 g_Trade.GoodType,
-                PlayerID,
-                TargetID,
                 g_Trade.GoodAmount,
-                Price
+                Price,
+                PlayerID,
+                TargetID
             );
         end
     end
@@ -571,21 +587,21 @@ end
 
 function ModuleTrade.Local:OverrideMerchantComputePurchasePrice()
     -- Override factor of hero ability
-    local AbilityTraderLambda = function(_BasePrice, _PlayerID, _TraderPlayerID)
+    local AbilityTraderLambda = function(_TraderType, _OfferType, _BasePrice, _PlayerID, _TraderPlayerID)
         local Modifier = Logic.GetKnightTraderAbilityModifier(_PlayerID);
         return math.ceil(_BasePrice / Modifier);
     end
     self.Lambda.PurchaseTraderAbility.Default = AbilityTraderLambda;
 
     -- Override base price calculation
-    local BasePriceLambda = function(_GoodType, _PlayerID, _TraderPlayerID)
-        local BasePrice = MerchantSystem.BasePrices[_GoodType];
+    local BasePriceLambda = function(_TraderType, _OfferType, _PlayerID, _TraderPlayerID)
+        local BasePrice = MerchantSystem.BasePrices[_OfferType];
         return (BasePrice == nil and 3) or BasePrice;
     end
     self.Lambda.PurchaseBasePrice.Default = BasePriceLambda;
 
     -- Override max inflation
-    local InflationLambda = function(_OfferCount, _Price, _PlayerID, _TraderPlayerID)
+    local InflationLambda = function(_TraderType, _GoodType, _OfferCount, _Price, _PlayerID, _TraderPlayerID)
         _OfferCount = (_OfferCount > 8 and 8) or _OfferCount;
         local Result = _Price + (math.ceil(_Price / 4) * _OfferCount);
         return (Result < _Price and _Price) or Result;
@@ -600,17 +616,17 @@ function ModuleTrade.Local:OverrideMerchantComputePurchasePrice()
         -- Calculate the base price
         local BasePrice;
         if ModuleTrade.Local.Lambda.PurchaseBasePrice[TraderPlayerID] then
-            BasePrice = ModuleTrade.Local.Lambda.PurchaseBasePrice[TraderPlayerID](Type, PlayerID, TraderPlayerID)
+            BasePrice = ModuleTrade.Local.Lambda.PurchaseBasePrice[TraderPlayerID](TraderType, Type, PlayerID, TraderPlayerID)
         else
-            BasePrice = ModuleTrade.Local.Lambda.PurchaseBasePrice.Default(Type, PlayerID, TraderPlayerID)
+            BasePrice = ModuleTrade.Local.Lambda.PurchaseBasePrice.Default(TraderType, Type, PlayerID, TraderPlayerID)
         end
 
         -- Calculate price
         local Price
         if ModuleTrade.Local.Lambda.PurchaseTraderAbility[TraderPlayerID] then
-            Price = ModuleTrade.Local.Lambda.PurchaseTraderAbility[TraderPlayerID](BasePrice, PlayerID, TraderPlayerID)
+            Price = ModuleTrade.Local.Lambda.PurchaseTraderAbility[TraderPlayerID](TraderType, Type, BasePrice, PlayerID, TraderPlayerID)
         else
-            Price = ModuleTrade.Local.Lambda.PurchaseTraderAbility.Default(BasePrice, PlayerID, TraderPlayerID)
+            Price = ModuleTrade.Local.Lambda.PurchaseTraderAbility.Default(TraderType, Type, BasePrice, PlayerID, TraderPlayerID)
         end
 
         -- Invoke price inflation
@@ -620,24 +636,31 @@ function ModuleTrade.Local:OverrideMerchantComputePurchasePrice()
         end
         local FinalPrice;
         if ModuleTrade.Local.Lambda.PurchaseInflation[TraderPlayerID] then
-            FinalPrice = ModuleTrade.Local.Lambda.PurchaseInflation[TraderPlayerID](OfferCount, Price, PlayerID, TraderPlayerID);
+            FinalPrice = ModuleTrade.Local.Lambda.PurchaseInflation[TraderPlayerID](TraderType, Type, OfferCount, Price, PlayerID, TraderPlayerID);
         else
-            FinalPrice = ModuleTrade.Local.Lambda.PurchaseInflation.Default(OfferCount, Price, PlayerID, TraderPlayerID);
+            FinalPrice = ModuleTrade.Local.Lambda.PurchaseInflation.Default(TraderType, Type, OfferCount, Price, PlayerID, TraderPlayerID);
         end
         return FinalPrice;
     end
 end
 
 function ModuleTrade.Local:OverrideMerchantComputeSellingPrice()
+    -- Override factor of hero ability
+    local AbilityTraderLambda = function(_TraderType, _OfferType, _BasePrice, _PlayerID, _TraderPlayerID)
+        -- No change by default
+        return _BasePrice;
+    end
+    self.Lambda.SaleTraderAbility.Default = AbilityTraderLambda;
+
     -- Override base price calculation
-    local BasePriceLambda = function(_GoodType, _PlayerID, _TargetPlayerID)
-        local BasePrice = MerchantSystem.BasePrices[_GoodType];
+    local BasePriceLambda = function(_TraderType, _OfferType, _PlayerID, _TargetPlayerID)
+        local BasePrice = MerchantSystem.BasePrices[_OfferType];
         return (BasePrice == nil and 3) or BasePrice;
     end
     self.Lambda.SaleBasePrice.Default = BasePriceLambda;
 
     -- Override max deflation
-    local DeflationLambda = function(_Price, _PlayerID, _TargetPlayerID)
+    local DeflationLambda = function(_TraderType, _OfferType, _WagonsSold, _Price, _PlayerID, _TargetPlayerID)
         return _Price - math.ceil(_Price / 4);
     end
     self.Lambda.SaleDeflation.Default = DeflationLambda;
@@ -652,9 +675,17 @@ function ModuleTrade.Local:OverrideMerchantComputeSellingPrice()
         -- Calculate the base price
         local BasePrice;
         if ModuleTrade.Local.Lambda.SaleBasePrice[_TargetPlayerID] then
-            BasePrice = ModuleTrade.Local.Lambda.SaleBasePrice[_TargetPlayerID](_GoodType, PlayerID, _TargetPlayerID);
+            BasePrice = ModuleTrade.Local.Lambda.SaleBasePrice[_TargetPlayerID](g_Merchant.GoodTrader, _GoodType, PlayerID, _TargetPlayerID);
         else
-            BasePrice = ModuleTrade.Local.Lambda.SaleBasePrice.Default(_GoodType, PlayerID, _TargetPlayerID);
+            BasePrice = ModuleTrade.Local.Lambda.SaleBasePrice.Default(g_Merchant.GoodTrader, _GoodType, PlayerID, _TargetPlayerID);
+        end
+
+        -- Calculate price
+        local Price = BasePrice;
+        if ModuleTrade.Local.Lambda.SaleTraderAbility[_TargetPlayerID] then
+            Price = ModuleTrade.Local.Lambda.SaleTraderAbility[_TargetPlayerID](g_Merchant.GoodTrader, _GoodType, BasePrice, PlayerID, _TargetPlayerID)
+        else
+            Price = ModuleTrade.Local.Lambda.SaleTraderAbility.Default(g_Merchant.GoodTrader, _GoodType, BasePrice, PlayerID, _TargetPlayerID)
         end
 
         local GoodsSoldToTargetPlayer = 0
@@ -662,18 +693,17 @@ function ModuleTrade.Local:OverrideMerchantComputeSellingPrice()
         and g_Trade.SellToPlayers[_TargetPlayerID][_GoodType] ~= nil then
             GoodsSoldToTargetPlayer = g_Trade.SellToPlayers[_TargetPlayerID][_GoodType];
         end
-        local Modifier = math.ceil(BasePrice / 4);
+        local Modifier = math.ceil(Price / 4);
+        local WaggonsToSell = math.ceil(_GoodAmount / Waggonload);
+        local WaggonsSold = math.ceil(GoodsSoldToTargetPlayer / Waggonload);
 
         -- Calculate the max deflation
         local MaxToSubstract
         if ModuleTrade.Local.Lambda.SaleDeflation[_TargetPlayerID] then
-            MaxToSubstract = ModuleTrade.Local.Lambda.SaleDeflation[_TargetPlayerID](BasePrice, PlayerID, _TargetPlayerID);
+            MaxToSubstract = ModuleTrade.Local.Lambda.SaleDeflation[_TargetPlayerID](g_Merchant.GoodTrader, _GoodType, WaggonsSold, Price, PlayerID, _TargetPlayerID);
         else
-            MaxToSubstract = ModuleTrade.Local.Lambda.SaleDeflation.Default(BasePrice, PlayerID, _TargetPlayerID);
+            MaxToSubstract = ModuleTrade.Local.Lambda.SaleDeflation.Default(g_Merchant.GoodTrader, _GoodType, WaggonsSold, Price, PlayerID, _TargetPlayerID);
         end
-
-        local WaggonsToSell = math.ceil(_GoodAmount / Waggonload);
-        local WaggonsSold = math.ceil(GoodsSoldToTargetPlayer / Waggonload);
 
         local PriceToSubtract = 0;
         for i = 1, WaggonsToSell do
@@ -698,7 +728,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ]]
 
 ---
--- Ein Modul zur Steuerung des Kauf und Verkauf.
+-- Es kann in den Ablauf von Kauf und Verkauf eingegriffen werden.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
@@ -712,22 +742,34 @@ You may use and modify this file unter the terms of the MIT licence.
 ---
 -- Events, auf die reagiert werden kann.
 --
--- @field GoodsPurchased Güter werden bei einem Händler gekauft (Parameter: TraderType, OfferIndex, GoodType, PlayerID, TraderPlayerID, OfferGoodAmount, Price)
--- @field GoodsSold      Güter werden im eigenen Lagerhaus verkauft (Parameter: GoodType, PlayerID, TargetPlayerID, GoodAmount, Price)
+-- @field GoodsPurchased Güter werden bei einem Händler gekauft (Parameter: OfferID, TraderType, GoodType, OfferGoodAmount, Price, PlayerID, TraderPlayerID)
+-- @field GoodsSold      Güter werden im eigenen Lagerhaus verkauft (Parameter: TraderType, GoodType, GoodAmount, Price, PlayerID, TargetPlayerID)
 --
 -- @within Event
 --
 QSB.ScriptEvents = QSB.ScriptEvents or {};
 
 ---
--- Setzt die Funktion zur Kalkulation des Preisfaktors des Helden. Die Änderung
--- betrifft nur den angegebenen Spieler.
+-- Typen der Händler
+--
+-- @field GoodTrader        Es werden Güter verkauft
+-- @field MercenaryTrader   Es werden Söldner verkauft
+-- @field EntertainerTrader Es werden Entertainer verkauft
+-- @field Unknown           Unbekannter Typ (Fehler)
+--
+QSB.TraderTypes = QSB.TraderTypes or {};
+
+---
+-- Setzt die Funktion zur Kalkulation des Einkaufspreisfaktors des Helden. Die
+-- Änderung betrifft nur den angegebenen Spieler.
 -- Die Funktion muss den angepassten Preis zurückgeben.
 --
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
--- <tr><td>_Price</td><td>number</td><td></td>Basispreis</tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_BasePrice</td><td>number</td><td></td>Basispreis</tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- </table>
@@ -737,7 +779,7 @@ QSB.ScriptEvents = QSB.ScriptEvents or {};
 -- <b>Hinweis</b>: Um den Standard wiederherzustellen, muss nil als Funktion
 -- übergeben werden.
 --
--- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _PlayerID Player ID des Händlers
 -- @param[type=number] _Function Kalkulationsfunktion
 -- @within Anwenderfunktionen
 --
@@ -756,13 +798,15 @@ function API.PurchaseSetTraderAbilityForPlayer(_PlayerID, _Function)
 end
 
 ---
--- Setzt die allgemeine Funktion zur Kalkulation des Preisfaktors des Helden.
--- Die Funktion muss den angepassten Preis zurückgeben.
+-- Setzt die allgemeine Funktion zur Kalkulation des Einkaufspreisfaktors des
+-- Helden. Die Funktion muss den angepassten Preis zurückgeben.
 --
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
--- <tr><td>_Price</td><td>number</td><td></td>Basispreis</tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_BasePrice</td><td>number</td><td></td>Basispreis</tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- </table>
@@ -787,7 +831,8 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
--- <tr><td>_Type</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- </table>
@@ -797,7 +842,7 @@ end
 -- <b>Hinweis</b>: Um den Standard wiederherzustellen, muss nil als Funktion
 -- übergeben werden.
 --
--- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _PlayerID Player ID des Händlers
 -- @param[type=number] _Function Kalkulationsfunktion
 -- @within Anwenderfunktionen
 --
@@ -822,8 +867,8 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
--- <tr><td>_PurchaseCount</td><td>number</td><td>Zahl bereits gekaufter Angebote</td></tr>
--- <tr><td>_Price</td><td>number</td><td></td>Aktueller Preis</tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- </table>
@@ -848,8 +893,10 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
--- <tr><td>_PurchaseCount</td><td>number</td><td>Zahl bereits gekaufter Angebote</td></tr>
--- <tr><td>_Price</td><td>number</td><td></td>Aktueller Preis</tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_Amount</td><td>number</td><td>Anzahl bereits gekaufter Angebote</td></tr>
+-- <tr><td>_Price</td><td>number</td><td></td>Einkaufspreis</tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- </table>
@@ -859,7 +906,7 @@ end
 -- <b>Hinweis</b>: Um den Standard wiederherzustellen, muss nil als Funktion
 -- übergeben werden.
 --
--- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _PlayerID Player ID des Händlers
 -- @param[type=number] _Function Kalkulationsfunktion
 -- @within Anwenderfunktionen
 --
@@ -884,11 +931,12 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_Amount</td><td>number</td><td>Anzahl bereits gekaufter Angebote</td></tr>
+-- <tr><td>_Price</td><td>number</td><td></td>Einkaufspreis</tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
--- <tr><td>_Type</td><td>number</td><td>Typ des Angebot</td></tr>
--- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
--- <tr><td>_UnitPrice</td><td>number</td><td>Stückpreis</td></tr>
 -- </table>
 --
 -- <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
@@ -911,11 +959,11 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
--- <tr><td>_Type</td><td>number</td><td>Typ des Angebot</td></tr>
--- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
--- <tr><td>_UnitPrice</td><td>number</td><td>Stückpreis</td></tr>
 -- </table>
 --
 -- <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
@@ -923,7 +971,7 @@ end
 -- <b>Hinweis</b>: Um den Standard wiederherzustellen, muss nil als Funktion
 -- übergeben werden.
 --
--- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _PlayerID Player ID des Händlers
 -- @param[type=number] _Function Evaluationsfunktion
 -- @within Anwenderfunktionen
 --
@@ -948,11 +996,11 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
--- <tr><td>_Type</td><td>number</td><td>Typ des Angebot</td></tr>
--- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
--- <tr><td>_UnitPrice</td><td>number</td><td>Stückpreis</td></tr>
 -- </table>
 --
 -- <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
@@ -968,6 +1016,70 @@ function API.PurchaseSetDefaultCondition(_Function)
 end
 
 ---
+-- Setzt die Funktion zur Kalkulation des Verkreisfaktors des Helden. Die
+-- Änderung betrifft nur den angegebenen Spieler.
+-- Die Funktion muss den angepassten Preis zurückgeben.
+--
+-- Parameter der Funktion:
+-- <table border="1">
+-- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td></td>Typ des Händlers</tr>
+-- <tr><td>_Good</td><td>number</td><td></td>Typ des Angebot</tr>
+-- <tr><td>_BasePrice</td><td>number</td><td></td>Basispreis</tr>
+-- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
+-- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
+-- </table>
+--
+-- <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
+--
+-- <b>Hinweis</b>: Um den Standard wiederherzustellen, muss nil als Funktion
+-- übergeben werden.
+--
+-- @param[type=number] _PlayerID Player ID des Händlers
+-- @param[type=number] _Function Kalkulationsfunktion
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.SaleSetTraderAbilityForPlayer(2, MyCalculationFunction);
+--
+function API.SaleSetTraderAbilityForPlayer(_PlayerID, _Function)
+    if not GUI then
+        return;
+    end
+    if _PlayerID then
+        ModuleTrade.Local.Lambda.SaleTraderAbility[_PlayerID] = _Function;
+    else
+        ModuleTrade.Local.Lambda.SaleTraderAbility.Default = _Function;
+    end
+end
+
+---
+-- Setzt die allgemeine Funktion zur Kalkulation des Verkreisfaktors des Helden.
+-- Die Funktion muss den angepassten Preis zurückgeben.
+--
+-- Parameter der Funktion:
+-- <table border="1">
+-- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td></td>Typ des Händlers</tr>
+-- <tr><td>_Good</td><td>number</td><td></td>Typ des Angebot</tr>
+-- <tr><td>_BasePrice</td><td>number</td><td></td>Basispreis</tr>
+-- <tr><td>_PlayerID1</td><td>number</td><td>ID des Käufers</td></tr>
+-- <tr><td>_PlayerID2</td><td>number</td><td>ID des Verkäufers</td></tr>
+-- </table>
+--
+-- <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
+--
+-- @param[type=number] _Function Kalkulationsfunktion
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.SaleSetDefaultTraderAbility(MyCalculationFunction);
+--
+function API.SaleSetDefaultTraderAbility(_Function)
+    API.SaleSetTraderAbilityForPlayer(nil, _Function);
+end
+
+---
 -- Setzt die Funktion zur Bestimmung des Basispreis. Die Änderung betrifft nur
 -- den angegebenen Spieler.
 -- Die Funktion muss den Basispreis der Ware zurückgeben.
@@ -975,7 +1087,8 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
--- <tr><td>_Type</td><td>number</td><td>Warentyp</td></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Käufers</td></tr>
 -- </table>
@@ -985,7 +1098,7 @@ end
 -- <b>Hinweis</b>: Um den Standard wiederherzustellen, muss nil als Funktion
 -- übergeben werden.
 --
--- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _PlayerID Player ID des Händlers
 -- @param[type=number] _Function Kalkulationsfunktion
 -- @within Anwenderfunktionen
 --
@@ -1010,7 +1123,8 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
--- <tr><td>_Type</td><td>number</td><td>Warentyp</td></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Käufers</td></tr>
 -- </table>
@@ -1035,6 +1149,9 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_SaleCount</td><td>number</td><td>Amount of sold waggons</td></tr>
 -- <tr><td>_Price</td><td>number</td><td>Verkaufspreis</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Käufers</td></tr>
@@ -1045,7 +1162,7 @@ end
 -- <b>Hinweis</b>: Um den Standard wiederherzustellen, muss nil als Funktion
 -- übergeben werden.
 --
--- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _PlayerID Player ID des Händlers
 -- @param[type=number] _Function Kalkulationsfunktion
 -- @within Anwenderfunktionen
 --
@@ -1070,6 +1187,9 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_SaleCount</td><td>number</td><td>Amount of sold waggons</td></tr>
 -- <tr><td>_Price</td><td>number</td><td>Verkaufspreis</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Käufers</td></tr>
@@ -1095,10 +1215,11 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Käufers</td></tr>
--- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
--- <tr><td>_UnitPrice</td><td>number</td><td>Preis pro Stück</td></tr>
 -- </table>
 --
 -- <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
@@ -1106,7 +1227,7 @@ end
 -- <b>Hinweis</b>: Um den Standard wiederherzustellen, muss nil als Funktion
 -- übergeben werden.
 --
--- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _PlayerID Player ID des Händlers
 -- @param[type=number] _Function Evaluationsfunktion
 -- @within Anwenderfunktionen
 --
@@ -1131,10 +1252,11 @@ end
 -- Parameter der Funktion:
 -- <table border="1">
 -- <tr><th><b>Parameter</b></th><th><b>Typ</b></th><th><b>Beschreibung</b></th></tr>
+-- <tr><td>_Type</td><td>number</td><td>Typ des Händler</td></tr>
+-- <tr><td>_Good</td><td>number</td><td>Typ des Angebot</td></tr>
+-- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
 -- <tr><td>_PlayerID1</td><td>number</td><td>ID des Verkäufers</td></tr>
 -- <tr><td>_PlayerID2</td><td>number</td><td>ID des Käufers</td></tr>
--- <tr><td>_Amount</td><td>number</td><td>Verkaufte Menge</td></tr>
--- <tr><td>_UnitPrice</td><td>number</td><td>Preis pro Stück</td></tr>
 -- </table>
 --
 -- <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!

@@ -14,10 +14,21 @@ ModuleQuest = {
         Version = "4.0.0 (ALPHA 1.0.0)",
     },
 
-    Global = {},
+    Global = {
+        ExternalTriggerConditions = {},
+        ExternalTimerConditions = {},
+        ExternalDecisionConditions = {},
+        SegmentsOfQuest = {},
+    },
     Local  = {},
 
     Shared = {},
+}
+
+QSB.SegmentResult = {
+    Success = 1,
+    Failure = 2,
+    Ignore  = 3,
 }
 
 -- -------------------------------------------------------------------------- --
@@ -581,8 +592,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ]]
 
 ---
--- Dieses Modul ermöglicht es einen Quest, bzw. Auftrag, per Skript zu 
--- erstellen.
+-- Aufträge können über das Skript erstellt werden.
 --
 -- Normaler Weise werden Aufträge im Questassistenten erzeugt. Dies ist aber
 -- statisch und das Kopieren von Aufträgen ist nicht möglich. Wenn Aufträge

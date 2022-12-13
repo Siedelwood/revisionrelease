@@ -469,7 +469,7 @@
 	<td class="summary">Erstellt einen neuen Listener für das Event.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.BroadcastScriptEventToGlobal">API.BroadcastScriptEventToGlobal (_EventID, ...)</a></td>
+	<td class="name" nowrap><a href="#API.BroadcastScriptEventToGlobal">API.BroadcastScriptEventToGlobal (_EventName, ...)</a></td>
 	<td class="summary">Triggerd ein Script Event im globalen Skript aus dem lokalen Skript.</td>
 	</tr>
 	<tr>
@@ -632,7 +632,7 @@
 	<td class="summary">Ermittelt den lokalisierten Text anhand der eingestellten Sprache der QSB.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.Message">API.Message (_Text)</a></td>
+	<td class="name" nowrap><a href="#API.Message">API.Message (_Text, _Sound)</a></td>
 	<td class="summary">Schreibt eine Nachricht unten in das Nachrichtenfenster.</td>
 	</tr>
 	<tr>
@@ -689,7 +689,7 @@
  Parameter.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.SendScriptEventToGlobal">API.SendScriptEventToGlobal (_EventID, ...)</a></td>
+	<td class="name" nowrap><a href="#API.SendScriptEventToGlobal">API.SendScriptEventToGlobal (_EventName, ...)</a></td>
 	<td class="summary">Triggerd ein Script Event im globalen Skript aus dem lokalen Skript.</td>
 	</tr>
 	<tr>
@@ -1544,7 +1544,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -1552,6 +1552,10 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
     </ol>
 
 
+    <h3>Verwandte Themen:</h3>
+    <ul>
+         <a href="../modules/qsb.html#API.RemoveScriptEventListener">API.RemoveScriptEventListener</a>
+    </ul>
 
     <h3>Beispiel:</h3>
     <ul>
@@ -1563,7 +1567,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 </dd>
     <dt>
     <a name = "API.BroadcastScriptEventToGlobal"></a>
-    <strong>API.BroadcastScriptEventToGlobal (_EventID, ...)</strong>
+    <strong>API.BroadcastScriptEventToGlobal (_EventName, ...)</strong>
     </dt>
     <dd>
     Triggerd ein Script Event im globalen Skript aus dem lokalen Skript.
@@ -1573,9 +1577,9 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">_EventID</span>
+        <li><span class="parameter">_EventName</span>
             <span class="types"><span class="type">number</span></span>
-         ID des Event
+         Name des Event
         </li>
         <li><span class="parameter">...</span>
          Optionale Parameter (nil, string, number, boolean, (array) table)
@@ -1587,7 +1591,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
     <h3>Beispiel:</h3>
     <ul>
-        <pre class="example">API.SendScriptEventToGlobal(SomeEventID, Param1, Param2, ...);</pre>
+        <pre class="example">API.SendScriptEventToGlobal(<span class="string">"SomeEventName"</span>, Param1, Param2, ...);</pre>
     </ul>
 
 </dd>
@@ -1655,7 +1659,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -1686,7 +1690,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -1750,7 +1754,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
         Ersetzter Text
@@ -1786,7 +1790,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -1815,7 +1819,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
@@ -1953,7 +1957,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
@@ -1976,7 +1980,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
@@ -2011,7 +2015,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
@@ -2041,7 +2045,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
@@ -2070,7 +2074,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -2096,7 +2100,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -2122,7 +2126,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -2148,7 +2152,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
@@ -2174,7 +2178,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
@@ -2205,7 +2209,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -2235,7 +2239,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -2261,7 +2265,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
@@ -2292,7 +2296,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -2326,7 +2330,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
         <li>
            <span class="types"><span class="type">number</span></span>
@@ -2358,7 +2362,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -2386,7 +2390,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -2416,7 +2420,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
         <li>
            <span class="types"><span class="type">number</span></span>
@@ -2550,7 +2554,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">boolean</span></span>
@@ -2575,7 +2579,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">boolean</span></span>
@@ -2604,7 +2608,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">boolean</span></span>
@@ -2631,7 +2635,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">boolean</span></span>
@@ -2658,7 +2662,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">boolean</span></span>
@@ -2697,7 +2701,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
         Übersetzten Text oder Table mit Texten
@@ -2719,7 +2723,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 </dd>
     <dt>
     <a name = "API.Message"></a>
-    <strong>API.Message (_Text)</strong>
+    <strong>API.Message (_Text, _Sound)</strong>
     </dt>
     <dd>
     Schreibt eine Nachricht unten in das Nachrichtenfenster.  Die Nachricht
@@ -2735,7 +2739,11 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
     <ul>
         <li><span class="parameter">_Text</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Anzeigetext
+          Anzeigetext
+        </li>
+        <li><span class="parameter">_Sound</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         (Optional) Soundeffekt der Nachricht
         </li>
     </ul>
 
@@ -2744,7 +2752,10 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
     <h3>Beispiel:</h3>
     <ul>
-        <pre class="example">API.Message(<span class="string">"Das ist eine Nachricht!"</span>);</pre>
+        <li><pre class="example"><span class="comment">-- Beispiel #1: Einfache Nachricht
+</span>API.Message(<span class="string">"Das ist eine Nachricht!"</span>);</pre></li>
+        <li><pre class="example"><span class="comment">-- Beispiel #2: Nachricht und Ton
+</span>API.Message(<span class="string">"Das ist eine WERTVOLLE Nachricht!"</span>, <span class="string">"ui/menu_left_gold_pay"</span>);</pre></li>
     </ul>
 
 </dd>
@@ -2798,7 +2809,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
         Wert
@@ -2821,7 +2832,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -2852,7 +2863,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -2889,6 +2900,10 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 
 
+    <h3>Verwandte Themen:</h3>
+    <ul>
+         <a href="../modules/qsb.html#API.AddScriptEventListener">API.AddScriptEventListener</a>
+    </ul>
 
 
 </dd>
@@ -2921,7 +2936,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -3030,7 +3045,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -3114,7 +3129,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -3165,7 +3180,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 </dd>
     <dt>
     <a name = "API.SendScriptEventToGlobal"></a>
-    <strong>API.SendScriptEventToGlobal (_EventID, ...)</strong>
+    <strong>API.SendScriptEventToGlobal (_EventName, ...)</strong>
     </dt>
     <dd>
     Triggerd ein Script Event im globalen Skript aus dem lokalen Skript.
@@ -3175,9 +3190,9 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">_EventID</span>
+        <li><span class="parameter">_EventName</span>
             <span class="types"><span class="type">number</span></span>
-         ID des Event
+         Name des Event
         </li>
         <li><span class="parameter">...</span>
          Optionale Parameter (nil, string, number, boolean, (array) table)
@@ -3189,7 +3204,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
     <h3>Beispiel:</h3>
     <ul>
-        <pre class="example">API.SendScriptEventToGlobal(SomeEventID, Param1, Param2, ...);</pre>
+        <pre class="example">API.SendScriptEventToGlobal(<span class="string">"SomeEventName"</span>, Param1, Param2, ...);</pre>
     </ul>
 
 </dd>
@@ -3484,7 +3499,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -3531,7 +3546,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -3573,7 +3588,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -3609,7 +3624,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -3662,7 +3677,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -3735,7 +3750,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -7221,7 +7236,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-12-12 17:25:59 </i>
+<i style="float:right;">Last updated 2022-12-13 21:15:08 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 

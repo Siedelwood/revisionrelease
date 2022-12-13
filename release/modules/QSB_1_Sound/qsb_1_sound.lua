@@ -102,8 +102,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ]]
 
 ---
--- Dieses Modul bietet die Möglichkeit die Lautstärke im Spiel zu regeln.
--- Außerdem kannst du Stimmen und Playlists abspielen und stoppen.
+-- Steuerung der Lautstärke und der Sound-Ausgabe.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>

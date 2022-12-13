@@ -15,12 +15,12 @@ ModuleGUI = {
     },
 
     Global = {
-        CinematicEventID = 0,
-        CinematicEventStatus = {},
-        CinematicEventQueue = {},
+        CinematicElementID = 0,
+        CinematicElementStatus = {},
+        CinematicElementQueue = {},
     },
     Local = {
-        CinematicEventStatus = {},
+        CinematicElementStatus = {},
         ChatOptionsWasShown = false,
         MessageLogWasShown = false,
         PauseScreenShown = false,
@@ -35,25 +35,25 @@ ModuleGUI = {
 }
 
 QSB.FarClipDefault = {MIN = 0, MAX = 0};
-QSB.CinematicEvent = {};
-QSB.CinematicEventTypes = {};
+QSB.CinematicElement = {};
+QSB.CinematicElementTypes = {};
 QSB.PlayerNames = {};
 
 -- Global ------------------------------------------------------------------- --
 
 function ModuleGUI.Global:OnGameStart()
-    QSB.ScriptEvents.CinematicActivated = API.RegisterScriptEvent("Event_CinematicEventActivated");
-    QSB.ScriptEvents.CinematicConcluded = API.RegisterScriptEvent("Event_CinematicEventConcluded");
+    QSB.ScriptEvents.CinematicActivated = API.RegisterScriptEvent("Event_CinematicElementActivated");
+    QSB.ScriptEvents.CinematicConcluded = API.RegisterScriptEvent("Event_CinematicElementConcluded");
     QSB.ScriptEvents.BorderScrollLocked = API.RegisterScriptEvent("Event_BorderScrollLocked");
     QSB.ScriptEvents.BorderScrollReset = API.RegisterScriptEvent("Event_BorderScrollReset");
     QSB.ScriptEvents.GameInterfaceShown = API.RegisterScriptEvent("Event_GameInterfaceShown");
     QSB.ScriptEvents.GameInterfaceHidden = API.RegisterScriptEvent("Event_GameInterfaceHidden");
-    QSB.ScriptEvents.BlackScreenShown = API.RegisterScriptEvent("Event_BlackScreenShown");
-    QSB.ScriptEvents.BlackScreenHidden = API.RegisterScriptEvent("Event_BlackScreenHidden");
+    QSB.ScriptEvents.ImageScreenShown = API.RegisterScriptEvent("Event_ImageScreenShown");
+    QSB.ScriptEvents.ImageScreenHidden = API.RegisterScriptEvent("Event_ImageScreenHidden");
 
     for i= 1, 8 do
-        self.CinematicEventStatus[i] = {};
-        self.CinematicEventQueue[i] = {};
+        self.CinematicElementStatus[i] = {};
+        self.CinematicElementQueue[i] = {};
     end
 
     self:ShowInitialBlackscreen();
@@ -64,7 +64,7 @@ function ModuleGUI.Global:OnEvent(_ID, ...)
         self.LoadscreenClosed = true;
     elseif _ID == QSB.ScriptEvents.CinematicActivated then
         -- Save cinematic state
-        self.CinematicEventStatus[arg[2]][arg[1]] = 1;
+        self.CinematicElementStatus[arg[2]][arg[1]] = 1;
         -- deactivate black background
         Logic.ExecuteInLuaLocalState(string.format(
             "ModuleGUI.Local:InterfaceDeactivateImageBackground(%d)",
@@ -77,10 +77,10 @@ function ModuleGUI.Global:OnEvent(_ID, ...)
         ));
     elseif _ID == QSB.ScriptEvents.CinematicConcluded then
         -- Save cinematic state
-        if self.CinematicEventStatus[arg[2]][arg[1]] then
-            self.CinematicEventStatus[arg[2]][arg[1]] = 2;
+        if self.CinematicElementStatus[arg[2]][arg[1]] then
+            self.CinematicElementStatus[arg[2]][arg[1]] = 2;
         end
-        if #self.CinematicEventQueue[arg[2]] > 0 then
+        if #self.CinematicElementQueue[arg[2]] > 0 then
             -- activate black background
             Logic.ExecuteInLuaLocalState(string.format(
                 [[ModuleGUI.Local:InterfaceActivateImageBackground(%d, "", 0, 0, 0, 255)]],
@@ -95,38 +95,38 @@ function ModuleGUI.Global:OnEvent(_ID, ...)
     end
 end
 
-function ModuleGUI.Global:PushCinematicEventToQueue(_PlayerID, _Type, _Name, _Data)
-    table.insert(self.CinematicEventQueue[_PlayerID], {_Type, _Name, _Data});
+function ModuleGUI.Global:PushCinematicElementToQueue(_PlayerID, _Type, _Name, _Data)
+    table.insert(self.CinematicElementQueue[_PlayerID], {_Type, _Name, _Data});
 end
 
 function ModuleGUI.Global:LookUpCinematicInQueue(_PlayerID)
-    if #self.CinematicEventQueue[_PlayerID] > 0 then
-        return self.CinematicEventQueue[_PlayerID][1];
+    if #self.CinematicElementQueue[_PlayerID] > 0 then
+        return self.CinematicElementQueue[_PlayerID][1];
     end
 end
 
-function ModuleGUI.Global:PopCinematicEventFromQueue(_PlayerID)
-    if #self.CinematicEventQueue[_PlayerID] > 0 then
-        return table.remove(self.CinematicEventQueue[_PlayerID], 1);
+function ModuleGUI.Global:PopCinematicElementFromQueue(_PlayerID)
+    if #self.CinematicElementQueue[_PlayerID] > 0 then
+        return table.remove(self.CinematicElementQueue[_PlayerID], 1);
     end
 end
 
-function ModuleGUI.Global:GetNewCinematicEventID()
-    self.CinematicEventID = self.CinematicEventID +1;
-    return self.CinematicEventID;
+function ModuleGUI.Global:GetNewCinematicElementID()
+    self.CinematicElementID = self.CinematicElementID +1;
+    return self.CinematicElementID;
 end
 
-function ModuleGUI.Global:GetCinematicEventStatus(_InfoID)
+function ModuleGUI.Global:GetCinematicElementStatus(_InfoID)
     for i= 1, 8 do
-        if self.CinematicEventStatus[i][_InfoID] then
-            return self.CinematicEventStatus[i][_InfoID];
+        if self.CinematicElementStatus[i][_InfoID] then
+            return self.CinematicElementStatus[i][_InfoID];
         end
     end
     return 0;
 end
 
-function ModuleGUI.Global:ActivateCinematicEvent(_PlayerID)
-    local ID = self:GetNewCinematicEventID();
+function ModuleGUI.Global:ActivateCinematicElement(_PlayerID)
+    local ID = self:GetNewCinematicElementID();
     Logic.ExecuteInLuaLocalState(string.format(
         [[API.SendScriptEvent(QSB.ScriptEvents.CinematicActivated, %d, %d);
           if GUI.GetPlayerID() == %d then
@@ -141,7 +141,7 @@ function ModuleGUI.Global:ActivateCinematicEvent(_PlayerID)
     return ID;
 end
 
-function ModuleGUI.Global:ConcludeCinematicEvent(_ID, _PlayerID)
+function ModuleGUI.Global:ConcludeCinematicElement(_ID, _PlayerID)
     Logic.ExecuteInLuaLocalState(string.format(
         [[API.SendScriptEvent(QSB.ScriptEvents.CinematicConcluded, %d, %d);
           if GUI.GetPlayerID() == %d then
@@ -171,17 +171,17 @@ end
 -- Local -------------------------------------------------------------------- --
 
 function ModuleGUI.Local:OnGameStart()
-    QSB.ScriptEvents.CinematicActivated = API.RegisterScriptEvent("Event_CinematicEventActivated");
-    QSB.ScriptEvents.CinematicConcluded = API.RegisterScriptEvent("Event_CinematicEventConcluded");
+    QSB.ScriptEvents.CinematicActivated = API.RegisterScriptEvent("Event_CinematicElementActivated");
+    QSB.ScriptEvents.CinematicConcluded = API.RegisterScriptEvent("Event_CinematicElementConcluded");
     QSB.ScriptEvents.BorderScrollLocked = API.RegisterScriptEvent("Event_BorderScrollLocked");
     QSB.ScriptEvents.BorderScrollReset  = API.RegisterScriptEvent("Event_BorderScrollReset");
     QSB.ScriptEvents.GameInterfaceShown = API.RegisterScriptEvent("Event_GameInterfaceShown");
     QSB.ScriptEvents.GameInterfaceHidden = API.RegisterScriptEvent("Event_GameInterfaceHidden");
-    QSB.ScriptEvents.BlackScreenShown = API.RegisterScriptEvent("Event_BlackScreenShown");
-    QSB.ScriptEvents.BlackScreenHidden = API.RegisterScriptEvent("Event_BlackScreenHidden");
+    QSB.ScriptEvents.ImageScreenShown = API.RegisterScriptEvent("Event_ImageScreenShown");
+    QSB.ScriptEvents.ImageScreenHidden = API.RegisterScriptEvent("Event_ImageScreenHidden");
 
     for i= 1, 8 do
-        self.CinematicEventStatus[i] = {};
+        self.CinematicElementStatus[i] = {};
     end
     self:OverrideInterfaceUpdateForCinematicMode();
     self:OverrideInterfaceThroneroomForCinematicMode();
@@ -199,11 +199,11 @@ function ModuleGUI.Local:OnEvent(_ID, ...)
             API.ActivateNormalInterface(GUI.GetPlayerID());
         end
     elseif _ID == QSB.ScriptEvents.CinematicActivated then
-        self.CinematicEventStatus[arg[2]][arg[1]] = 1;
+        self.CinematicElementStatus[arg[2]][arg[1]] = 1;
     elseif _ID == QSB.ScriptEvents.CinematicConcluded then
         for i= 1, 8 do
-            if self.CinematicEventStatus[i][arg[1]] then
-                self.CinematicEventStatus[i][arg[1]] = 2;
+            if self.CinematicElementStatus[i][arg[1]] then
+                self.CinematicElementStatus[i][arg[1]] = 2;
             end
         end
     elseif _ID == QSB.ScriptEvents.SaveGameLoaded then
@@ -527,10 +527,10 @@ function ModuleGUI.Local:ResetFarClipPlane()
     );
 end
 
-function ModuleGUI.Local:GetCinematicEventStatus(_InfoID)
+function ModuleGUI.Local:GetCinematicElementStatus(_InfoID)
     for i= 1, 8 do
-        if self.CinematicEventStatus[i][_InfoID] then
-            return self.CinematicEventStatus[i][_InfoID];
+        if self.CinematicElementStatus[i][_InfoID] then
+            return self.CinematicElementStatus[i][_InfoID];
         end
     end
     return 0;
@@ -616,7 +616,7 @@ function ModuleGUI.Local:OverrideInterfaceThroneroomForCinematicMode()
 end
 
 function ModuleGUI.Local:InterfaceActivateImageBackground(_PlayerID, _Graphic, _R, _G, _B, _A)
-    if self.PauseScreenShown then
+    if _PlayerID ~= GUI.GetPlayerID() or self.PauseScreenShown then
         return;
     end
     self.PauseScreenShown = true;
@@ -634,12 +634,12 @@ function ModuleGUI.Local:InterfaceActivateImageBackground(_PlayerID, _Graphic, _
         XGUIEng.SetMaterialUV("/InGame/Root/Normal/PauseScreen", 0, u0, v0, u1, v1);
     end
     XGUIEng.SetMaterialColor("/InGame/Root/Normal/PauseScreen", 0, _R, _G, _B, _A);
-    API.SendScriptEventToGlobal( QSB.ScriptEvents.BlackScreenShown, GUI.GetPlayerID());
-    API.SendScriptEvent(QSB.ScriptEvents.BlackScreenShown, GUI.GetPlayerID());
+    API.SendScriptEventToGlobal("ImageScreenShown", _PlayerID);
+    API.SendScriptEvent(QSB.ScriptEvents.ImageScreenShown, _PlayerID);
 end
 
 function ModuleGUI.Local:InterfaceDeactivateImageBackground(_PlayerID)
-    if not self.PauseScreenShown then
+    if _PlayerID ~= GUI.GetPlayerID() or not self.PauseScreenShown then
         return;
     end
     self.PauseScreenShown = false;
@@ -648,12 +648,12 @@ function ModuleGUI.Local:InterfaceDeactivateImageBackground(_PlayerID)
     XGUIEng.SetMaterialTexture("/InGame/Root/Normal/PauseScreen", 0, "");
     XGUIEng.SetMaterialColor("/InGame/Root/Normal/PauseScreen", 0, 40, 40, 40, 180);
     XGUIEng.PopPage();
-    API.SendScriptEventToGlobal( QSB.ScriptEvents.BlackScreenHidden, GUI.GetPlayerID());
-    API.SendScriptEvent(QSB.ScriptEvents.BlackScreenHidden, GUI.GetPlayerID());
+    API.SendScriptEventToGlobal("ImageScreenHidden", _PlayerID);
+    API.SendScriptEvent(QSB.ScriptEvents.ImageScreenHidden, _PlayerID);
 end
 
 function ModuleGUI.Local:InterfaceDeactivateBorderScroll(_PlayerID, _PositionID)
-    if self.BorderScrollDeactivated then
+    if _PlayerID ~= GUI.GetPlayerID() or self.BorderScrollDeactivated then
         return;
     end
     self.BorderScrollDeactivated = true;
@@ -663,16 +663,12 @@ function ModuleGUI.Local:InterfaceDeactivateBorderScroll(_PlayerID, _PositionID)
     Camera.RTS_SetBorderScrollSize(0);
     Camera.RTS_SetZoomWheelSpeed(0);
 
-    API.SendScriptEventToGlobal(
-        QSB.ScriptEvents.BorderScrollLocked,
-        GUI.GetPlayerID(),
-        (_PositionID or 0)
-    );
-    API.SendScriptEvent(QSB.ScriptEvents.BorderScrollLocked, GUI.GetPlayerID(), _PositionID);
+    API.SendScriptEventToGlobal("BorderScrollLocked", _PlayerID, (_PositionID or 0));
+    API.SendScriptEvent(QSB.ScriptEvents.BorderScrollLocked, _PlayerID, _PositionID);
 end
 
 function ModuleGUI.Local:InterfaceActivateBorderScroll(_PlayerID)
-    if not self.BorderScrollDeactivated then
+    if _PlayerID ~= GUI.GetPlayerID() or not self.BorderScrollDeactivated then
         return;
     end
     self.BorderScrollDeactivated = false;
@@ -680,8 +676,8 @@ function ModuleGUI.Local:InterfaceActivateBorderScroll(_PlayerID)
     Camera.RTS_SetBorderScrollSize(3.0);
     Camera.RTS_SetZoomWheelSpeed(4.2);
 
-    API.SendScriptEventToGlobal(QSB.ScriptEvents.BorderScrollReset, GUI.GetPlayerID());
-    API.SendScriptEvent(QSB.ScriptEvents.BorderScrollReset, GUI.GetPlayerID());
+    API.SendScriptEventToGlobal("BorderScrollReset", _PlayerID);
+    API.SendScriptEvent(QSB.ScriptEvents.BorderScrollReset, _PlayerID);
 end
 
 function ModuleGUI.Local:InterfaceDeactivateNormalInterface(_PlayerID)
@@ -725,7 +721,7 @@ function ModuleGUI.Local:InterfaceDeactivateNormalInterface(_PlayerID)
         XGUIEng.ShowWidget("/InGame/Root/Normal/Selected_Tradepost", 0);
     end
 
-    API.SendScriptEventToGlobal(QSB.ScriptEvents.GameInterfaceHidden, GUI.GetPlayerID());
+    API.SendScriptEventToGlobal("GameInterfaceHidden", GUI.GetPlayerID());
     API.SendScriptEvent(QSB.ScriptEvents.GameInterfaceHidden, GUI.GetPlayerID());
 end
 
@@ -778,7 +774,7 @@ function ModuleGUI.Local:InterfaceActivateNormalInterface(_PlayerID)
         XGUIEng.ShowWidget("/InGame/Root/Normal/Selected_Tradepost", 1);
     end
 
-    API.SendScriptEventToGlobal(QSB.ScriptEvents.GameInterfaceShown, GUI.GetPlayerID());
+    API.SendScriptEventToGlobal("GameInterfaceShown", GUI.GetPlayerID());
     API.SendScriptEvent(QSB.ScriptEvents.GameInterfaceShown, GUI.GetPlayerID());
 end
 
@@ -795,7 +791,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ]]
 
 ---
--- Dieses Modul bietet rudimentäre Funktionen zur Veränderung des Interface.
+-- Funktionen zur Veränderung der Benutzeroberfläche.
 --
 -- <h5>Cinematic Event</h5>
 -- <b>Ein Kinoevent hat nichts mit den Script Events zu tun!</b> <br>
@@ -821,9 +817,9 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @set sort=true
 --
 
-QSB.CinematicEvent = {};
+QSB.CinematicElement = {};
 
-CinematicEvent = {
+CinematicElement = {
     NotTriggered = 0,
     Active = 1,
     Concluded = 2,
@@ -832,14 +828,14 @@ CinematicEvent = {
 ---
 -- Events, auf die reagiert werden kann.
 --
--- @field CinematicActivated Ein Kinoevent wurde aktiviert (Parameter: KinoEventID, PlayerID)
--- @field CinematicConcluded Ein Kinoevent wurde deaktiviert (Parameter: KinoEventID, PlayerID)
--- @field BorderScrollLocked Scrollen am Bildschirmrand wurde gesperrt (Parameter: PlayerID)
--- @field BorderScrollReset Scrollen am Bildschirmrand wurde freigegeben (Parameter: PlayerID)
--- @field GameInterfaceShown Die Spieloberfläche wird angezeigt (Parameter: PlayerID)
+-- @field CinematicActivated  Ein Kinoevent wurde aktiviert (Parameter: KinoEventID, PlayerID)
+-- @field CinematicConcluded  Ein Kinoevent wurde deaktiviert (Parameter: KinoEventID, PlayerID)
+-- @field BorderScrollLocked  Scrollen am Bildschirmrand wurde gesperrt (Parameter: PlayerID)
+-- @field BorderScrollReset   Scrollen am Bildschirmrand wurde freigegeben (Parameter: PlayerID)
+-- @field GameInterfaceShown  Die Spieloberfläche wird angezeigt (Parameter: PlayerID)
 -- @field GameInterfaceHidden Die Spieloberfläche wird ausgeblendet (Parameter: PlayerID)
--- @field BlackScreenShown Der schwarze Hintergrund wird angezeigt (Parameter: PlayerID)
--- @field BlackScreenHidden Der schwarze Hintergrund wird ausgeblendet (Parameter: PlayerID)
+-- @field ImageScreenShown    Der schwarze Hintergrund wird angezeigt (Parameter: PlayerID)
+-- @field ImageScreenHidden   Der schwarze Hintergrund wird ausgeblendet (Parameter: PlayerID)
 --
 -- @within Event
 --
@@ -1007,14 +1003,14 @@ end
 -- @param[type=number] _PlayerID ID des Spielers
 -- @within Anwenderfunktionen
 --
-function API.StartCinematicEvent(_Name, _PlayerID)
+function API.StartCinematicElement(_Name, _PlayerID)
     if GUI then
         return;
     end
     assert(_PlayerID and _PlayerID >= 1 and _PlayerID <= 8);
-    QSB.CinematicEvent[_PlayerID] = QSB.CinematicEvent[_PlayerID] or {};
-    local ID = ModuleGUI.Global:ActivateCinematicEvent(_PlayerID);
-    QSB.CinematicEvent[_PlayerID][_Name] = ID;
+    QSB.CinematicElement[_PlayerID] = QSB.CinematicElement[_PlayerID] or {};
+    local ID = ModuleGUI.Global:ActivateCinematicElement(_PlayerID);
+    QSB.CinematicElement[_PlayerID][_Name] = ID;
 end
 
 ---
@@ -1023,14 +1019,14 @@ end
 -- @param[type=string] _Name Bezeichner
 -- @within Anwenderfunktionen
 --
-function API.FinishCinematicEvent(_Name, _PlayerID)
+function API.FinishCinematicElement(_Name, _PlayerID)
     if GUI then
         return;
     end
     assert(_PlayerID and _PlayerID >= 1 and _PlayerID <= 8);
-    QSB.CinematicEvent[_PlayerID] = QSB.CinematicEvent[_PlayerID] or {};
-    if QSB.CinematicEvent[_PlayerID][_Name] then
-        ModuleGUI.Global:ConcludeCinematicEvent(QSB.CinematicEvent[_PlayerID][_Name], _PlayerID);
+    QSB.CinematicElement[_PlayerID] = QSB.CinematicElement[_PlayerID] or {};
+    if QSB.CinematicElement[_PlayerID][_Name] then
+        ModuleGUI.Global:ConcludeCinematicElement(QSB.CinematicElement[_PlayerID][_Name], _PlayerID);
     end
 end
 
@@ -1041,22 +1037,22 @@ end
 -- @return[type=number] Zustand des Kinoevent
 -- @within Anwenderfunktionen
 --
-function API.GetCinematicEvent(_Identifier, _PlayerID)
+function API.GetCinematicElement(_Identifier, _PlayerID)
     assert(_PlayerID and _PlayerID >= 1 and _PlayerID <= 8);
-    QSB.CinematicEvent[_PlayerID] = QSB.CinematicEvent[_PlayerID] or {};
+    QSB.CinematicElement[_PlayerID] = QSB.CinematicElement[_PlayerID] or {};
     if type(_Identifier) == "number" then
         if GUI then
-            return ModuleGUI.Local:GetCinematicEvent(_Identifier);
+            return ModuleGUI.Local:GetCinematicElement(_Identifier);
         end
-        return ModuleGUI.Global:GetCinematicEvent(_Identifier);
+        return ModuleGUI.Global:GetCinematicElement(_Identifier);
     end
-    if QSB.CinematicEvent[_PlayerID][_Identifier] then
+    if QSB.CinematicElement[_PlayerID][_Identifier] then
         if GUI then
-            return ModuleGUI.Local:GetCinematicEvent(QSB.CinematicEvent[_PlayerID][_Identifier]);
+            return ModuleGUI.Local:GetCinematicElement(QSB.CinematicElement[_PlayerID][_Identifier]);
         end
-        return ModuleGUI.Global:GetCinematicEvent(QSB.CinematicEvent[_PlayerID][_Identifier]);
+        return ModuleGUI.Global:GetCinematicElement(QSB.CinematicElement[_PlayerID][_Identifier]);
     end
-    return CinematicEvent.NotTriggered;
+    return CinematicElement.NotTriggered;
 end
 
 ---
@@ -1066,11 +1062,11 @@ end
 -- @return[type=boolean] Kinoevent ist aktiv
 -- @within Anwenderfunktionen
 --
-function API.IsCinematicEventActive(_PlayerID)
+function API.IsCinematicElementActive(_PlayerID)
     assert(_PlayerID and _PlayerID >= 1 and _PlayerID <= 8);
-    QSB.CinematicEvent[_PlayerID] = QSB.CinematicEvent[_PlayerID] or {};
-    for k, v in pairs(QSB.CinematicEvent[_PlayerID]) do
-        if API.GetCinematicEvent(k, _PlayerID) == CinematicEvent.Active then
+    QSB.CinematicElement[_PlayerID] = QSB.CinematicElement[_PlayerID] or {};
+    for k, v in pairs(QSB.CinematicElement[_PlayerID]) do
+        if API.GetCinematicElement(k, _PlayerID) == CinematicElement.Active then
             return true;
         end
     end
@@ -1226,26 +1222,6 @@ function API.GetPlayerName(_PlayerID)
 end
 GetPlayerName_OrigName = GetPlayerName;
 GetPlayerName = API.GetPlayerName;
-
----
--- Wechselt die Spieler ID des menschlichen Spielers.
---
--- Die neue ID muss einen Primärritter haben.
---
--- <h5>Multiplayer</h5>
--- Nicht für Multiplayer geeignet.
---
--- @param[type=number] _OldPlayerID Alte ID des menschlichen Spielers
--- @param[type=number] _NewPlayerID Neue ID des menschlichen Spielers
--- @param[type=string] _NewStatisticsName Name in der Statistik
--- @within Anwenderfunktionen
---
-function API.SetControllingPlayer(_OldPlayerID, _NewPlayerID, _NewStatisticsName)
-    if Framework.IsNetworkGame() then
-        return;
-    end
-    ModuleGUI.Global:SetControllingPlayer(_OldPlayerID, _NewPlayerID, _NewStatisticsName);
-end
 
 ---
 -- Gibt dem Spieler einen neuen Namen.

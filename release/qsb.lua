@@ -1554,7 +1554,7 @@ function Revision.Debug:ProcessDebugShortcut(_Type, _Params)
     end
 end
 
-function Revision.Debug:ProcessDebugInput(_ID, _Input, _PlayerID, _DebugAllowed)
+function Revision.Debug:ProcessDebugInput(_Input, _PlayerID, _DebugAllowed)
     if _DebugAllowed then
         if _Input:lower():find("^restartmap") then
             self:ProcessDebugShortcut("RestartMap");
@@ -1650,7 +1650,9 @@ QSB.ScriptEvents = {};
 function Revision.Event:Initalize()
     self:OverrideSoldierPayment();
     if Revision.Environment == QSB.Environment.GLOBAL then
-        self:CreateScriptCommand("Cmd_SendScriptEvent", API.SendScriptEvent);
+        self:CreateScriptCommand("Cmd_SendScriptEvent", function(_Event, ...)
+            API.SendScriptEvent(QSB.ScriptEvents[_Event], unpack(arg));
+        end);
     end
 end
 
@@ -1829,7 +1831,7 @@ function Revision.Event:DispatchScriptEvent(_ID, ...)
     if self.ScriptEventListener[_ID] then
         for k, v in pairs(self.ScriptEventListener[_ID]) do
             if tonumber(k) then
-                v(_ID, unpack(arg));
+                v(unpack(arg));
             end
         end
     end
@@ -1914,21 +1916,21 @@ end
 --
 -- Das Event wird synchron für alle Spieler gesendet.
 --
--- @param[type=number] _EventID ID des Event
+-- @param[type=number] _EventName Name des Event
 -- @param              ... Optionale Parameter (nil, string, number, boolean, (array) table)
 -- @within Anwenderfunktionen
 --
 -- @usage
--- API.SendScriptEventToGlobal(SomeEventID, Param1, Param2, ...);
+-- API.SendScriptEventToGlobal("SomeEventName", Param1, Param2, ...);
 --
-function API.BroadcastScriptEventToGlobal(_EventID, ...)
+function API.BroadcastScriptEventToGlobal(_EventName, ...)
     if not GUI then
         return;
     end
     Revision.Event:DispatchScriptCommand(
         QSB.ScriptCommands.SendScriptEvent,
         0,
-        _EventID,
+        _EventName,
         unpack(arg)
     );
 end
@@ -1938,21 +1940,21 @@ end
 --
 -- Das Event wird asynchron für den kontrollierenden Spieler gesendet.
 --
--- @param[type=number] _EventID ID des Event
+-- @param[type=number] _EventName Name des Event
 -- @param              ... Optionale Parameter (nil, string, number, boolean, (array) table)
 -- @within Anwenderfunktionen
 --
 -- @usage
--- API.SendScriptEventToGlobal(SomeEventID, Param1, Param2, ...);
+-- API.SendScriptEventToGlobal("SomeEventName", Param1, Param2, ...);
 --
-function API.SendScriptEventToGlobal(_EventID, ...)
+function API.SendScriptEventToGlobal(_EventName, ...)
     if not GUI then
         return;
     end
     Revision.Event:DispatchScriptCommand(
         QSB.ScriptCommands.SendScriptEvent,
         GUI.GetPlayerID(),
-        _EventID,
+        _EventName,
         unpack(arg)
     );
 end
@@ -1970,6 +1972,7 @@ end
 -- @param[type=function] _Function Listener Funktion
 -- @return[type=number] ID des Listener
 -- @within Anwenderfunktionen
+-- @see API.RemoveScriptEventListener
 --
 -- @usage
 -- local ListenerID = API.AddScriptEventListener(QSB.ScriptEvents.SaveGameLoaded, function()
@@ -1995,6 +1998,7 @@ end
 -- @param[type=number] _EventID ID des Event
 -- @param[type=number] _ID      ID des Listener
 -- @within Anwenderfunktionen
+-- @see API.AddScriptEventListener
 --
 function API.RemoveScriptEventListener(_EventID, _ID)
     if Revision.Event.ScriptEventListener[_EventID] then
@@ -2472,7 +2476,7 @@ function Revision.Save:DisableSaving(_Flag)
             tostring(_Flag)
         ))
     else
-        self:UpdateLoadButtons();
+        self:UpdateSaveButtons();
     end
 end
 
@@ -3022,13 +3026,10 @@ end
 function API.Note(_Text)
     _Text = Revision.Text:ConvertPlaceholders(Revision.Text:Localize(_Text));
     if not GUI then
-        Logic.ExecuteInLuaLocalState(string.format(
-            [[API.AddNote("%s")]],
-            _Text
-        ));
+        Logic.DEBUG_AddNote(_Text);
         return;
     end
-    API.AddNote(_Text);
+    GUI.AddNote(_Text);
 end
 
 ---
@@ -3050,12 +3051,12 @@ function API.StaticNote(_Text)
     _Text = Revision.Text:ConvertPlaceholders(Revision.Text:Localize(_Text));
     if not GUI then
         Logic.ExecuteInLuaLocalState(string.format(
-            [[API.AddStaticNote("%s")]],
+            [[GUI.AddStaticNote("%s")]],
             _Text
         ));
         return;
     end
-    API.AddStaticNote(_Text);
+    GUI.AddStaticNote(_Text);
 end
 
 ---
@@ -3067,11 +3068,17 @@ end
 --
 -- <b>Hinweis:</b> Texte werden automatisch lokalisiert und Platzhalter ersetzt.
 --
--- @param[type=string] _Text Anzeigetext
+-- @param[type=string] _Text  Anzeigetext
+-- @param[type=string] _Sound (Optional) Soundeffekt der Nachricht
 -- @within Anwenderfunktionen
 --
 -- @usage
+-- -- Beispiel #1: Einfache Nachricht
 -- API.Message("Das ist eine Nachricht!");
+--
+-- @usage
+-- -- Beispiel #2: Nachricht und Ton
+-- API.Message("Das ist eine WERTVOLLE Nachricht!", "ui/menu_left_gold_pay");
 --
 function API.Message(_Text, _Sound)
     _Text = Revision.Text:ConvertPlaceholders(Revision.Text:Localize(_Text));
@@ -3079,11 +3086,14 @@ function API.Message(_Text, _Sound)
         Logic.ExecuteInLuaLocalState(string.format(
             [[API.Message("%s", %s)]],
             _Text,
-            (_Sound == nil and "nil") or _Sound:gsub("\\", "\\\\\\\\")
+            _Sound
         ));
         return;
     end
     _Text = ModuleRequester:ConvertPlaceholders(API.Localize(_Text));
+    if _Sound then
+        _Sound = _Sound:gsub("/", "\\");
+    end
     Message(_Text, _Sound);
 end
 
@@ -3100,7 +3110,7 @@ function API.ClearNotes()
         Logic.ExecuteInLuaLocalState([[API.ClearNotes()]]);
         return;
     end
-    API.ClearNotes();
+    GUI.ClearNotes();
 end
 
 ---
@@ -4880,7 +4890,7 @@ function Revision.Debug:ProcessDebugShortcut(_Type, _Params)
     end
 end
 
-function Revision.Debug:ProcessDebugInput(_ID, _Input, _PlayerID, _DebugAllowed)
+function Revision.Debug:ProcessDebugInput(_Input, _PlayerID, _DebugAllowed)
     if _DebugAllowed then
         if _Input:lower():find("^restartmap") then
             self:ProcessDebugShortcut("RestartMap");

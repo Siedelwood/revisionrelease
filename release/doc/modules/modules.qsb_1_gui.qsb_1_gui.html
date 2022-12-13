@@ -55,7 +55,7 @@
 <div id="content">
 
 <h1>Module <code>(1) Benutzerschnittstelle</code></h1>
-<p>Dieses Modul bietet rudimentäre Funktionen zur Veränderung des Interface.</p>
+<p>Funktionen zur Veränderung der Benutzeroberfläche.</p>
 <p>
 <p> <h5>Cinematic Event</h5>
  <b>Ein Kinoevent hat nichts mit den Script Events zu tun!</b> <br>
@@ -125,11 +125,11 @@
 	<td class="summary">Blendet das normale Interface aus.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.FinishCinematicEvent">API.FinishCinematicEvent (_Name)</a></td>
+	<td class="name" nowrap><a href="#API.FinishCinematicElement">API.FinishCinematicElement (_Name)</a></td>
 	<td class="summary">Propagiert das Ende des Kinoevent.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.GetCinematicEvent">API.GetCinematicEvent (_Identifier)</a></td>
+	<td class="name" nowrap><a href="#API.GetCinematicElement">API.GetCinematicElement (_Identifier)</a></td>
 	<td class="summary">Gibt den Zustand des Kinoevent zurück.</td>
 	</tr>
 	<tr>
@@ -181,16 +181,12 @@
 	<td class="summary">Versteckt den Button des Wettermenüs oder blendet ihn ein.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.IsCinematicEventActive">API.IsCinematicEventActive (_PlayerID)</a></td>
+	<td class="name" nowrap><a href="#API.IsCinematicElementActive">API.IsCinematicElementActive (_PlayerID)</a></td>
 	<td class="summary">Prüft ob gerade ein Kinoevent für den Spieler aktiv ist.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.RemoveShortcutEntry">API.RemoveShortcutEntry (_ID)</a></td>
 	<td class="summary">Entfernt eine Beschreibung eines benutzerdefinierten Hotkeys.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.SetControllingPlayer">API.SetControllingPlayer (_OldPlayerID, _NewPlayerID, _NewStatisticsName)</a></td>
-	<td class="summary">Wechselt die Spieler ID des menschlichen Spielers.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.SetIcon">API.SetIcon (_WidgetID, _Coordinates, _Size, _Name)</a></td>
@@ -217,7 +213,7 @@
 	<td class="summary">Ändert den Beschreibungstext eines Button oder eines Icon.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.StartCinematicEvent">API.StartCinematicEvent (_Name, _PlayerID)</a></td>
+	<td class="name" nowrap><a href="#API.StartCinematicElement">API.StartCinematicElement (_Name, _PlayerID)</a></td>
 	<td class="summary">Propagiert den Beginn des Kinoevent und bindet es an den Spieler.</td>
 	</tr>
 </table>
@@ -239,28 +235,28 @@
 
     <ul>
         <li><span class="parameter">CinematicActivated</span>
-         Ein Kinoevent wurde aktiviert (Parameter: KinoEventID, PlayerID)
+          Ein Kinoevent wurde aktiviert (Parameter: KinoEventID, PlayerID)
         </li>
         <li><span class="parameter">CinematicConcluded</span>
-         Ein Kinoevent wurde deaktiviert (Parameter: KinoEventID, PlayerID)
+          Ein Kinoevent wurde deaktiviert (Parameter: KinoEventID, PlayerID)
         </li>
         <li><span class="parameter">BorderScrollLocked</span>
-         Scrollen am Bildschirmrand wurde gesperrt (Parameter: PlayerID)
+          Scrollen am Bildschirmrand wurde gesperrt (Parameter: PlayerID)
         </li>
         <li><span class="parameter">BorderScrollReset</span>
-         Scrollen am Bildschirmrand wurde freigegeben (Parameter: PlayerID)
+           Scrollen am Bildschirmrand wurde freigegeben (Parameter: PlayerID)
         </li>
         <li><span class="parameter">GameInterfaceShown</span>
-         Die Spieloberfläche wird angezeigt (Parameter: PlayerID)
+          Die Spieloberfläche wird angezeigt (Parameter: PlayerID)
         </li>
         <li><span class="parameter">GameInterfaceHidden</span>
          Die Spieloberfläche wird ausgeblendet (Parameter: PlayerID)
         </li>
-        <li><span class="parameter">BlackScreenShown</span>
-         Der schwarze Hintergrund wird angezeigt (Parameter: PlayerID)
+        <li><span class="parameter">ImageScreenShown</span>
+            Der schwarze Hintergrund wird angezeigt (Parameter: PlayerID)
         </li>
-        <li><span class="parameter">BlackScreenHidden</span>
-         Der schwarze Hintergrund wird ausgeblendet (Parameter: PlayerID)
+        <li><span class="parameter">ImageScreenHidden</span>
+           Der schwarze Hintergrund wird ausgeblendet (Parameter: PlayerID)
         </li>
     </ul>
 
@@ -421,7 +417,7 @@
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -521,8 +517,8 @@
 
 </dd>
     <dt>
-    <a name = "API.FinishCinematicEvent"></a>
-    <strong>API.FinishCinematicEvent (_Name)</strong>
+    <a name = "API.FinishCinematicElement"></a>
+    <strong>API.FinishCinematicElement (_Name)</strong>
     </dt>
     <dd>
     Propagiert das Ende des Kinoevent.
@@ -542,8 +538,8 @@
 
 </dd>
     <dt>
-    <a name = "API.GetCinematicEvent"></a>
-    <strong>API.GetCinematicEvent (_Identifier)</strong>
+    <a name = "API.GetCinematicElement"></a>
+    <strong>API.GetCinematicElement (_Identifier)</strong>
     </dt>
     <dd>
     Gibt den Zustand des Kinoevent zurück.
@@ -556,7 +552,7 @@
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
@@ -583,7 +579,7 @@
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
@@ -610,7 +606,7 @@
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
@@ -862,8 +858,8 @@
 
 </dd>
     <dt>
-    <a name = "API.IsCinematicEventActive"></a>
-    <strong>API.IsCinematicEventActive (_PlayerID)</strong>
+    <a name = "API.IsCinematicElementActive"></a>
+    <strong>API.IsCinematicElementActive (_PlayerID)</strong>
     </dt>
     <dd>
     Prüft ob gerade ein Kinoevent für den Spieler aktiv ist.
@@ -877,7 +873,7 @@
         </li>
     </ul>
 
-    <h3>Returns:</h3>
+    <h3>Rückgabe:</h3>
     <ol>
 
            <span class="types"><span class="type">boolean</span></span>
@@ -901,39 +897,6 @@
         <li><span class="parameter">_ID</span>
             <span class="types"><span class="type">number</span></span>
          Index in Table
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.SetControllingPlayer"></a>
-    <strong>API.SetControllingPlayer (_OldPlayerID, _NewPlayerID, _NewStatisticsName)</strong>
-    </dt>
-    <dd>
-    Wechselt die Spieler ID des menschlichen Spielers.
-<p> Die neue ID muss einen Primärritter haben.
-<p> <h5>Multiplayer</h5>
- Nicht für Multiplayer geeignet.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_OldPlayerID</span>
-            <span class="types"><span class="type">number</span></span>
-         Alte ID des menschlichen Spielers
-        </li>
-        <li><span class="parameter">_NewPlayerID</span>
-            <span class="types"><span class="type">number</span></span>
-         Neue ID des menschlichen Spielers
-        </li>
-        <li><span class="parameter">_NewStatisticsName</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Name in der Statistik
         </li>
     </ul>
 
@@ -1196,8 +1159,8 @@
 
 </dd>
     <dt>
-    <a name = "API.StartCinematicEvent"></a>
-    <strong>API.StartCinematicEvent (_Name, _PlayerID)</strong>
+    <a name = "API.StartCinematicElement"></a>
+    <strong>API.StartCinematicElement (_Name, _PlayerID)</strong>
     </dt>
     <dd>
     Propagiert den Beginn des Kinoevent und bindet es an den Spieler.
@@ -1229,7 +1192,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-12-12 17:25:59 </i>
+<i style="float:right;">Last updated 2022-12-13 21:15:08 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 
