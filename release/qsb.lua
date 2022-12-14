@@ -450,8 +450,6 @@ end
 -- @field QuestSuccess    Ein Quest wurde erfolgreich abgeschlossen (Parameter: QuestID)
 -- @field QuestTrigger    Ein Quest wurde aktiviert (Parameter: QuestID)
 --
--- @within Event
---
 QSB.ScriptEvents = QSB.ScriptEvents or {};
 
 QSB.Environment = {
@@ -808,7 +806,7 @@ end
 -- <b>Achtung</b>: Die Funktion Framework.RestartMap kann nicht mehr verwendet
 -- werden, da es sonst zu Fehlern mit dem Ladebildschirm kommt!
 --
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.RestartMap()
     Camera.RTS_FollowEntity(0);
@@ -825,7 +823,7 @@ end
 -- Option zum LAN-Spiel in der HE nicht verfügbar ist.
 --
 -- @return[type=boolean] Spiel ist History Edition
--- @within Anwenderfunktionen
+-- @within Multiplayer
 --
 function API.IsHistoryEditionNetworkGame()
     return Revision.GameVersion == QSB.GameVersion.HISTORY_EDITION and Framework.IsNetworkGame();
@@ -840,7 +838,7 @@ end
 --
 -- @return[type=number] ID des Player
 -- @return[type=number] Slot ID des Player
--- @within Anwenderfunktionen
+-- @within Multiplayer
 --
 function API.GetPlayerSlotID(_PlayerID)
     for i= 1, 8 do
@@ -864,7 +862,7 @@ end
 --
 -- @return[type=number] Slot ID des Player
 -- @return[type=number] ID des Player
--- @within Anwenderfunktionen
+-- @within Multiplayer
 --
 function API.GetSlotPlayerID(_SlotID)
     if Network.IsNetworkSlotIDUsed(_SlotID) then
@@ -883,7 +881,7 @@ end
 -- Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
 --
 -- @return[type=table] Liste der aktiven Spieler
--- @within Anwenderfunktionen
+-- @within Multiplayer
 --
 function API.GetActivePlayers()
     local PlayerList = {};
@@ -905,7 +903,7 @@ end
 -- Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
 --
 -- @return[type=table] Liste der aktiven Spieler
--- @within Anwenderfunktionen
+-- @within Multiplayer
 --
 function API.GetDelayedPlayers()
     local PlayerList = {};
@@ -1226,7 +1224,7 @@ end
 --
 -- @param _Value Wahrheitswert
 -- @return[type=boolean] Wahrheitswert
--- @within Anwenderfunktionen
+-- @within Base
 -- @local
 --
 -- @usage local Bool = API.ToBoolean("+")  --> Bool = true
@@ -1244,7 +1242,7 @@ end
 --
 -- @param[type=table]  _Table Tabelle, die gedumpt wird
 -- @param[type=string] _Name Optionaler Name im Log
--- @within Anwenderfunktionen
+-- @within Base
 -- @local
 -- @usage
 -- Table = {1, 2, 3, {a = true}}
@@ -1402,222 +1400,14 @@ end
 --
 -- @param[type=number] _ScreenLogLevel Level für Bildschirmausgabe
 -- @param[type=number] _FileLogLevel   Level für Dateiausgaabe
--- @within Anwenderfunktionen
+-- @within Base
+-- @local
 --
 -- @usage
 -- API.SetLogLevel(QSB.LogLevel.ERROR, QSB.LogLevel.WARNING);
 --
 function API.SetLogLevel(_ScreenLogLevel, _FileLogLevel)
     Revision.Logging:SetLogLevel(_ScreenLogLevel, _FileLogLevel);
-end
-
---[[
-Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
-
-This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
-You may use and modify this file unter the terms of the MIT licence.
-(See https://en.wikipedia.org/wiki/MIT_License)
-]]
-
--- -------------------------------------------------------------------------- --
-
----
--- Stellt Cheats und Befehle für einfacheres Testen bereit.
---
--- @set sort=true
--- @within Beschreibung
--- @local
---
-
-Revision.Debug = {
-    CheckAtRun           = false;
-    TraceQuests          = false;
-    DevelopingCheats     = false;
-    DevelopingShell      = false;
-};
-
-function Revision.Debug:Initalize()
-    QSB.ScriptEvents.DebugChatConfirmed = Revision.Event:CreateScriptEvent("Event_DebugChatConfirmed");
-    QSB.ScriptEvents.DebugConfigChanged = Revision.Event:CreateScriptEvent("Event_DebugConfigChanged");
-
-    if Revision.Environment == QSB.Environment.LOCAL then
-        self:InitalizeQsbDebugHotkeys();
-
-        API.AddScriptEventListener(
-            QSB.ScriptEvents.ChatClosed,
-            function(...)
-                Revision.Debug:ProcessDebugInput(unpack(arg));
-            end
-        );
-    end
-end
-
-function Revision.Debug:OnSaveGameLoaded()
-    if Revision.Environment == QSB.Environment.LOCAL then
-        self:InitalizeQuestTrace();
-        self:InitalizeDebugWidgets();
-        self:InitalizeQsbDebugHotkeys();
-    end
-end
-
-function Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)
-    if Revision.Environment == QSB.Environment.LOCAL then
-        return;
-    end
-
-    self.CheckAtRun       = _CheckAtRun == true;
-    self.TraceQuests      = _TraceQuests == true;
-    self.DevelopingCheats = _DevelopingCheats == true;
-    self.DevelopingShell  = _DevelopingShell == true;
-
-    Revision.Event:DispatchScriptEvent(
-        QSB.ScriptEvents.DebugModeStatusChanged,
-        self.CheckAtRun,
-        self.TraceQuests,
-        self.DevelopingCheats,
-        self.DevelopingShell
-    );
-    self:InitalizeQuestTrace();
-
-    Logic.ExecuteInLuaLocalState(string.format(
-        [[
-            Revision.Debug.CheckAtRun       = %s;
-            Revision.Debug.TraceQuests      = %s;
-            Revision.Debug.DevelopingCheats = %s;
-            Revision.Debug.DevelopingShell  = %s;
-
-            Revision.Event:DispatchScriptEvent(
-                QSB.ScriptEvents.DebugModeStatusChanged,
-                Revision.Debug.CheckAtRun,
-                Revision.Debug.TraceQuests,
-                Revision.Debug.DevelopingCheats,
-                Revision.Debug.DevelopingShell
-            );
-            Revision.Debug:InitalizeDebugWidgets();
-        ]],
-        tostring(self.CheckAtRun),
-        tostring(self.TraceQuests),
-        tostring(self.DevelopingCheats),
-        tostring(self.DevelopingShell)
-    ));
-end
-
-function Revision.Debug:InitalizeQuestTrace()
-    DEBUG_EnableQuestDebugKeys();
-    DEBUG_QuestTrace(self.TraceQuests == true);
-end
-
-function Revision.Debug:InitalizeDebugWidgets()
-    if Network.IsNATReady ~= nil and Framework.IsNetworkGame() then
-        return;
-    end
-    if self.DevelopingCheats then
-        KeyBindings_EnableDebugMode(1);
-        KeyBindings_EnableDebugMode(2);
-        KeyBindings_EnableDebugMode(3);
-        XGUIEng.ShowWidget("/InGame/Root/Normal/AlignTopLeft/GameClock", 1);
-        self.GameClock = true;
-    else
-        KeyBindings_EnableDebugMode(0);
-        XGUIEng.ShowWidget("/InGame/Root/Normal/AlignTopLeft/GameClock", 0);
-        self.GameClock = false;
-    end
-end
-
-function Revision.Debug:InitalizeQsbDebugHotkeys()
-    if Framework.IsNetworkGame() then
-        return;
-    end
-    -- Restart map
-    Input.KeyBindDown(
-        Keys.ModifierControl + Keys.ModifierShift + Keys.ModifierAlt + Keys.R,
-        "Revision.Debug:ProcessDebugShortcut('RestartMap')",
-        30,
-        false
-    );
-    -- Open chat
-    Input.KeyBindDown(
-        Keys.ModifierShift + Keys.OemPipe,
-        "Revision.Debug:ProcessDebugShortcut('Terminal')",
-        30,
-        false
-    );
-end
-
-function Revision.Debug:ProcessDebugShortcut(_Type, _Params)
-    if self.DevelopingCheats then
-        if _Type == "RestartMap" then
-            API.RestartMap();
-        elseif _Type == "Terminal" then
-            API.ShowTextInput(GUI.GetPlayerID(), true);
-        end
-    end
-end
-
-function Revision.Debug:ProcessDebugInput(_Input, _PlayerID, _DebugAllowed)
-    if _DebugAllowed then
-        if _Input:lower():find("^restartmap") then
-            self:ProcessDebugShortcut("RestartMap");
-        elseif _Input:lower():find("^clear") then
-            GUI.ClearNotes();
-        elseif _Input:lower():find("^version") then
-            local Slices = _Input:slice(" ");
-            if Slices[2] then
-                for i= 1, #Revision.ModuleRegister do
-                    if Revision.ModuleRegister[i].Properties.Name ==  Slices[2] then
-                        GUI.AddStaticNote("Version: " ..Revision.ModuleRegister[i].Properties.Version);
-                    end
-                end
-                return;
-            end
-            GUI.AddStaticNote("Version: " ..QSB.Version);
-        elseif _Input:find("^> ") then
-            GUI.SendScriptCommand(_Input:sub(3), true);
-        elseif _Input:find("^>> ") then
-            GUI.SendScriptCommand(string.format(
-                "Logic.ExecuteInLuaLocalState(\"%s\")",
-                _Input:sub(4)
-            ), true);
-        elseif _Input:find("^< ") then
-            GUI.SendScriptCommand(string.format(
-                [[Script.Load("%s")]],
-                _Input:sub(3)
-            ));
-        elseif _Input:find("^<< ") then
-            Script.Load(_Input:sub(4));
-        end
-    end
-end
-
--- -------------------------------------------------------------------------- --
--- API
-
----
--- Aktiviert oder deaktiviert Optionen des Debug Mode.
---
--- <b>Hinweis:</b> Du kannst alle Optionen unbegrenzt oft beliebig ein-
--- und ausschalten.
---
--- <ul>
--- <li><u>Prüfung zum Spielbeginn</u>: <br>
--- Quests werden auf konsistenz geprüft, bevor sie starten. </li>
--- <li><u>Questverfolgung</u>: <br>
--- Jede Statusänderung an einem Quest löst eine Nachricht auf dem Bildschirm
--- aus, die die Änderung wiedergibt. </li>
--- <li><u>Eintwickler Cheaks</u>: <br>
--- Aktivier die Entwickler Cheats. </li>
--- <li><u>Debug Chat-Eingabe</u>: <br>
--- Die Chat-Eingabe kann zur Eingabe von Befehlen genutzt werden. </li>
--- </ul>
---
--- @param[type=boolean] _CheckAtRun       Custom Behavior prüfen an/aus
--- @param[type=boolean] _TraceQuests      Quest Trace an/aus
--- @param[type=boolean] _DevelopingCheats Cheats an/aus
--- @param[type=boolean] _DevelopingShell  Eingabeaufforderung an/aus
--- @within Anwenderfunktionen
---
-function API.ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)
-    Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell);
 end
 
 --[[
@@ -1651,6 +1441,7 @@ function Revision.Event:Initalize()
     self:OverrideSoldierPayment();
     if Revision.Environment == QSB.Environment.GLOBAL then
         self:CreateScriptCommand("Cmd_SendScriptEvent", function(_Event, ...)
+            assert(QSB.ScriptEvents[_Event] ~= nil);
             API.SendScriptEvent(QSB.ScriptEvents[_Event], unpack(arg));
         end);
     end
@@ -1883,7 +1674,8 @@ end
 --
 -- @param[type=string]   _Name     Identifier des Event
 -- @return[type=number] ID des neuen Script Event
--- @within Anwenderfunktionen
+-- @within Event
+-- @local
 --
 -- @usage
 -- local EventID = API.RegisterScriptEvent("MyNewEvent");
@@ -1902,7 +1694,8 @@ end
 --
 -- @param[type=number] _EventID ID des Event
 -- @param              ... Optionale Parameter (nil, string, number, boolean, (array) table)
--- @within Anwenderfunktionen
+-- @within Event
+-- @local
 --
 -- @usage
 -- API.SendScriptEvent(SomeEventID, Param1, Param2, ...);
@@ -1918,7 +1711,8 @@ end
 --
 -- @param[type=number] _EventName Name des Event
 -- @param              ... Optionale Parameter (nil, string, number, boolean, (array) table)
--- @within Anwenderfunktionen
+-- @within Event
+-- @local
 --
 -- @usage
 -- API.SendScriptEventToGlobal("SomeEventName", Param1, Param2, ...);
@@ -1942,7 +1736,8 @@ end
 --
 -- @param[type=number] _EventName Name des Event
 -- @param              ... Optionale Parameter (nil, string, number, boolean, (array) table)
--- @within Anwenderfunktionen
+-- @within Event
+-- @local
 --
 -- @usage
 -- API.SendScriptEventToGlobal("SomeEventName", Param1, Param2, ...);
@@ -1971,7 +1766,7 @@ end
 -- @param[type=number]   _EventID  ID des Event
 -- @param[type=function] _Function Listener Funktion
 -- @return[type=number] ID des Listener
--- @within Anwenderfunktionen
+-- @within Event
 -- @see API.RemoveScriptEventListener
 --
 -- @usage
@@ -1997,7 +1792,7 @@ end
 --
 -- @param[type=number] _EventID ID des Event
 -- @param[type=number] _ID      ID des Listener
--- @within Anwenderfunktionen
+-- @within Event
 -- @see API.AddScriptEventListener
 --
 function API.RemoveScriptEventListener(_EventID, _ID)
@@ -2098,7 +1893,7 @@ end
 ---
 -- Gibt die real vergangene Zeit seit dem Spielstart in Sekunden zurück.
 -- @return[type=number] Vergangene reale Zeit
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- local RealTime = API.RealTimeGetSecondsPassedSinceGameStart();
@@ -2123,7 +1918,7 @@ end
 -- @param _Function      Funktion (Funktionsreferenz oder String)
 -- @param ...            Optionale Argumente des Job
 -- @return[type=number] ID des Jobs
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- API.StartJobByEventType(
@@ -2149,7 +1944,7 @@ end
 -- @param _Function Funktion (Funktionsreferenz oder String)
 -- @param ...       Liste von Argumenten
 -- @return[type=number] Job ID
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- -- Führt eine Funktion nach 15 Sekunden aus.
@@ -2184,7 +1979,7 @@ StartSimpleJobEx = API.StartJob;
 -- @param _Function Funktion (Funktionsreferenz oder String)
 -- @param ...       Liste von Argumenten
 -- @return[type=number] Job ID
--- @within Anwenderfunktionen
+-- @within Job
 -- @see API.StartJob
 --
 function API.StartHiResJob(_Function, ...)
@@ -2202,7 +1997,7 @@ StartSimpleHiResJobEx = API.StartHiResJob;
 -- Beendet den Job mit der übergebenen ID endgültig.
 --
 -- @param[type=number] _JobID ID des Jobs
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- API.EndJob(AnyJobID);
@@ -2221,7 +2016,7 @@ end
 --
 -- @param[type=number] _JobID ID des Jobs
 -- @return[type=boolean] Job ist aktiv
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- if API.JobIsRunning(AnyJobID) then
@@ -2239,7 +2034,7 @@ end
 -- Aktiviert einen pausierten Job.
 --
 -- @param[type=number] _JobID ID des Jobs
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- API.ResumeJob(AnyJobID);
@@ -2258,7 +2053,7 @@ end
 -- Pausiert einen aktivien Job.
 --
 -- @param[type=number] _JobID ID des Jobs
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- API.YieldJob(AnyJobID);
@@ -2285,7 +2080,7 @@ end
 -- @param[type=function] _Function Callback-Funktion
 -- @param ... Liste der Argumente
 -- @return[type=number] ID der Verzögerung
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- API.StartDelay(
@@ -2327,7 +2122,7 @@ end
 -- @param[type=function] _Function Callback-Funktion
 -- @param ... Liste der Argumente
 -- @return[type=number] ID der Verzögerung
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- API.StartHiResDelay(
@@ -2370,7 +2165,7 @@ end
 -- @param[type=function] _Function Callback-Funktion
 -- @param ... Liste der Argumente
 -- @return[type=number] ID der Verzögerung
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- API.StartRealTimeDelay(
@@ -2517,7 +2312,7 @@ end
 ---
 -- Deaktiviert das automatische Speichern der History Edition.
 -- @param[type=boolean] _Flag Auto-Speichern ist deaktiviert
--- @within Anwenderfunktionen
+-- @within Spielstand
 --
 function API.DisableAutoSave(_Flag)
     if Revision.Environment == QSB.Environment.GLOBAL then
@@ -2532,7 +2327,7 @@ end
 ---
 -- Deaktiviert das Speichern des Spiels.
 -- @param[type=boolean] _Flag Speichern ist deaktiviert
--- @within Anwenderfunktionen
+-- @within Spielstand
 --
 function API.DisableSaving(_Flag)
     Revision.Save:DisableSaving(_Flag);
@@ -2541,7 +2336,7 @@ end
 ---
 -- Deaktiviert das Laden von Spielständen.
 -- @param[type=boolean] _Flag Laden ist deaktiviert
--- @within Anwenderfunktionen
+-- @within Spielstand
 --
 function API.DisableLoading(_Flag)
     Revision.Save:DisableLoading(_Flag);
@@ -2701,7 +2496,7 @@ end
 -- 
 -- @param[type=number]  _PlayerID   Spieler für den der Chat geöffnet wird
 -- @param[type=boolean] _AllowDebug Debug Eingaben werden bearbeitet
--- @within Anwenderfunktionen
+-- @within Chat
 --
 function API.ShowTextInput(_PlayerID, _AllowDebug)
     Revision.Chat:ShowTextInput(_PlayerID, _AllowDebug);
@@ -2991,7 +2786,7 @@ end
 --
 -- @param[type=table] _Text Table mit Übersetzungen
 -- @return Übersetzten Text oder Table mit Texten
--- @within Anwenderfunktionen
+-- @within Text
 --
 -- @usage
 -- -- Beispiel #1: Table lokalisieren
@@ -3018,7 +2813,7 @@ end
 -- <b>Hinweis:</b> Texte werden automatisch lokalisiert und Platzhalter ersetzt.
 --
 -- @param[type=string] _Text Anzeigetext
--- @within Anwenderfunktionen
+-- @within Text
 --
 -- @usage
 -- API.Note("Das ist eine flüchtige Information!");
@@ -3042,7 +2837,7 @@ end
 -- <b>Hinweis:</b> Texte werden automatisch lokalisiert und Platzhalter ersetzt.
 --
 -- @param[type=string] _Text Anzeigetext
--- @within Anwenderfunktionen
+-- @within Text
 --
 -- @usage
 -- API.StaticNote("Das ist eine dauerhafte Information!");
@@ -3070,7 +2865,7 @@ end
 --
 -- @param[type=string] _Text  Anzeigetext
 -- @param[type=string] _Sound (Optional) Soundeffekt der Nachricht
--- @within Anwenderfunktionen
+-- @within Text
 --
 -- @usage
 -- -- Beispiel #1: Einfache Nachricht
@@ -3100,7 +2895,7 @@ end
 ---
 -- Löscht alle Nachrichten im Debug Window.
 --
--- @within Anwenderfunktionen
+-- @within Text
 --
 -- @usage
 -- API.ClearNotes();
@@ -3154,7 +2949,7 @@ end
 --
 -- @param[type=string] _Message Text
 -- @return Ersetzter Text
--- @within Anwenderfunktionen
+-- @within Text
 --
 -- @usage
 -- -- Beispiel #1: Vordefinierte Farbe austauschen
@@ -3194,7 +2989,7 @@ end
 --
 -- @param[type=string] _Name        Name, der ersetzt werden soll
 -- @param[type=string] _Replacement Wert, der ersetzt wird
--- @within Anwenderfunktionen
+-- @within Text
 --
 -- @usage
 -- API.AddNamePlaceholder("Scriptname", "Horst");
@@ -3218,7 +3013,7 @@ end
 --
 -- @param[type=string] _Type        Typname, der ersetzt werden soll
 -- @param[type=string] _Replacement Wert, der ersetzt wird
--- @within Anwenderfunktionen
+-- @within Text
 --
 -- @usage
 -- API.AddNamePlaceholder("U_KnightHealing", "Arroganze Ziege");
@@ -3566,7 +3361,7 @@ end
 -- @param[type=string] _Value         Zu rundender Wert
 -- @param[type=string] _DecimalDigits Maximale Dezimalstellen
 -- @return[type=number] Abgerundete Zahl
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.Round(_Value, _DecimalDigits)
     _DecimalDigits = _DecimalDigits or 2;
@@ -3615,7 +3410,8 @@ end
 --
 -- @param[type=boolean] _Name  Name der Custom Variable
 -- @param               _Value Neuer Wert
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
+-- @local
 --
 -- @usage
 -- local Value = API.ObtainCustomVariable("MyVariable", 0);
@@ -3629,7 +3425,8 @@ end
 -- @param[type=boolean] _Name    Name der Custom Variable
 -- @param               _Default (Optional) Defaultwert falls leer
 -- @return Wert
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
+-- @local
 --
 -- @usage
 -- local Value = API.ObtainCustomVariable("MyVariable", 0);
@@ -3659,7 +3456,7 @@ end
 -- @param[type=number] _Type     Neuer Typ
 -- @param[type=number] _NewOwner (optional) Neuer Besitzer
 -- @return[type=number] Entity-ID des Entity
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 -- @usage
 -- API.ReplaceEntity("Stein", Entities.XD_ScriptEntity)
 --
@@ -3687,7 +3484,7 @@ ReplaceEntity = API.ReplaceEntity;
 --
 -- @param _Entity Entity (Scriptname oder ID)
 -- @return[type=number] Typ des Entity
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetEntityType(_Entity)
     local EntityID = GetID(_Entity);
@@ -3703,7 +3500,7 @@ end
 --
 -- @param _Entity Entity (Scriptname oder ID)
 -- @return[type=string] Typname des Entity
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetEntityTypeName(_Entity)
     if not IsExisting(_Entity) then
@@ -3718,7 +3515,8 @@ end
 --
 -- @param               _Entity Entity (Scriptname oder ID)
 -- @param[type=boolean] _Flag Verwundbar
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
+-- @local
 --
 function API.SetEntityVulnerableFlag(_Entity, _Flag)
     if GUI then
@@ -3755,7 +3553,7 @@ end
 -- @param[type=boolean] _IgnoreReservation (optional) Marktplatzreservation ignorieren
 -- @param[type=boolean] _Overtake          (optional) Mit Position austauschen
 -- @return[type=number] Entity-ID des erzeugten Wagens
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 -- @usage
 -- -- API-Call
 -- API.SendCart(Logic.GetStoreHouse(1), 2, Goods.G_Grain, 45)
@@ -3832,7 +3630,7 @@ end
 --
 -- @param _Entity Entity (Scriptname oder ID)
 -- @return[type=number] Aktuelle Gesundheit
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetEntityHealth(_Entity)
     local EntityID = GetID(_Entity);
@@ -3852,7 +3650,7 @@ end
 -- @param               _Entity   Entity (Scriptname oder ID)
 -- @param[type=number]  _Health   Neue aktuelle Gesundheit
 -- @param[type=boolean] _Relative (Optional) Relativ zur maximalen Gesundheit
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.ChangeEntityHealth(_Entity, _Health, _Relative)
     if GUI then
@@ -3894,7 +3692,7 @@ end
 --
 -- @param              _Entity Entity (Skriptname oder ID)
 -- @return[type=table] Kategorien des Entity
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetEntityCategoyList(_Entity)
     local EntityID = GetID(_Entity);
@@ -3910,7 +3708,7 @@ end
 --
 -- @param              _Type Typ des Entity
 -- @return[type=table] Kategorien des Entity
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetEntityTypeCategoyList(_Type)
     local Categories = {};
@@ -3928,7 +3726,7 @@ end
 -- @param              _Entity Entity (Skriptname oder ID)
 -- @param[type=number] ...     Liste mit Kategorien
 -- @return[type=boolean] Entity hat Kategorie
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.IsEntityInAtLeastOneCategory(_Entity, ...)
     local EntityID = GetID(_Entity);
@@ -3949,7 +3747,7 @@ end
 --
 -- @param _Entity Entity (Scriptname oder ID)
 -- @return[type=number] Tasklist
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetEntityTaskList(_Entity)
     local EntityID = GetID(_Entity);
@@ -3967,7 +3765,7 @@ end
 -- @param              _Entity  Entity (Scriptname oder ID)
 -- @param[type=number] _NewModel Neues Model
 -- @param[type=number] _AnimSet  (optional) Animation Set
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.SetEntityModel(_Entity, _NewModel, _AnimSet)
     if GUI then
@@ -3998,7 +3796,7 @@ end
 --
 -- @param              _Entity  Entity (Scriptname oder ID)
 -- @param[type=number] _NewTask Neuer Task
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.SetEntityTaskList(_Entity, _NewTask)
     if GUI then
@@ -4022,7 +3820,7 @@ end
 --
 -- @param _Entity  Entity (Scriptname oder ID)
 -- @return[type=number] Menge an Rohstoffen
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetResourceAmount(_Entity)
     local EntityID = GetID(_Entity);
@@ -4040,7 +3838,7 @@ end
 -- @param              _Entity       Rohstoffvorkommen (Skriptname oder ID)
 -- @param[type=number] _StartAmount  Menge an Rohstoffen
 -- @param[type=number] _RefillAmount Minimale Nachfüllmenge (> 0)
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 -- @usage
 -- API.SetResourceAmount("mine1", 250, 150);
@@ -4072,7 +3870,7 @@ end
 -- @param[type=number] _PlayerID  PlayerID [0-8] oder -1 für alle
 -- @param[type=number] _Category  Kategorie, der die Entities angehören
 -- @param[type=number] _Territory Zielterritorium
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 -- @local
 -- @usage
 -- local Found = API.GetEntitiesOfCategoryInTerritory(1, EntityCategories.Hero, 5)
@@ -4109,7 +3907,7 @@ end
 -- @param _Category    Kategorien oder Table mit Kategorien (Einzelne Kategorie oder Table)
 -- @param _Territory   Zielterritorium oder Table mit Territorien (Einzelnes Territorium oder Table)
 -- @return[type=table] Liste mit Resultaten
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 -- @usage
 -- local Result = API.GetEntitiesOfCategoriesInTerritories({1, 2, 3}, EntityCategories.Hero, {5, 12, 23, 24});
@@ -4138,7 +3936,7 @@ end
 -- zurückgegeben.
 -- @param[type=number] _EntityID Entity ID
 -- @return[type=string] Skriptname
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.CreateEntityName(_EntityID)
     if type(_EntityID) == "string" then
@@ -4192,7 +3990,7 @@ QSB.PossibleSettlerTypes = {
 -- weiblich sein.
 --
 -- @return[type=number] Zufälliger Typ
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 -- @local
 --
 function API.GetRandomSettlerType()
@@ -4206,7 +4004,7 @@ end
 -- werden nur Stadtsiedler zurückgegeben.
 --
 -- @return[type=number] Zufälliger Typ
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 -- @local
 --
 function API.GetRandomMaleSettlerType()
@@ -4219,7 +4017,7 @@ end
 -- werden nur Stadtsiedler zurückgegeben.
 --
 -- @return[type=number] Zufälliger Typ
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 -- @local
 --
 function API.GetRandomFemaleSettlerType()
@@ -4235,7 +4033,7 @@ end
 --
 -- @param _Entity Entity (Skriptname oder ID)
 -- @return[type=number] Menge an Soldaten
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.CountSoldiersOfGroup(_Entity)
     local EntityID = GetID(_Entity);
@@ -4255,7 +4053,7 @@ end
 --
 -- @param _Entity Entity (Skriptname oder ID)
 -- @return[type=table] Liste aller Soldaten
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetGroupSoldiers(_Entity)
     local EntityID = GetID(_Entity);
@@ -4276,7 +4074,7 @@ end
 --
 -- @param _Entity Entity (Skriptname oder ID)
 -- @return[type=number] Menge an Soldaten
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetGroupLeader(_Entity)
     local EntityID = GetID(_Entity);
@@ -4295,7 +4093,7 @@ end
 --
 -- @param               _Entity   Entity (Scriptname oder ID)
 -- @param[type=number]  _Amount   Geheilte Gesundheit
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GroupHeal(_Entity, _Amount)
     if GUI then
@@ -4321,7 +4119,7 @@ end
 -- @param               _Entity   Entity (Scriptname oder ID)
 -- @param[type=number] _Damage   Schaden
 -- @param[type=string] _Attacker Angreifer
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GroupHurt(_Entity, _Damage, _Attacker)
     if GUI then
@@ -4369,9 +4167,9 @@ end
 ---
 -- Aktiviert ein Interaktives Objekt.
 --
--- @param[type=string] _EntityName Skriptname des Objektes
+-- @param[type=string] _ScriptName Skriptname des Objektes
 -- @param[type=number] _State      State des Objektes
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.InteractiveObjectActivate(_ScriptName, _State)
     _State = _State or 0;
@@ -4387,8 +4185,8 @@ InteractiveObjectActivate = API.InteractiveObjectActivate;
 ---
 -- Deaktiviert ein interaktives Objekt.
 --
--- @param[type=string] _EntityName Scriptname des Objektes
--- @within Anwenderfunktionen
+-- @param[type=string] _ScriptName Scriptname des Objektes
+-- @within Werkzeugkasten
 --
 function API.InteractiveObjectDeactivate(_ScriptName)
     if GUI or not IsExisting(_ScriptName) then
@@ -4516,7 +4314,7 @@ end
 --
 -- @param[type=string] _Name Name des Quest
 -- @return[type=number] ID des Quest
--- @within Anwenderfunktionen
+-- @within Quest
 --
 function API.GetQuestID(_Name)
     if type(_Name) == "number" then
@@ -4538,7 +4336,7 @@ GetQuestID = API.GetQuestID;
 --
 -- @param[type=number] _QuestID ID oder Name des Quest
 -- @return[type=boolean] Quest existiert
--- @within Anwenderfunktionen
+-- @within Quest
 --
 function API.IsValidQuest(_QuestID)
     return Quests[_QuestID] ~= nil or Quests[API.GetQuestID(_QuestID)] ~= nil;
@@ -4550,7 +4348,7 @@ IsValidQuest = API.IsValidQuest;
 --
 -- @param[type=number] _Name Name des Quest
 -- @return[type=boolean] Name ist gültig
--- @within Anwenderfunktionen
+-- @within Quest
 --
 function API.IsValidQuestName(_Name)
     return string.find(_Name, "^[A-Za-z0-9_ @ÄÖÜäöüß]+$") ~= nil;
@@ -4564,7 +4362,7 @@ IsValidQuestName = API.IsValidQuestName;
 --
 -- @param[type=string]  _QuestName Name des Quest
 -- @param[type=boolean] _NoMessage Meldung nicht anzeigen
--- @within Anwenderfunktionen
+-- @within Quest
 --
 function API.FailQuest(_QuestName, _NoMessage)
     local QuestID = GetQuestID(_QuestName);
@@ -4588,7 +4386,7 @@ end
 --
 -- @param[type=string]  _QuestName Name des Quest
 -- @param[type=boolean] _NoMessage Meldung nicht anzeigen
--- @within Anwenderfunktionen
+-- @within Quest
 --
 function API.RestartQuest(_QuestName, _NoMessage)
     -- All changes on default behavior must be considered in this function.
@@ -4686,7 +4484,7 @@ end
 --
 -- @param[type=string]  _QuestName Name des Quest
 -- @param[type=boolean] _NoMessage Meldung nicht anzeigen
--- @within Anwenderfunktionen
+-- @within Quest
 --
 function API.StartQuest(_QuestName, _NoMessage)
     local QuestID = GetQuestID(_QuestName);
@@ -4710,7 +4508,7 @@ end
 --
 -- @param[type=string]  _QuestName Name des Quest
 -- @param[type=boolean] _NoMessage Meldung nicht anzeigen
--- @within Anwenderfunktionen
+-- @within Quest
 --
 function API.StopQuest(_QuestName, _NoMessage)
     local QuestID = GetQuestID(_QuestName);
@@ -4732,7 +4530,7 @@ end
 --
 -- @param[type=string]  _QuestName Name des Quest
 -- @param[type=boolean] _NoMessage Meldung nicht anzeigen
--- @within Anwenderfunktionen
+-- @within Quest
 --
 function API.WinQuest(_QuestName, _NoMessage)
     local QuestID = GetQuestID(_QuestName);
@@ -4950,7 +4748,7 @@ end
 -- @param[type=boolean] _TraceQuests      Quest Trace an/aus
 -- @param[type=boolean] _DevelopingCheats Cheats an/aus
 -- @param[type=boolean] _DevelopingShell  Eingabeaufforderung an/aus
--- @within Anwenderfunktionen
+-- @within Debug
 --
 function API.ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)
     Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell);
@@ -5125,7 +4923,7 @@ end
 -- @param[type=number] _Entity Entity
 -- @param[type=number] _SV     Typ der Scripting Value
 -- @return[type=number] Ermittelter Wert
--- @within Anwenderfunktionen
+-- @within ScriptingValue
 --
 -- @usage
 -- local PlayerID = API.GetInteger("HansWurst", QSB.ScriptingValue.Player);
@@ -5144,7 +4942,7 @@ end
 -- @param[type=number] _Entity Entity
 -- @param[type=number] _SV     Typ der Scripting Value
 -- @return[type=number] Ermittelter Wert
--- @within Anwenderfunktionen
+-- @within ScriptingValue
 --
 -- @usage
 -- local Size = API.GetFloat("HansWurst", QSB.ScriptingValue.Size);
@@ -5164,7 +4962,7 @@ end
 -- @param[type=number] _Entity Entity
 -- @param[type=number] _SV     Typ der Scripting Value
 -- @param[type=number] _Value  Zu setzender Wert
--- @within Anwenderfunktionen
+-- @within ScriptingValue
 --
 -- @usage
 -- API.SetInteger("HansWurst", QSB.ScriptingValue.Player, 2);
@@ -5183,7 +4981,7 @@ end
 -- @param[type=number] _Entity Entity
 -- @param[type=number] _SV     Typ der Scripting Value
 -- @param[type=number] _Value  Zu setzender Wert
--- @within Anwenderfunktionen
+-- @within ScriptingValue
 --
 -- @usage
 -- API.SetFloat("HansWurst", QSB.ScriptingValue.Size, 1.5);
@@ -5201,7 +4999,7 @@ end
 --
 -- @param[type=number] _Value Gleitkommazahl
 -- @return[type=number] Konvertierte Ganzzahl
--- @within Anwenderfunktionen
+-- @within ScriptingValue
 --
 -- @usage
 -- local Converted = API.ConvertIntegerToFloat(Value)
@@ -5215,7 +5013,7 @@ end
 --
 -- @param[type=number] _Value Gleitkommazahl
 -- @return[type=number] Konvertierte Ganzzahl
--- @within Anwenderfunktionen
+-- @within ScriptingValue
 --
 -- @usage
 -- local Converted = API.ConvertFloatToInteger(Value)

@@ -745,8 +745,6 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @field GoodsPurchased Güter werden bei einem Händler gekauft (Parameter: OfferID, TraderType, GoodType, OfferGoodAmount, Price, PlayerID, TraderPlayerID)
 -- @field GoodsSold      Güter werden im eigenen Lagerhaus verkauft (Parameter: TraderType, GoodType, GoodAmount, Price, PlayerID, TargetPlayerID)
 --
--- @within Event
---
 QSB.ScriptEvents = QSB.ScriptEvents or {};
 
 ---
@@ -1279,6 +1277,7 @@ end
 -- @param[type=number] _OfferAmount Menge an Angeboten
 -- @param[type=number] _RefreshRate (Optional) Regenerationsrate des Angebot
 -- @within Anwenderfunktionen
+-- @local
 --
 -- @usage
 -- -- Spieler 2 bietet Brot an
@@ -1343,6 +1342,7 @@ end
 -- @param[type=number] _OfferAmount Menge an Söldnern
 -- @param[type=number] _RefreshRate (Optional) Regenerationsrate des Angebot
 -- @within Anwenderfunktionen
+-- @local
 --
 -- @usage
 -- -- Spieler 2 bietet Sölder an
@@ -1403,6 +1403,7 @@ end
 -- @param[type=number] _VendorID    Spieler-ID des Verkäufers
 -- @param[type=number] _OfferType   Typ des Entertainer
 -- @within Anwenderfunktionen
+-- @local
 --
 -- @usage
 -- -- Spieler 2 bietet einen Feuerschlucker an
@@ -1450,6 +1451,7 @@ end
 -- @param[type=number] _PlayerID Player ID
 -- @return[type=table] Angebotsinformationen
 -- @within Anwenderfunktionen
+-- @local
 --
 -- @usage
 -- local Info = API.GetOfferInformation(2);
@@ -1480,6 +1482,7 @@ end
 -- @param[type=number] _PlayerID Player ID
 -- @return[type=number] Anzahl angebote
 -- @within Anwenderfunktionen
+-- @local
 --
 -- @usage
 -- -- Angebote von Spieler 5 zählen
@@ -1500,6 +1503,7 @@ end
 -- @param[type=number] _GoodOrEntityType Warentyp oder Entitytyp
 -- @return[type=boolean] Ware wird angeboten
 -- @within Anwenderfunktionen
+-- @local
 --
 -- @usage
 -- -- Wird die Ware angeboten?
@@ -1522,6 +1526,7 @@ end
 -- @param[type=number] _GoodOrEntityType Warentyp oder Entitytyp
 -- @return[type=number] Menge an Angeboten
 -- @within Anwenderfunktionen
+-- @local
 --
 -- @usage
 -- -- Wie viel wird aktuell angeboten?

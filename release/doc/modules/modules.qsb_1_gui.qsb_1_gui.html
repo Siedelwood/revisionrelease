@@ -34,7 +34,7 @@
 
 <h2>Contents</h2>
 <ul>
-<li><a href="#Event">Event</a></li>
+<li><a href="#Fields">Fields</a></li>
 <li><a href="#Anwenderfunktionen">Anwenderfunktionen</a></li>
 </ul>
 
@@ -45,8 +45,13 @@
   <li><a href="../modules/modules.qsb_1_requester.qsb_1_requester.html">(1) Dialogfenster</a></li>
   <li><a href="../modules/modules.qsb_1_sound.qsb_1_sound.html">(1) Sound</a></li>
   <li><a href="../modules/modules.qsb_1_trade.qsb_1_trade.html">(1) Handelserweiterung</a></li>
+  <li><a href="../modules/modules.qsb_2_npc.qsb_2_npc.html">(2) Ansprechbare Siedler</a></li>
+  <li><a href="../modules/modules.qsb_2_objects.qsb_2_objects.html">(2) Interaktive Objekte</a></li>
+  <li><a href="../modules/modules.qsb_2_promotion.qsb_2_promotion.html">(2) Aufstiegsbedingungen</a></li>
   <li><a href="../modules/modules.qsb_2_quest.qsb_2_quest.html">(2) Aufträge</a></li>
-  <li><a href="../modules/modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons.html">(4) Gebäudeschalter</a></li>
+  <li><a href="../modules/modules.qsb_4_typewriter.qsb_4_typewriter.html">(4) Schreibmaschinentext</a></li>
+  <li><a href="../modules/modules.qsb_5_buildingbuttons.qsb_5_buildingbuttons.html">(5) Gebäudeschalter</a></li>
+  <li><a href="../modules/modules.qsb_5_weather.qsb_5_weather.html">(5) Wetter</a></li>
   <li><a href="../modules/qsb.html">(0) Basismodul</a></li>
 </ul>
 
@@ -78,7 +83,7 @@
 </p>
 
 
-<h2><a href="#Event">Event</a></h2>
+<h2><a href="#Fields">Fields</a></h2>
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#QSB.ScriptEvents">QSB.ScriptEvents</a></td>
@@ -92,11 +97,6 @@
 	<td class="summary">Akliviert border Scroll wieder und löst die Fixierung auf ein Entity auf.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.ActivateColoredScreen">API.ActivateColoredScreen (_PlayerID, _Red, _Green, _Blue, _Alpha)</a></td>
-	<td class="summary">Blendet einen farbigen Hintergrund über der Spielwelt aber hinter dem
- Interface ein.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#API.ActivateImageScreen">API.ActivateImageScreen (_PlayerID, _Image, _Red, _Green, _Blue, _Alpha)</a></td>
 	<td class="summary">Blendet eine Graphic über der Spielwelt aber hinter dem Interface ein.</td>
 	</tr>
@@ -105,16 +105,8 @@
 	<td class="summary">Zeigt das normale Interface an.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.AddShortcutEntry">API.AddShortcutEntry (_Key, _Description)</a></td>
-	<td class="summary">Fügt eine Beschreibung zu einem benutzerdefinierten Hotkey hinzu.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#API.DeactivateBorderScroll">API.DeactivateBorderScroll (_PlayerID, _Position)</a></td>
 	<td class="summary">Deaktiviert Randscrollen und setzt die Kamera optional auf das Ziel</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.DeactivateColoredScreen">API.DeactivateColoredScreen (_PlayerID)</a></td>
-	<td class="summary">Deaktiviert den farbigen Hintergrund, wenn er angezeigt wird.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.DeactivateImageScreen">API.DeactivateImageScreen (_PlayerID)</a></td>
@@ -125,11 +117,11 @@
 	<td class="summary">Blendet das normale Interface aus.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.FinishCinematicElement">API.FinishCinematicElement (_Name)</a></td>
+	<td class="name" nowrap><a href="#API.FinishCinematicElement">API.FinishCinematicElement (_Name, _PlayerID)</a></td>
 	<td class="summary">Propagiert das Ende des Kinoevent.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.GetCinematicElement">API.GetCinematicElement (_Identifier)</a></td>
+	<td class="name" nowrap><a href="#API.GetCinematicElement">API.GetCinematicElement (_Identifier, _PlayerID)</a></td>
 	<td class="summary">Gibt den Zustand des Kinoevent zurück.</td>
 	</tr>
 	<tr>
@@ -185,10 +177,6 @@
 	<td class="summary">Prüft ob gerade ein Kinoevent für den Spieler aktiv ist.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.RemoveShortcutEntry">API.RemoveShortcutEntry (_ID)</a></td>
-	<td class="summary">Entfernt eine Beschreibung eines benutzerdefinierten Hotkeys.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#API.SetIcon">API.SetIcon (_WidgetID, _Coordinates, _Size, _Name)</a></td>
 	<td class="summary">Setzt einen Icon aus einer Icon Matrix.</td>
 	</tr>
@@ -222,7 +210,7 @@
 <br/>
 
 
-    <h2 class="section-header "><a name="Event"></a>Event</h2>
+    <h2 class="section-header "><a name="Fields"></a>Fields</h2>
 
     <dl class="function">
     <dt>
@@ -282,44 +270,6 @@
         <li><span class="parameter">_PlayerID</span>
             <span class="types"><span class="type">number</span></span>
          ID des Spielers
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.ActivateColoredScreen"></a>
-    <strong>API.ActivateColoredScreen (_PlayerID, _Red, _Green, _Blue, _Alpha)</strong>
-    </dt>
-    <dd>
-    Blendet einen farbigen Hintergrund über der Spielwelt aber hinter dem
- Interface ein.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-            <span class="types"><span class="type">number</span></span>
-         ID des Spielers
-        </li>
-        <li><span class="parameter">_Red</span>
-            <span class="types"><span class="type">number</span></span>
-           (Optional) Rotwert (Standard: 0)
-        </li>
-        <li><span class="parameter">_Green</span>
-            <span class="types"><span class="type">number</span></span>
-         (Optional) Grünwert (Standard: 0)
-        </li>
-        <li><span class="parameter">_Blue</span>
-            <span class="types"><span class="type">number</span></span>
-          (Optional) Blauwert (Standard: 0)
-        </li>
-        <li><span class="parameter">_Alpha</span>
-            <span class="types"><span class="type">number</span></span>
-         (Optional) Alphawert (Standard: 255)
         </li>
     </ul>
 
@@ -394,41 +344,6 @@
 
 </dd>
     <dt>
-    <a name = "API.AddShortcutEntry"></a>
-    <strong>API.AddShortcutEntry (_Key, _Description)</strong>
-    </dt>
-    <dd>
-    Fügt eine Beschreibung zu einem benutzerdefinierten Hotkey hinzu.
-<p> Ist der Hotkey bereits vorhanden, wird -1 zurückgegeben.
-<p> <b>Hinweis</b>: Diese Funktionalität selbst muss mit Input.KeyBindDown oder
- Input.KeyBindUp separat implementiert werden!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Key</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-                 Tastenkombination
-        </li>
-        <li><span class="parameter">_Description</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Beschreibung des Hotkey
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Index oder Fehlercode
-    </ol>
-
-
-
-
-</dd>
-    <dt>
     <a name = "API.DeactivateBorderScroll"></a>
     <strong>API.DeactivateBorderScroll (_PlayerID, _Position)</strong>
     </dt>
@@ -445,27 +360,6 @@
         <li><span class="parameter">_Position</span>
             <span class="types"><span class="type">number</span></span>
          (Optional) Entity auf das die Kamera schaut
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.DeactivateColoredScreen"></a>
-    <strong>API.DeactivateColoredScreen (_PlayerID)</strong>
-    </dt>
-    <dd>
-    Deaktiviert den farbigen Hintergrund, wenn er angezeigt wird.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-            <span class="types"><span class="type">number</span></span>
-         ID des Spielers
         </li>
     </ul>
 
@@ -518,7 +412,7 @@
 </dd>
     <dt>
     <a name = "API.FinishCinematicElement"></a>
-    <strong>API.FinishCinematicElement (_Name)</strong>
+    <strong>API.FinishCinematicElement (_Name, _PlayerID)</strong>
     </dt>
     <dd>
     Propagiert das Ende des Kinoevent.
@@ -528,7 +422,11 @@
     <ul>
         <li><span class="parameter">_Name</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Bezeichner
+             Bezeichner
+        </li>
+        <li><span class="parameter">_PlayerID</span>
+            <span class="types"><span class="type">number</span></span>
+         ID des Spielers
         </li>
     </ul>
 
@@ -539,7 +437,7 @@
 </dd>
     <dt>
     <a name = "API.GetCinematicElement"></a>
-    <strong>API.GetCinematicElement (_Identifier)</strong>
+    <strong>API.GetCinematicElement (_Identifier, _PlayerID)</strong>
     </dt>
     <dd>
     Gibt den Zustand des Kinoevent zurück.
@@ -548,7 +446,11 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">_Identifier</span>
-         Bezeichner oder ID
+                    Bezeichner oder ID
+        </li>
+        <li><span class="parameter">_PlayerID</span>
+            <span class="types"><span class="type">number</span></span>
+         ID des Spielers
         </li>
     </ul>
 
@@ -885,27 +787,6 @@
 
 </dd>
     <dt>
-    <a name = "API.RemoveShortcutEntry"></a>
-    <strong>API.RemoveShortcutEntry (_ID)</strong>
-    </dt>
-    <dd>
-    Entfernt eine Beschreibung eines benutzerdefinierten Hotkeys.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_ID</span>
-            <span class="types"><span class="type">number</span></span>
-         Index in Table
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
     <a name = "API.SetIcon"></a>
     <strong>API.SetIcon (_WidgetID, _Coordinates, _Size, _Name)</strong>
     </dt>
@@ -1192,7 +1073,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-12-13 23:49:33 </i>
+<i style="float:right;">Last updated 2022-12-14 18:36:22 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 

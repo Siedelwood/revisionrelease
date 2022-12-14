@@ -34,10 +34,19 @@
 
 <h2>Contents</h2>
 <ul>
+<li><a href="#Fields">Fields</a></li>
 <li><a href="#Event">Event</a></li>
-<li><a href="#Anwenderfunktionen">Anwenderfunktionen</a></li>
-<li><a href="#Reward">Reward</a></li>
 <li><a href="#Goal">Goal</a></li>
+<li><a href="#Werkzeugkasten">Werkzeugkasten</a></li>
+<li><a href="#Multiplayer">Multiplayer</a></li>
+<li><a href="#Job">Job</a></li>
+<li><a href="#Spielstand">Spielstand</a></li>
+<li><a href="#Chat">Chat</a></li>
+<li><a href="#Text">Text</a></li>
+<li><a href="#Quest">Quest</a></li>
+<li><a href="#Debug">Debug</a></li>
+<li><a href="#ScriptingValue">ScriptingValue</a></li>
+<li><a href="#Reward">Reward</a></li>
 <li><a href="#Reprisal">Reprisal</a></li>
 <li><a href="#Trigger">Trigger</a></li>
 </ul>
@@ -49,8 +58,13 @@
   <li><a href="../modules/modules.qsb_1_requester.qsb_1_requester.html">(1) Dialogfenster</a></li>
   <li><a href="../modules/modules.qsb_1_sound.qsb_1_sound.html">(1) Sound</a></li>
   <li><a href="../modules/modules.qsb_1_trade.qsb_1_trade.html">(1) Handelserweiterung</a></li>
+  <li><a href="../modules/modules.qsb_2_npc.qsb_2_npc.html">(2) Ansprechbare Siedler</a></li>
+  <li><a href="../modules/modules.qsb_2_objects.qsb_2_objects.html">(2) Interaktive Objekte</a></li>
+  <li><a href="../modules/modules.qsb_2_promotion.qsb_2_promotion.html">(2) Aufstiegsbedingungen</a></li>
   <li><a href="../modules/modules.qsb_2_quest.qsb_2_quest.html">(2) Aufträge</a></li>
-  <li><a href="../modules/modules.qsb_4_buildingbuttons.qsb_4_buildingbuttons.html">(4) Gebäudeschalter</a></li>
+  <li><a href="../modules/modules.qsb_4_typewriter.qsb_4_typewriter.html">(4) Schreibmaschinentext</a></li>
+  <li><a href="../modules/modules.qsb_5_buildingbuttons.qsb_5_buildingbuttons.html">(5) Gebäudeschalter</a></li>
+  <li><a href="../modules/modules.qsb_5_weather.qsb_5_weather.html">(5) Wetter</a></li>
   <li><strong>(0) Basismodul</strong></li>
 </ul>
 
@@ -439,58 +453,192 @@
 </p>
 
 
-<h2><a href="#Event">Event</a></h2>
+<h2><a href="#Fields">Fields</a></h2>
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#QSB.ScriptEvents">QSB.ScriptEvents</a></td>
 	<td class="summary">Events, um auf Ereignisse zu reagieren.</td>
 	</tr>
 </table>
-<h2><a href="#Anwenderfunktionen">Anwenderfunktionen</a></h2>
+<h2><a href="#Event">Event</a></h2>
 <table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#API.ActivateDebugMode">API.ActivateDebugMode (_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)</a></td>
-	<td class="summary">Aktiviert oder deaktiviert Optionen des Debug Mode.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ActivateDebugMode">API.ActivateDebugMode (_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)</a></td>
-	<td class="summary">Aktiviert oder deaktiviert Optionen des Debug Mode.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.AddEntityTypePlaceholder">API.AddEntityTypePlaceholder (_Type, _Replacement)</a></td>
-	<td class="summary">Fügt einen Platzhalter für einen Entity-Typ hinzu.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.AddNamePlaceholder">API.AddNamePlaceholder (_Name, _Replacement)</a></td>
-	<td class="summary">Fügt einen Platzhalter für den angegebenen Namen hinzu.</td>
-	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.AddScriptEventListener">API.AddScriptEventListener (_EventID, _Function)</a></td>
 	<td class="summary">Erstellt einen neuen Listener für das Event.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.BroadcastScriptEventToGlobal">API.BroadcastScriptEventToGlobal (_EventName, ...)</a></td>
-	<td class="summary">Triggerd ein Script Event im globalen Skript aus dem lokalen Skript.</td>
+	<td class="name" nowrap><a href="#API.RemoveScriptEventListener">API.RemoveScriptEventListener (_EventID, _ID)</a></td>
+	<td class="summary">Entfernt einen Listener von dem Event.</td>
 	</tr>
+</table>
+<h2><a href="#Goal">Goal</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Goal_ActivateBuff">Goal_ActivateBuff (_PlayerID, _Buff)</a></td>
+	<td class="summary">Der angegebene Spieler muss einen Buff aktivieren.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_ActivateObject">Goal_ActivateObject (_ScriptName)</a></td>
+	<td class="summary">Ein Interaktives Objekt muss benutzt werden.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_BuildRoad">Goal_BuildRoad (_Position1, _Position2, _OnlyRoads)</a></td>
+	<td class="summary">Zwei Punkte auf der Spielwelt müssen mit einer Straße verbunden werden.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_BuildWall">Goal_BuildWall (_PlayerID, _Position1, _Position2)</a></td>
+	<td class="summary">Eine Mauer muss gebaut werden um die Bewegung eines Spielers einzuschränken.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_Capture">Goal_Capture (_ScriptName)</a></td>
+	<td class="summary">Der Auftragnehmer muss eine Einheit gefangen nehmen.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_CaptureType">Goal_CaptureType (_Typ, _Amount, _PlayerID)</a></td>
+	<td class="summary">Der Auftragnehmer muss eine Menge von Einheiten eines Typs von einem
+ Spieler gefangen nehmen.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_Claim">Goal_Claim (_Territory)</a></td>
+	<td class="summary">Ein bestimmtes Territorium muss vom Auftragnehmer eingenommen werden.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_ClaimXTerritories">Goal_ClaimXTerritories (_Amount)</a></td>
+	<td class="summary">Der Auftragnehmer muss eine Menge an Territorien besitzen.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_Create">Goal_Create (_Type, _Amount, _Territory)</a></td>
+	<td class="summary">Der Auftragnehmer muss auf dem Territorium einen Entitytyp erstellen.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_CustomVariables">Goal_CustomVariables (_Name, _Relation, _Value)</a></td>
+	<td class="summary">Eine benutzerdefinierte Variable muss einen bestimmten Wert haben.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_Deliver">Goal_Deliver (_GoodType, _GoodAmount, _OtherTarget, _IgnoreCapture)</a></td>
+	<td class="summary">Einem Spieler müssen Rohstoffe oder Waren gesendet werden.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_DestroyAllPlayerUnits">Goal_DestroyAllPlayerUnits (_PlayerID)</a></td>
+	<td class="summary">Alle Einheiten des Spielers müssen zerstört werden.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_DestroyPlayer">Goal_DestroyPlayer (_PlayerID)</a></td>
+	<td class="summary">Eine andere Partei muss besiegt werden.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_DestroyScriptEntity">Goal_DestroyScriptEntity (_ScriptName)</a></td>
+	<td class="summary">Ein benanntes Entity muss zerstört werden.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_DestroyType">Goal_DestroyType (_EntityType, _Amount, _PlayerID)</a></td>
+	<td class="summary">Eine Menge an Entities eines Typs müssen zerstört werden.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_Diplomacy">Goal_Diplomacy (_PlayerID, _Relation, _State)</a></td>
+	<td class="summary">Es muss ein bestimmter Diplomatiestatus zu einer anderen Patei erreicht
+ werden.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_DiscoverPlayer">Goal_DiscoverPlayer (_PlayerID)</a></td>
+	<td class="summary">Das Heimatterritorium des Spielers muss entdeckt werden.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_DiscoverTerritory">Goal_DiscoverTerritory (_Territory)</a></td>
+	<td class="summary">Ein Territorium muss erstmalig vom Auftragnehmer betreten werden.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_EntityDistance">Goal_EntityDistance (_ScriptName1, _ScriptName2, _Relation, _Distance)</a></td>
+	<td class="summary">Eine Entfernung zwischen zwei Entities muss erreicht werden.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_Festivals">Goal_Festivals (_PlayerID, _Amount)</a></td>
+	<td class="summary">Der angegebene Spieler muss mindestens die Menge an Festen feiern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_GoodAmount">Goal_GoodAmount (_Type, _Amount, _Relation)</a></td>
+	<td class="summary">Der Spieler muss eine bestimmte Menge einer Ware erreichen.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_InstantFailure">Goal_InstantFailure ()</a></td>
+	<td class="summary">Der Quest schlägt sofort fehl.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_InstantSuccess">Goal_InstantSuccess ()</a></td>
+	<td class="summary">Der Quest wird sofort erfüllt.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_KnightDistance">Goal_KnightDistance (_ScriptName, _Disctande)</a></td>
+	<td class="summary">Der Primary Knight des angegebenen Spielers muss sich dem Ziel nähern.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_KnightTitle">Goal_KnightTitle (_Title)</a></td>
+	<td class="summary">Der Auftragnehmer muss wenigstens einen bestimmten Titel erreichen.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_MapScriptFunction">Goal_MapScriptFunction (_FunctionName)</a></td>
+	<td class="summary">Führt eine Funktion im Skript als Goal aus.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_NoChange">Goal_NoChange ()</a></td>
+	<td class="summary">Der Zustand des Quests ändert sich niemals</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_Produce">Goal_Produce (_Type, _Amount)</a></td>
+	<td class="summary">Der Auftragnehmer muss eine Menge von Rohstoffen produzieren.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_Protect">Goal_Protect (_ScriptName)</a></td>
+	<td class="summary">Der Auftragnehmer muss das angegebene Entity beschützen.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_Refill">Goal_Refill (_ScriptName)</a></td>
+	<td class="summary">Der Auftragnehmer muss eine Mine mit einem Geologen wieder auffüllen.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_ResourceAmount">Goal_ResourceAmount (_ScriptName, _Relation, _Amount)</a></td>
+	<td class="summary">Eine bestimmte Menge an Rohstoffen in einer Mine muss erreicht werden.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_SatisfyNeed">Goal_SatisfyNeed (_PlayerID, _Need)</a></td>
+	<td class="summary">Die Siedler des Spielers dürfen nicht aufgrund des Bedürfnisses streiken.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_SettlersNumber">Goal_SettlersNumber (_Amount, _PlayerID)</a></td>
+	<td class="summary">Der angegebene Spieler muss eine Menge an Siedlern in der Stadt haben.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_SoldierCount">Goal_SoldierCount (_PlayerID, _Relation, _Amount)</a></td>
+	<td class="summary">Ein Spieler muss eine Menge an Soldaten haben.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_Spouses">Goal_Spouses (_Amount)</a></td>
+	<td class="summary">Der Auftragnehmer muss eine Menge von Ehefrauen in der Stadt haben.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_StealInformation">Goal_StealInformation (_PlayerID)</a></td>
+	<td class="summary">Es sollen Informationen aus der Burg gestohlen werden.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_TributeClaim">Goal_TributeClaim (_Territory, _PlayerID, _Cost, _Periode, _Time, _StartMsg, _SuccessMsg, _FailMsg, _HowOften, _OtherOwner, _Abort)</a></td>
+	<td class="summary">Erlaubt es dem Spieler ein Territorium zu "mieten".</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_TributeDiplomacy">Goal_TributeDiplomacy (_GoldAmount, _Periode, _Time, _StartMsg, _SuccessMsg, _FailureMsg, _Restart)</a></td>
+	<td class="summary">Der Spieler kann durch regelmäßiges Begleichen eines Tributes bessere
+ Diplomatie zu einem Spieler erreichen.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Goal_UnitsOnTerritory">Goal_UnitsOnTerritory (_Territory, _PlayerID, _Category, _Relation, _Amount)</a></td>
+	<td class="summary">Eine bestimmte Anzahl an Einheiten einer Kategorie muss sich auf dem
+ Territorium befinden.</td>
+	</tr>
+</table>
+<h2><a href="#Werkzeugkasten">Werkzeugkasten</a></h2>
+<table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#API.ChangeEntityHealth">API.ChangeEntityHealth (_Entity, _Health, _Relative)</a></td>
 	<td class="summary">Setzt die Gesundheit des Entity.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ClearNotes">API.ClearNotes ()</a></td>
-	<td class="summary">Löscht alle Nachrichten im Debug Window.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ConvertFloatToInteger">API.ConvertFloatToInteger (_Value)</a></td>
-	<td class="summary">Konvertirert den Wert in eine Gleitkommazahl.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ConvertIntegerToFloat">API.ConvertIntegerToFloat (_Value)</a></td>
-	<td class="summary">Konvertirert den Wert in eine Ganzzahl.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ConvertPlaceholders">API.ConvertPlaceholders (_Message)</a></td>
-	<td class="summary">Ersetzt alle Platzhalter im Text oder in der Table.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.CountSoldiersOfGroup">API.CountSoldiersOfGroup (_Entity)</a></td>
@@ -499,34 +647,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#API.CreateEntityName">API.CreateEntityName (_EntityID)</a></td>
 	<td class="summary">Gibt dem Entity einen eindeutigen Skriptnamen und gibt ihn zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.DisableAutoSave">API.DisableAutoSave (_Flag)</a></td>
-	<td class="summary">Deaktiviert das automatische Speichern der History Edition.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.DisableLoading">API.DisableLoading (_Flag)</a></td>
-	<td class="summary">Deaktiviert das Laden von Spielständen.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.DisableSaving">API.DisableSaving (_Flag)</a></td>
-	<td class="summary">Deaktiviert das Speichern des Spiels.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.EndJob">API.EndJob (_JobID)</a></td>
-	<td class="summary">Beendet den Job mit der übergebenen ID endgültig.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.FailQuest">API.FailQuest (_QuestName, _NoMessage)</a></td>
-	<td class="summary">Lässt den Quest fehlschlagen.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetActivePlayers">API.GetActivePlayers ()</a></td>
-	<td class="summary">Gibt eine Liste aller Spieler im Spiel zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetDelayedPlayers">API.GetDelayedPlayers ()</a></td>
-	<td class="summary">Gibt alle Spieler zurück, auf die gerade gewartet wird.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.GetEntitiesOfCategoriesInTerritories">API.GetEntitiesOfCategoriesInTerritories (_PlayerID, _Category, _Territory)</a></td>
@@ -558,10 +678,6 @@
 	<td class="summary">Gibt den Typnamen des Entity zurück.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.GetFloat">API.GetFloat (_Entity, _SV)</a></td>
-	<td class="summary">Gibt den Wert auf dem übergebenen Index für das Entity zurück.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#API.GetGroupLeader">API.GetGroupLeader (_Entity)</a></td>
 	<td class="summary">Gibt den Leader des Soldaten zurück.</td>
 	</tr>
@@ -570,24 +686,8 @@
 	<td class="summary">Gibt die IDs aller Soldaten zurück, die zum Battalion gehören.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.GetInteger">API.GetInteger (_Entity, _SV)</a></td>
-	<td class="summary">Gibt den Wert auf dem übergebenen Index für das Entity zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetPlayerSlotID">API.GetPlayerSlotID (_PlayerID)</a></td>
-	<td class="summary">Gibt den Slot zurück, den der Spieler einnimmt.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetQuestID">API.GetQuestID (_Name)</a></td>
-	<td class="summary">Gibt die ID des Quests mit dem angegebenen Namen zurück.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#API.GetResourceAmount">API.GetResourceAmount (_Entity)</a></td>
 	<td class="summary">Gibt die Menge an Rohstoffen des Entity zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetSlotPlayerID">API.GetSlotPlayerID (_SlotID)</a></td>
-	<td class="summary">Gibt den Spieler zurück, welcher den Slot okkupiert.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.GroupHeal">API.GroupHeal (_Entity, _Amount)</a></td>
@@ -599,61 +699,16 @@
  Menge an Schaden.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.InteractiveObjectActivate">API.InteractiveObjectActivate (_EntityName, _State)</a></td>
+	<td class="name" nowrap><a href="#API.InteractiveObjectActivate">API.InteractiveObjectActivate (_ScriptName, _State)</a></td>
 	<td class="summary">Aktiviert ein Interaktives Objekt.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.InteractiveObjectDeactivate">API.InteractiveObjectDeactivate (_EntityName)</a></td>
+	<td class="name" nowrap><a href="#API.InteractiveObjectDeactivate">API.InteractiveObjectDeactivate (_ScriptName)</a></td>
 	<td class="summary">Deaktiviert ein interaktives Objekt.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.IsEntityInAtLeastOneCategory">API.IsEntityInAtLeastOneCategory (_Entity, ...)</a></td>
 	<td class="summary">Prüft, ob das Entity mindestens eine der Kategorien hat.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.IsHistoryEditionNetworkGame">API.IsHistoryEditionNetworkGame ()</a></td>
-	<td class="summary">Prüft, ob das laufende Spiel eine Multiplayerpartie in der History Edition
- ist.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.IsValidQuest">API.IsValidQuest (_QuestID)</a></td>
-	<td class="summary">Prüft, ob zu der angegebenen ID ein Quest existiert.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.IsValidQuestName">API.IsValidQuestName (_Name)</a></td>
-	<td class="summary">Prüft den angegebenen Questnamen auf verbotene Zeichen.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.JobIsRunning">API.JobIsRunning (_JobID)</a></td>
-	<td class="summary">Gibt zurück, ob der Job mit der übergebenen ID aktiv ist.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.Localize">API.Localize (_Text)</a></td>
-	<td class="summary">Ermittelt den lokalisierten Text anhand der eingestellten Sprache der QSB.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.Message">API.Message (_Text, _Sound)</a></td>
-	<td class="summary">Schreibt eine Nachricht unten in das Nachrichtenfenster.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.Note">API.Note (_Text)</a></td>
-	<td class="summary">Schreibt eine Nachricht in das Debug Window.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ObtainCustomVariable">API.ObtainCustomVariable (_Name, _Default)</a></td>
-	<td class="summary">Gibt den aktuellen Wert der Custom Variable zurück oder den Default-Wert.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.RealTimeGetSecondsPassedSinceGameStart">API.RealTimeGetSecondsPassedSinceGameStart ()</a></td>
-	<td class="summary">Gibt die real vergangene Zeit seit dem Spielstart in Sekunden zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.RegisterScriptEvent">API.RegisterScriptEvent (_Name)</a></td>
-	<td class="summary">Legt ein neues Script Event an.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.RemoveScriptEventListener">API.RemoveScriptEventListener (_EventID, _ID)</a></td>
-	<td class="summary">Entfernt einen Listener von dem Event.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.ReplaceEntity">API.ReplaceEntity (_Entity, _Type, _NewOwner)</a></td>
@@ -664,33 +719,12 @@
 	<td class="summary">Startet die Map sofort neu.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.RestartQuest">API.RestartQuest (_QuestName, _NoMessage)</a></td>
-	<td class="summary">Startet den Quest neu.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ResumeJob">API.ResumeJob (_JobID)</a></td>
-	<td class="summary">Aktiviert einen pausierten Job.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#API.Round">API.Round (_Value, _DecimalDigits)</a></td>
 	<td class="summary">Rundet eine Dezimalzahl kaufmännisch ab.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.SaveCustomVariable">API.SaveCustomVariable (_Name, _Value)</a></td>
-	<td class="summary">Speichert den Wert der Custom Variable im globalen und lokalen Skript.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#API.SendCart">API.SendCart (_Position, _PlayerID, _GoodType, _Amount, _CartOverlay, _IgnoreReservation, _Overtake)</a></td>
 	<td class="summary">Sendet einen Handelskarren zu dem Spieler.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.SendScriptEvent">API.SendScriptEvent (_EventID, ...)</a></td>
-	<td class="summary">Sendet das Script Event mit der übergebenen ID und überträgt optional
- Parameter.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.SendScriptEventToGlobal">API.SendScriptEventToGlobal (_EventName, ...)</a></td>
-	<td class="summary">Triggerd ein Script Event im globalen Skript aus dem lokalen Skript.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.SetEntityModel">API.SetEntityModel (_Entity, _NewModel, _AnimSet)</a></td>
@@ -701,29 +735,52 @@
 	<td class="summary">Setzt die aktuelle Tasklist des Entity.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.SetEntityVulnerableFlag">API.SetEntityVulnerableFlag (_Entity, _Flag)</a></td>
-	<td class="summary">Setzt das Entity oder das Battalion verwundbar oder unverwundbar.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.SetFloat">API.SetFloat (_Entity, _SV, _Value)</a></td>
-	<td class="summary">Setzt den Wert auf dem übergebenen Index für das Entity.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.SetInteger">API.SetInteger (_Entity, _SV, _Value)</a></td>
-	<td class="summary">Setzt den Wert auf dem übergebenen Index für das Entity.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.SetLogLevel">API.SetLogLevel (_ScreenLogLevel, _FileLogLevel)</a></td>
-	<td class="summary">Setzt, ab wann Log-Nachrichten geschrieben werden.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#API.SetResourceAmount">API.SetResourceAmount (_Entity, _StartAmount, _RefillAmount)</a></td>
 	<td class="summary">Setzt die Menge an Rohstoffen und die durchschnittliche Auffüllmenge
  in einer Mine.</td>
 	</tr>
+</table>
+<h2><a href="#Multiplayer">Multiplayer</a></h2>
+<table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#API.ShowTextInput">API.ShowTextInput (_PlayerID, _AllowDebug)</a></td>
-	<td class="summary">Offnet das Chatfenster für eine Eingabe.</td>
+	<td class="name" nowrap><a href="#API.GetActivePlayers">API.GetActivePlayers ()</a></td>
+	<td class="summary">Gibt eine Liste aller Spieler im Spiel zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetDelayedPlayers">API.GetDelayedPlayers ()</a></td>
+	<td class="summary">Gibt alle Spieler zurück, auf die gerade gewartet wird.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetPlayerSlotID">API.GetPlayerSlotID (_PlayerID)</a></td>
+	<td class="summary">Gibt den Slot zurück, den der Spieler einnimmt.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetSlotPlayerID">API.GetSlotPlayerID (_SlotID)</a></td>
+	<td class="summary">Gibt den Spieler zurück, welcher den Slot okkupiert.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.IsHistoryEditionNetworkGame">API.IsHistoryEditionNetworkGame ()</a></td>
+	<td class="summary">Prüft, ob das laufende Spiel eine Multiplayerpartie in der History Edition
+ ist.</td>
+	</tr>
+</table>
+<h2><a href="#Job">Job</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.EndJob">API.EndJob (_JobID)</a></td>
+	<td class="summary">Beendet den Job mit der übergebenen ID endgültig.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.JobIsRunning">API.JobIsRunning (_JobID)</a></td>
+	<td class="summary">Gibt zurück, ob der Job mit der übergebenen ID aktiv ist.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.RealTimeGetSecondsPassedSinceGameStart">API.RealTimeGetSecondsPassedSinceGameStart ()</a></td>
+	<td class="summary">Gibt die real vergangene Zeit seit dem Spielstart in Sekunden zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.ResumeJob">API.ResumeJob (_JobID)</a></td>
+	<td class="summary">Aktiviert einen pausierten Job.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.StartDelay">API.StartDelay (_Waittime, _Function, ...)</a></td>
@@ -746,17 +803,97 @@
 	<td class="summary">Erzeugt einen neuen Event-Job.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.StartQuest">API.StartQuest (_QuestName, _NoMessage)</a></td>
-	<td class="summary">Startet den Quest sofort, sofern er existiert.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#API.StartRealTimeDelay">API.StartRealTimeDelay (_Waittime, _Function, ...)</a></td>
 	<td class="summary">Wartet die angebene Zeit in realen Sekunden und führt anschließend die
  Funktion aus.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#API.YieldJob">API.YieldJob (_JobID)</a></td>
+	<td class="summary">Pausiert einen aktivien Job.</td>
+	</tr>
+</table>
+<h2><a href="#Spielstand">Spielstand</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.DisableAutoSave">API.DisableAutoSave (_Flag)</a></td>
+	<td class="summary">Deaktiviert das automatische Speichern der History Edition.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.DisableLoading">API.DisableLoading (_Flag)</a></td>
+	<td class="summary">Deaktiviert das Laden von Spielständen.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.DisableSaving">API.DisableSaving (_Flag)</a></td>
+	<td class="summary">Deaktiviert das Speichern des Spiels.</td>
+	</tr>
+</table>
+<h2><a href="#Chat">Chat</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.ShowTextInput">API.ShowTextInput (_PlayerID, _AllowDebug)</a></td>
+	<td class="summary">Offnet das Chatfenster für eine Eingabe.</td>
+	</tr>
+</table>
+<h2><a href="#Text">Text</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.AddEntityTypePlaceholder">API.AddEntityTypePlaceholder (_Type, _Replacement)</a></td>
+	<td class="summary">Fügt einen Platzhalter für einen Entity-Typ hinzu.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.AddNamePlaceholder">API.AddNamePlaceholder (_Name, _Replacement)</a></td>
+	<td class="summary">Fügt einen Platzhalter für den angegebenen Namen hinzu.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.ClearNotes">API.ClearNotes ()</a></td>
+	<td class="summary">Löscht alle Nachrichten im Debug Window.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.ConvertPlaceholders">API.ConvertPlaceholders (_Message)</a></td>
+	<td class="summary">Ersetzt alle Platzhalter im Text oder in der Table.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.Localize">API.Localize (_Text)</a></td>
+	<td class="summary">Ermittelt den lokalisierten Text anhand der eingestellten Sprache der QSB.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.Message">API.Message (_Text, _Sound)</a></td>
+	<td class="summary">Schreibt eine Nachricht unten in das Nachrichtenfenster.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.Note">API.Note (_Text)</a></td>
+	<td class="summary">Schreibt eine Nachricht in das Debug Window.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#API.StaticNote">API.StaticNote (_Text)</a></td>
 	<td class="summary">Schreibt eine Nachricht in das Debug Window.</td>
+	</tr>
+</table>
+<h2><a href="#Quest">Quest</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.FailQuest">API.FailQuest (_QuestName, _NoMessage)</a></td>
+	<td class="summary">Lässt den Quest fehlschlagen.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetQuestID">API.GetQuestID (_Name)</a></td>
+	<td class="summary">Gibt die ID des Quests mit dem angegebenen Namen zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.IsValidQuest">API.IsValidQuest (_QuestID)</a></td>
+	<td class="summary">Prüft, ob zu der angegebenen ID ein Quest existiert.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.IsValidQuestName">API.IsValidQuestName (_Name)</a></td>
+	<td class="summary">Prüft den angegebenen Questnamen auf verbotene Zeichen.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.RestartQuest">API.RestartQuest (_QuestName, _NoMessage)</a></td>
+	<td class="summary">Startet den Quest neu.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.StartQuest">API.StartQuest (_QuestName, _NoMessage)</a></td>
+	<td class="summary">Startet den Quest sofort, sofern er existiert.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.StopQuest">API.StopQuest (_QuestName, _NoMessage)</a></td>
@@ -766,9 +903,39 @@
 	<td class="name" nowrap><a href="#API.WinQuest">API.WinQuest (_QuestName, _NoMessage)</a></td>
 	<td class="summary">Gewinnt den Quest.</td>
 	</tr>
+</table>
+<h2><a href="#Debug">Debug</a></h2>
+<table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#API.YieldJob">API.YieldJob (_JobID)</a></td>
-	<td class="summary">Pausiert einen aktivien Job.</td>
+	<td class="name" nowrap><a href="#API.ActivateDebugMode">API.ActivateDebugMode (_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)</a></td>
+	<td class="summary">Aktiviert oder deaktiviert Optionen des Debug Mode.</td>
+	</tr>
+</table>
+<h2><a href="#ScriptingValue">ScriptingValue</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.ConvertFloatToInteger">API.ConvertFloatToInteger (_Value)</a></td>
+	<td class="summary">Konvertirert den Wert in eine Gleitkommazahl.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.ConvertIntegerToFloat">API.ConvertIntegerToFloat (_Value)</a></td>
+	<td class="summary">Konvertirert den Wert in eine Ganzzahl.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetFloat">API.GetFloat (_Entity, _SV)</a></td>
+	<td class="summary">Gibt den Wert auf dem übergebenen Index für das Entity zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetInteger">API.GetInteger (_Entity, _SV)</a></td>
+	<td class="summary">Gibt den Wert auf dem übergebenen Index für das Entity zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.SetFloat">API.SetFloat (_Entity, _SV, _Value)</a></td>
+	<td class="summary">Setzt den Wert auf dem übergebenen Index für das Entity.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.SetInteger">API.SetInteger (_Entity, _SV, _Value)</a></td>
+	<td class="summary">Setzt den Wert auf dem übergebenen Index für das Entity.</td>
 	</tr>
 </table>
 <h2><a href="#Reward">Reward</a></h2>
@@ -946,169 +1113,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#Reward_Victory">Reward_Victory ()</a></td>
 	<td class="summary">Der Spieler gewinnt das Spiel.</td>
-	</tr>
-</table>
-<h2><a href="#Goal">Goal</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#Goal_ActivateBuff">Goal_ActivateBuff (_PlayerID, _Buff)</a></td>
-	<td class="summary">Der angegebene Spieler muss einen Buff aktivieren.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_ActivateObject">Goal_ActivateObject (_ScriptName)</a></td>
-	<td class="summary">Ein Interaktives Objekt muss benutzt werden.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_BuildRoad">Goal_BuildRoad (_Position1, _Position2, _OnlyRoads)</a></td>
-	<td class="summary">Zwei Punkte auf der Spielwelt müssen mit einer Straße verbunden werden.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_BuildWall">Goal_BuildWall (_PlayerID, _Position1, _Position2)</a></td>
-	<td class="summary">Eine Mauer muss gebaut werden um die Bewegung eines Spielers einzuschränken.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_Capture">Goal_Capture (_ScriptName)</a></td>
-	<td class="summary">Der Auftragnehmer muss eine Einheit gefangen nehmen.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_CaptureType">Goal_CaptureType (_Typ, _Amount, _PlayerID)</a></td>
-	<td class="summary">Der Auftragnehmer muss eine Menge von Einheiten eines Typs von einem
- Spieler gefangen nehmen.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_Claim">Goal_Claim (_Territory)</a></td>
-	<td class="summary">Ein bestimmtes Territorium muss vom Auftragnehmer eingenommen werden.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_ClaimXTerritories">Goal_ClaimXTerritories (_Amount)</a></td>
-	<td class="summary">Der Auftragnehmer muss eine Menge an Territorien besitzen.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_Create">Goal_Create (_Type, _Amount, _Territory)</a></td>
-	<td class="summary">Der Auftragnehmer muss auf dem Territorium einen Entitytyp erstellen.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_CustomVariables">Goal_CustomVariables (_Name, _Relation, _Value)</a></td>
-	<td class="summary">Eine benutzerdefinierte Variable muss einen bestimmten Wert haben.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_Deliver">Goal_Deliver (_GoodType, _GoodAmount, _OtherTarget, _IgnoreCapture)</a></td>
-	<td class="summary">Einem Spieler müssen Rohstoffe oder Waren gesendet werden.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_DestroyAllPlayerUnits">Goal_DestroyAllPlayerUnits (_PlayerID)</a></td>
-	<td class="summary">Alle Einheiten des Spielers müssen zerstört werden.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_DestroyPlayer">Goal_DestroyPlayer (_PlayerID)</a></td>
-	<td class="summary">Eine andere Partei muss besiegt werden.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_DestroyScriptEntity">Goal_DestroyScriptEntity (_ScriptName)</a></td>
-	<td class="summary">Ein benanntes Entity muss zerstört werden.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_DestroyType">Goal_DestroyType (_EntityType, _Amount, _PlayerID)</a></td>
-	<td class="summary">Eine Menge an Entities eines Typs müssen zerstört werden.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_Diplomacy">Goal_Diplomacy (_PlayerID, _Relation, _State)</a></td>
-	<td class="summary">Es muss ein bestimmter Diplomatiestatus zu einer anderen Patei erreicht
- werden.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_DiscoverPlayer">Goal_DiscoverPlayer (_PlayerID)</a></td>
-	<td class="summary">Das Heimatterritorium des Spielers muss entdeckt werden.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_DiscoverTerritory">Goal_DiscoverTerritory (_Territory)</a></td>
-	<td class="summary">Ein Territorium muss erstmalig vom Auftragnehmer betreten werden.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_EntityDistance">Goal_EntityDistance (_ScriptName1, _ScriptName2, _Relation, _Distance)</a></td>
-	<td class="summary">Eine Entfernung zwischen zwei Entities muss erreicht werden.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_Festivals">Goal_Festivals (_PlayerID, _Amount)</a></td>
-	<td class="summary">Der angegebene Spieler muss mindestens die Menge an Festen feiern.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_GoodAmount">Goal_GoodAmount (_Type, _Amount, _Relation)</a></td>
-	<td class="summary">Der Spieler muss eine bestimmte Menge einer Ware erreichen.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_InstantFailure">Goal_InstantFailure ()</a></td>
-	<td class="summary">Der Quest schlägt sofort fehl.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_InstantSuccess">Goal_InstantSuccess ()</a></td>
-	<td class="summary">Der Quest wird sofort erfüllt.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_KnightDistance">Goal_KnightDistance (_ScriptName, _Disctande)</a></td>
-	<td class="summary">Der Primary Knight des angegebenen Spielers muss sich dem Ziel nähern.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_KnightTitle">Goal_KnightTitle (_Title)</a></td>
-	<td class="summary">Der Auftragnehmer muss wenigstens einen bestimmten Titel erreichen.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_MapScriptFunction">Goal_MapScriptFunction (_FunctionName)</a></td>
-	<td class="summary">Führt eine Funktion im Skript als Goal aus.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_NoChange">Goal_NoChange ()</a></td>
-	<td class="summary">Der Zustand des Quests ändert sich niemals</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_Produce">Goal_Produce (_Type, _Amount)</a></td>
-	<td class="summary">Der Auftragnehmer muss eine Menge von Rohstoffen produzieren.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_Protect">Goal_Protect (_ScriptName)</a></td>
-	<td class="summary">Der Auftragnehmer muss das angegebene Entity beschützen.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_Refill">Goal_Refill (_ScriptName)</a></td>
-	<td class="summary">Der Auftragnehmer muss eine Mine mit einem Geologen wieder auffüllen.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_ResourceAmount">Goal_ResourceAmount (_ScriptName, _Relation, _Amount)</a></td>
-	<td class="summary">Eine bestimmte Menge an Rohstoffen in einer Mine muss erreicht werden.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_SatisfyNeed">Goal_SatisfyNeed (_PlayerID, _Need)</a></td>
-	<td class="summary">Die Siedler des Spielers dürfen nicht aufgrund des Bedürfnisses streiken.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_SettlersNumber">Goal_SettlersNumber (_Amount, _PlayerID)</a></td>
-	<td class="summary">Der angegebene Spieler muss eine Menge an Siedlern in der Stadt haben.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_SoldierCount">Goal_SoldierCount (_PlayerID, _Relation, _Amount)</a></td>
-	<td class="summary">Ein Spieler muss eine Menge an Soldaten haben.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_Spouses">Goal_Spouses (_Amount)</a></td>
-	<td class="summary">Der Auftragnehmer muss eine Menge von Ehefrauen in der Stadt haben.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_StealInformation">Goal_StealInformation (_PlayerID)</a></td>
-	<td class="summary">Es sollen Informationen aus der Burg gestohlen werden.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_TributeClaim">Goal_TributeClaim (_Territory, _PlayerID, _Cost, _Periode, _Time, _StartMsg, _SuccessMsg, _FailMsg, _HowOften, _OtherOwner, _Abort)</a></td>
-	<td class="summary">Erlaubt es dem Spieler ein Territorium zu "mieten".</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_TributeDiplomacy">Goal_TributeDiplomacy (_GoldAmount, _Periode, _Time, _StartMsg, _SuccessMsg, _FailureMsg, _Restart)</a></td>
-	<td class="summary">Der Spieler kann durch regelmäßiges Begleichen eines Tributes bessere
- Diplomatie zu einem Spieler erreichen.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Goal_UnitsOnTerritory">Goal_UnitsOnTerritory (_Territory, _PlayerID, _Category, _Relation, _Amount)</a></td>
-	<td class="summary">Eine bestimmte Anzahl an Einheiten einer Kategorie muss sich auf dem
- Territorium befinden.</td>
 	</tr>
 </table>
 <h2><a href="#Reprisal">Reprisal</a></h2>
@@ -1294,7 +1298,7 @@
 <br/>
 
 
-    <h2 class="section-header "><a name="Event"></a>Event</h2>
+    <h2 class="section-header "><a name="Fields"></a>Fields</h2>
 
     <dl class="function">
     <dt>
@@ -1353,172 +1357,9 @@
 
 </dd>
 </dl>
-    <h2 class="section-header "><a name="Anwenderfunktionen"></a>Anwenderfunktionen</h2>
+    <h2 class="section-header "><a name="Event"></a>Event</h2>
 
     <dl class="function">
-    <dt>
-    <a name = "API.ActivateDebugMode"></a>
-    <strong>API.ActivateDebugMode (_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)</strong>
-    </dt>
-    <dd>
-    Aktiviert oder deaktiviert Optionen des Debug Mode.
-<p> <b>Hinweis:</b> Du kannst alle Optionen unbegrenzt oft beliebig ein-
- und ausschalten.
-<p> <ul>
- <li><u>Prüfung zum Spielbeginn</u>: <br>
- Quests werden auf konsistenz geprüft, bevor sie starten. </li>
- <li><u>Questverfolgung</u>: <br>
- Jede Statusänderung an einem Quest löst eine Nachricht auf dem Bildschirm
- aus, die die Änderung wiedergibt. </li>
- <li><u>Eintwickler Cheaks</u>: <br>
- Aktivier die Entwickler Cheats. </li>
- <li><u>Debug Chat-Eingabe</u>: <br>
- Die Chat-Eingabe kann zur Eingabe von Befehlen genutzt werden. </li>
- </ul>
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_CheckAtRun</span>
-            <span class="types"><span class="type">boolean</span></span>
-               Custom Behavior prüfen an/aus
-        </li>
-        <li><span class="parameter">_TraceQuests</span>
-            <span class="types"><span class="type">boolean</span></span>
-              Quest Trace an/aus
-        </li>
-        <li><span class="parameter">_DevelopingCheats</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Cheats an/aus
-        </li>
-        <li><span class="parameter">_DevelopingShell</span>
-            <span class="types"><span class="type">boolean</span></span>
-          Eingabeaufforderung an/aus
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.ActivateDebugMode"></a>
-    <strong>API.ActivateDebugMode (_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)</strong>
-    </dt>
-    <dd>
-    Aktiviert oder deaktiviert Optionen des Debug Mode.
-<p> <b>Hinweis:</b> Du kannst alle Optionen unbegrenzt oft beliebig ein-
- und ausschalten.
-<p> <ul>
- <li><u>Prüfung zum Spielbeginn</u>: <br>
- Quests werden auf konsistenz geprüft, bevor sie starten. </li>
- <li><u>Questverfolgung</u>: <br>
- Jede Statusänderung an einem Quest löst eine Nachricht auf dem Bildschirm
- aus, die die Änderung wiedergibt. </li>
- <li><u>Eintwickler Cheaks</u>: <br>
- Aktivier die Entwickler Cheats. </li>
- <li><u>Debug Chat-Eingabe</u>: <br>
- Die Chat-Eingabe kann zur Eingabe von Befehlen genutzt werden. </li>
- </ul>
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_CheckAtRun</span>
-            <span class="types"><span class="type">boolean</span></span>
-               Custom Behavior prüfen an/aus
-        </li>
-        <li><span class="parameter">_TraceQuests</span>
-            <span class="types"><span class="type">boolean</span></span>
-              Quest Trace an/aus
-        </li>
-        <li><span class="parameter">_DevelopingCheats</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Cheats an/aus
-        </li>
-        <li><span class="parameter">_DevelopingShell</span>
-            <span class="types"><span class="type">boolean</span></span>
-          Eingabeaufforderung an/aus
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.AddEntityTypePlaceholder"></a>
-    <strong>API.AddEntityTypePlaceholder (_Type, _Replacement)</strong>
-    </dt>
-    <dd>
-    Fügt einen Platzhalter für einen Entity-Typ hinzu.
-<p> Innerhalb des Textes wird der Plathalter wie folgt geschrieben:
- <pre>{t:ENTITY_TYP}</pre>
- ENTITY_TYP muss mit einem Entity-Typ ersetzt werden. Der Typ wird ohne
- Entities. davor geschrieben.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Type</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-                Typname, der ersetzt werden soll
-        </li>
-        <li><span class="parameter">_Replacement</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Wert, der ersetzt wird
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.AddNamePlaceholder(<span class="string">"U_KnightHealing"</span>, <span class="string">"Arroganze Ziege"</span>);
-API.AddNamePlaceholder(<span class="string">"B_Castle_SE"</span>, {de = <span class="string">"Festung des Bösen"</span>, en = <span class="string">"Fortress of Evil"</span>});</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.AddNamePlaceholder"></a>
-    <strong>API.AddNamePlaceholder (_Name, _Replacement)</strong>
-    </dt>
-    <dd>
-    Fügt einen Platzhalter für den angegebenen Namen hinzu.
-<p> Innerhalb des Textes wird der Plathalter wie folgt geschrieben:
- <pre>{n:SOME_NAME}</pre>
- SOME_NAME muss mit dem Namen ersetzt werden.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Name</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-                Name, der ersetzt werden soll
-        </li>
-        <li><span class="parameter">_Replacement</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Wert, der ersetzt wird
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, <span class="string">"Horst"</span>);
-API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span class="string">"Kuchen"</span>, en = <span class="string">"Cake"</span>});</pre>
-    </ul>
-
-</dd>
     <dt>
     <a name = "API.AddScriptEventListener"></a>
     <strong>API.AddScriptEventListener (_EventID, _Function)</strong>
@@ -1566,35 +1407,1158 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 </dd>
     <dt>
-    <a name = "API.BroadcastScriptEventToGlobal"></a>
-    <strong>API.BroadcastScriptEventToGlobal (_EventName, ...)</strong>
+    <a name = "API.RemoveScriptEventListener"></a>
+    <strong>API.RemoveScriptEventListener (_EventID, _ID)</strong>
     </dt>
     <dd>
-    Triggerd ein Script Event im globalen Skript aus dem lokalen Skript.
-<p> Das Event wird synchron für alle Spieler gesendet.
+    Entfernt einen Listener von dem Event.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_EventID</span>
+            <span class="types"><span class="type">number</span></span>
+         ID des Event
+        </li>
+        <li><span class="parameter">_ID</span>
+            <span class="types"><span class="type">number</span></span>
+              ID des Listener
+        </li>
+    </ul>
+
+
+
+    <h3>Verwandte Themen:</h3>
+    <ul>
+         <a href="../modules/qsb.html#API.AddScriptEventListener">API.AddScriptEventListener</a>
+    </ul>
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Goal"></a>Goal</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Goal_ActivateBuff"></a>
+    <strong>Goal_ActivateBuff (_PlayerID, _Buff)</strong>
+    </dt>
+    <dd>
+    Der angegebene Spieler muss einen Buff aktivieren.
+<p> <u>Buffs "Aufstieg eines Königreich"</u>
+ <li>Buff_Spice: Salz</li>
+ <li>Buff_Colour: Farben</li>
+ <li>Buff_Entertainers: Entertainer anheuern</li>
+ <li>Buff_FoodDiversity: Vielfältige Nahrung</li>
+ <li>Buff_ClothesDiversity: Vielfältige Kleidung</li>
+ <li>Buff_HygieneDiversity: Vielfältige Hygiene</li>
+ <li>Buff_EntertainmentDiversity: Vielfältige Unterhaltung</li>
+ <li>Buff_Sermon: Predigt halten</li>
+ <li>Buff_Festival: Fest veranstalten</li>
+ <li>Buff_ExtraPayment: Bonussold auszahlen</li>
+ <li>Buff_HighTaxes: Hohe Steuern verlangen</li>
+ <li>Buff_NoPayment: Sold streichen</li>
+ <li>Buff_NoTaxes: Keine Steuern verlangen</li>
+ <br/>
+ <u>Buffs "Reich des Ostens"</u>
+ <li>Buff_Gems: Edelsteine</li>
+ <li>Buff_MusicalInstrument: Musikinstrumente</li>
+ <li>Buff_Olibanum: Weihrauch</li>
 
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">_EventName</span>
-            <span class="types"><span class="type">number</span></span>
-         Name des Event
+        <li><span class="parameter">_PlayerID</span>
+         Spieler, der den Buff aktivieren muss
         </li>
-        <li><span class="parameter">...</span>
-         Optionale Parameter (nil, string, number, boolean, (array) table)
+        <li><span class="parameter">_Buff</span>
+             Buff, der aktiviert werden soll
         </li>
     </ul>
 
 
 
 
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.SendScriptEventToGlobal(<span class="string">"SomeEventName"</span>, Param1, Param2, ...);</pre>
-    </ul>
 
 </dd>
+    <dt>
+    <a name = "Goal_ActivateObject"></a>
+    <strong>Goal_ActivateObject (_ScriptName)</strong>
+    </dt>
+    <dd>
+    Ein Interaktives Objekt muss benutzt werden.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_ScriptName</span>
+         Skriptname des interaktiven Objektes
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_BuildRoad"></a>
+    <strong>Goal_BuildRoad (_Position1, _Position2, _OnlyRoads)</strong>
+    </dt>
+    <dd>
+    Zwei Punkte auf der Spielwelt müssen mit einer Straße verbunden werden.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Position1</span>
+         Erster Endpunkt der Straße
+        </li>
+        <li><span class="parameter">_Position2</span>
+         Zweiter Endpunkt der Straße
+        </li>
+        <li><span class="parameter">_OnlyRoads</span>
+         Keine Wege akzeptieren
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_BuildWall"></a>
+    <strong>Goal_BuildWall (_PlayerID, _Position1, _Position2)</strong>
+    </dt>
+    <dd>
+    Eine Mauer muss gebaut werden um die Bewegung eines Spielers einzuschränken.
+
+ Einschränken bedeutet, dass sich der angegebene Spieler nicht von Punkt A
+ nach Punkt B bewegen kann, weil eine Mauer im Weg ist. Die Punkte sind
+ frei wählbar. In den meisten Fällen reicht es, Marktplätze anzugeben.
+<p> Beispiel: Spieler 3 ist der Feind von Spieler 1, aber Bekannt mit Spieler 2.
+ Wenn er sich nicht mehr zwischen den Marktplätzen von Spieler 1 und 2
+ bewegen kann, weil eine Mauer dazwischen ist, ist das Ziel erreicht.
+<p> <b>Achtung:</b> Bei Monsun kann dieses Ziel fälschlicher Weise als erfüllt
+ gewertet werden, wenn der Weg durch Wasser blockiert wird!
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+          PlayerID, die blockiert wird
+        </li>
+        <li><span class="parameter">_Position1</span>
+         Erste Position
+        </li>
+        <li><span class="parameter">_Position2</span>
+         Zweite Position
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_Capture"></a>
+    <strong>Goal_Capture (_ScriptName)</strong>
+    </dt>
+    <dd>
+    Der Auftragnehmer muss eine Einheit gefangen nehmen.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_ScriptName</span>
+         Ziel
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_CaptureType"></a>
+    <strong>Goal_CaptureType (_Typ, _Amount, _PlayerID)</strong>
+    </dt>
+    <dd>
+    Der Auftragnehmer muss eine Menge von Einheiten eines Typs von einem
+ Spieler gefangen nehmen.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Typ</span>
+              Typ, der gefangen werden soll
+        </li>
+        <li><span class="parameter">_Amount</span>
+           Menge an Einheiten
+        </li>
+        <li><span class="parameter">_PlayerID</span>
+         Besitzer der Einheiten
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_Claim"></a>
+    <strong>Goal_Claim (_Territory)</strong>
+    </dt>
+    <dd>
+    Ein bestimmtes Territorium muss vom Auftragnehmer eingenommen werden.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Territory</span>
+         Territorium-ID oder Territoriumname
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_ClaimXTerritories"></a>
+    <strong>Goal_ClaimXTerritories (_Amount)</strong>
+    </dt>
+    <dd>
+    Der Auftragnehmer muss eine Menge an Territorien besitzen.
+ Das Heimatterritorium des Spielers wird mitgezählt!
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Amount</span>
+         Anzahl Territorien
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_Create"></a>
+    <strong>Goal_Create (_Type, _Amount, _Territory)</strong>
+    </dt>
+    <dd>
+    Der Auftragnehmer muss auf dem Territorium einen Entitytyp erstellen.
+<p> Dieses Behavior eignet sich für Aufgaben vom Schlag "Baue X Getreidefarmen
+ Auf Territorium >".
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Type</span>
+              Typ des Entity
+        </li>
+        <li><span class="parameter">_Amount</span>
+            Menge an Entities
+        </li>
+        <li><span class="parameter">_Territory</span>
+         Territorium
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_CustomVariables"></a>
+    <strong>Goal_CustomVariables (_Name, _Relation, _Value)</strong>
+    </dt>
+    <dd>
+    Eine benutzerdefinierte Variable muss einen bestimmten Wert haben.
+<p> Custom Variables können ausschließlich Zahlen enthalten. Bevor eine
+ Variable in einem Goal abgefragt werden kann, muss sie zuvor mit
+ Reprisal_CustomVariables oder Reward_CutsomVariables initialisiert
+ worden sein.
+<p> <p>Vergleichsoperatoren</p>
+ <ul>
+ <li>== - Werte müssen gleich sein</li>
+ <li>~= - Werte müssen ungleich sein</li>
+ <li>> - Variablenwert größer Vergleichswert</li>
+ <li>>= - Variablenwert größer oder gleich Vergleichswert</li>
+ <li>< - Variablenwert kleiner Vergleichswert</li>
+ <li><= - Variablenwert kleiner oder gleich Vergleichswert</li>
+ </ul>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Name</span>
+             Name der Variable
+        </li>
+        <li><span class="parameter">_Relation</span>
+         Vergleichsoperator
+        </li>
+        <li><span class="parameter">_Value</span>
+            Wert oder andere Custom Variable mit wert.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_Deliver"></a>
+    <strong>Goal_Deliver (_GoodType, _GoodAmount, _OtherTarget, _IgnoreCapture)</strong>
+    </dt>
+    <dd>
+    Einem Spieler müssen Rohstoffe oder Waren gesendet werden.
+<p> In der Regel wird zum Auftraggeber gesendet. Es ist aber möglich auch zu
+ einem anderen Zielspieler schicken zu lassen. Wird ein Wagen gefangen
+ genommen, dann muss erneut geschickt werden. Optional kann dem Spieler
+ auch erlaubt werden, den Karren zurückzuerobern.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_GoodType</span>
+              Typ der Ware
+        </li>
+        <li><span class="parameter">_GoodAmount</span>
+            Menga der Ware
+        </li>
+        <li><span class="parameter">_OtherTarget</span>
+           Anderes Ziel als Auftraggeber
+        </li>
+        <li><span class="parameter">_IgnoreCapture</span>
+         Wagen kann zurückerobert werden
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_DestroyAllPlayerUnits"></a>
+    <strong>Goal_DestroyAllPlayerUnits (_PlayerID)</strong>
+    </dt>
+    <dd>
+    Alle Einheiten des Spielers müssen zerstört werden.
+<p> <b>Achtung</b>: Bei normalen Parteien, welche ein Dorf oder eine Stadt
+ besitzen, ist Goal_DestroyPlayer besser geeignet!
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+         ID des Spielers
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_DestroyPlayer"></a>
+    <strong>Goal_DestroyPlayer (_PlayerID)</strong>
+    </dt>
+    <dd>
+    Eine andere Partei muss besiegt werden.
+<p> Die Partei gilt als besiegt, wenn ein Hauptgebäude (Burg, Kirche, Lager)
+ zerstört wurde.
+
+ <b>Achtung:</b> Bei Banditen ist dieses Behavior wenig sinnvoll, da sie
+ nicht durch zerstörung ihres Hauptzeltes vernichtet werden. Hier bietet
+ sich Goal_DestroyAllPlayerUnits an.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+         ID des Spielers
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_DestroyScriptEntity"></a>
+    <strong>Goal_DestroyScriptEntity (_ScriptName)</strong>
+    </dt>
+    <dd>
+    Ein benanntes Entity muss zerstört werden.
+<p> Ein Entity gilt als zerstört, wenn es nicht mehr existiert oder während
+ der Laufzeit des Quests seine Entity-ID oder den Besitzer verändert.
+<p> <b>Achtung</b>: Helden können nicht direkt zerstört werden. Bei ihnen
+ genügt es, wenn sie sich "in die Burg zurückziehen".
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_ScriptName</span>
+         Skriptname des Ziels
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_DestroyType"></a>
+    <strong>Goal_DestroyType (_EntityType, _Amount, _PlayerID)</strong>
+    </dt>
+    <dd>
+    Eine Menge an Entities eines Typs müssen zerstört werden.
+<p> <b>Achtung</b>: Wenn Raubtiere zerstört werden sollen, muss Spieler 0
+ als Besitzer angegeben werden.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_EntityType</span>
+         Typ des Entity
+        </li>
+        <li><span class="parameter">_Amount</span>
+             Menge an Entities des Typs
+        </li>
+        <li><span class="parameter">_PlayerID</span>
+           Besitzer des Entity
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_Diplomacy"></a>
+    <strong>Goal_Diplomacy (_PlayerID, _Relation, _State)</strong>
+    </dt>
+    <dd>
+    Es muss ein bestimmter Diplomatiestatus zu einer anderen Patei erreicht
+ werden.  Der Status kann eine Verbesserung oder eine Verschlechterung zum
+ aktuellen Status sein.
+<p> Die Relation kann entweder auf kleiner oder gleich (<=), größer oder gleich
+ (>=), oder exakte Gleichheit (==) eingestellt werden. Exakte GLeichheit ist
+ wegen der Gefahr eines Soft Locks mit Vorsicht zu genießen.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+         Partei, die Entdeckt werden muss
+        </li>
+        <li><span class="parameter">_Relation</span>
+         Größer-Kleiner-Relation
+        </li>
+        <li><span class="parameter">_State</span>
+            Diplomatiestatus
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_DiscoverPlayer"></a>
+    <strong>Goal_DiscoverPlayer (_PlayerID)</strong>
+    </dt>
+    <dd>
+    Das Heimatterritorium des Spielers muss entdeckt werden.
+<p> Das Heimatterritorium ist immer das, wo sich Burg oder Lagerhaus der
+ zu entdeckenden Partei befinden.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+         ID der zu entdeckenden Partei
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_DiscoverTerritory"></a>
+    <strong>Goal_DiscoverTerritory (_Territory)</strong>
+    </dt>
+    <dd>
+    Ein Territorium muss erstmalig vom Auftragnehmer betreten werden.
+<p> Wenn ein Spieler zuvor mit seinen Einheiten auf dem Territorium war, ist
+ es bereits entdeckt und das Ziel sofort erfüllt.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Territory</span>
+         Name oder ID des Territorium
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_EntityDistance"></a>
+    <strong>Goal_EntityDistance (_ScriptName1, _ScriptName2, _Relation, _Distance)</strong>
+    </dt>
+    <dd>
+    Eine Entfernung zwischen zwei Entities muss erreicht werden.
+<p> Je nach angegebener Relation muss die Entfernung unter- oder überschritten
+ werden, um den Quest zu gewinnen.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_ScriptName1</span>
+          Erstes Entity
+        </li>
+        <li><span class="parameter">_ScriptName2</span>
+          Zweites Entity
+        </li>
+        <li><span class="parameter">_Relation</span>
+             Relation
+        </li>
+        <li><span class="parameter">_Distance</span>
+             Entfernung
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_Festivals"></a>
+    <strong>Goal_Festivals (_PlayerID, _Amount)</strong>
+    </dt>
+    <dd>
+    Der angegebene Spieler muss mindestens die Menge an Festen feiern.
+<p> Ein Fest wird gewertet, sobald die Metfässer auf dem Markt erscheinen. Diese
+ Metfässer erscheinen im normalen Spielverlauf nur durch ein Fest!
+<p> <b>Achtung</b>: Wenn ein Spieler aus einem anderen Grund Metfässer besitzt,
+ wird dieses Behavior nicht mehr richtig funktionieren!
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+         ID des Spielers
+        </li>
+        <li><span class="parameter">_Amount</span>
+           Menge an Festen
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_GoodAmount"></a>
+    <strong>Goal_GoodAmount (_Type, _Amount, _Relation)</strong>
+    </dt>
+    <dd>
+    Der Spieler muss eine bestimmte Menge einer Ware erreichen.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Type</span>
+             Typ der Ware
+        </li>
+        <li><span class="parameter">_Amount</span>
+           Menge an Waren
+        </li>
+        <li><span class="parameter">_Relation</span>
+         Mengenrelation
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_InstantFailure"></a>
+    <strong>Goal_InstantFailure ()</strong>
+    </dt>
+    <dd>
+    Der Quest schlägt sofort fehl.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_InstantSuccess"></a>
+    <strong>Goal_InstantSuccess ()</strong>
+    </dt>
+    <dd>
+    Der Quest wird sofort erfüllt.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_KnightDistance"></a>
+    <strong>Goal_KnightDistance (_ScriptName, _Disctande)</strong>
+    </dt>
+    <dd>
+    Der Primary Knight des angegebenen Spielers muss sich dem Ziel nähern.
+<p> Die Distanz, die unterschritten werden muss, kann frei bestimmt werden.
+ Wird die Distanz 0 belassen, wird sie automatisch 2500.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_ScriptName</span>
+         Skriptname des Ziels
+        </li>
+        <li><span class="parameter">_Disctande</span>
+          (optional) Entfernung zum Ziel
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_KnightTitle"></a>
+    <strong>Goal_KnightTitle (_Title)</strong>
+    </dt>
+    <dd>
+    Der Auftragnehmer muss wenigstens einen bestimmten Titel erreichen.
+<p> Folgende Titel können verwendet werden:
+ <table border="1">
+ <tr>
+ <td><b>Titel</b></td>
+ <td><b>Übersetzung</b></td>
+ </tr>
+ <tr>
+ <td>Knight</td>
+ <td>Ritter</td>
+ </tr>
+ <tr>
+ <td>Mayor</td>
+ <td>Landvogt</td>
+ </tr>
+ <tr>
+ <td>Baron</td>
+ <td>Baron</td>
+ </tr>
+ <tr>
+ <td>Earl</td>
+ <td>Graf</td>
+ </tr>
+ <tr>
+ <td>Marquees</td>
+ <td>Marktgraf</td>
+ </tr>
+ <tr>
+ <td>Duke</td>
+ <td>Herzog</td>
+ </tr>
+ </tr>
+ <tr>
+ <td>Archduke</td>
+ <td>Erzherzog</td>
+ </tr>
+ <table>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Title</span>
+         Titel, der erreicht werden muss
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_MapScriptFunction"></a>
+    <strong>Goal_MapScriptFunction (_FunctionName)</strong>
+    </dt>
+    <dd>
+    Führt eine Funktion im Skript als Goal aus.
+<p> Die Funktion muss entweder true, false oder nichts zurückgeben.
+ <ul>
+ <li>true: Erfolgreich abgeschlossen</li>
+ <li>false: Fehlschlag</li>
+ <li>nichts: Zustand unbestimmt</li>
+ </ul>
+<p> Anstelle eines Strings kann beim Einsatz im Skript eine Funktionsreferenz
+ übergeben werden. In diesem Fall werden alle weiteren Parameter direkt an
+ die Funktion weitergereicht.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_FunctionName</span>
+         Name der Funktion
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_NoChange"></a>
+    <strong>Goal_NoChange ()</strong>
+    </dt>
+    <dd>
+    Der Zustand des Quests ändert sich niemals  Wenn ein Zeitlimit auf dem Quest liegt, wird dieses Behavior nicht
+ fehlschlagen sondern automatisch erfüllt.
+
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_Produce"></a>
+    <strong>Goal_Produce (_Type, _Amount)</strong>
+    </dt>
+    <dd>
+    Der Auftragnehmer muss eine Menge von Rohstoffen produzieren.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Type</span>
+           Typ des Rohstoffs
+        </li>
+        <li><span class="parameter">_Amount</span>
+         Menge an Rohstoffen
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_Protect"></a>
+    <strong>Goal_Protect (_ScriptName)</strong>
+    </dt>
+    <dd>
+    Der Auftragnehmer muss das angegebene Entity beschützen.
+<p> Wird ein Wagen zerstört oder in das Lagerhaus / die Burg eines Feindes
+ gebracht, schlägt das Ziel fehl.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_ScriptName</span>
+         Zu beschützendes Entity
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_Refill"></a>
+    <strong>Goal_Refill (_ScriptName)</strong>
+    </dt>
+    <dd>
+    Der Auftragnehmer muss eine Mine mit einem Geologen wieder auffüllen.
+<p> <b>Achtung</b>: Dieses Behavior ist nur in "Reich des Ostens" verfügbar.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_ScriptName</span>
+         Skriptname der Mine
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_ResourceAmount"></a>
+    <strong>Goal_ResourceAmount (_ScriptName, _Relation, _Amount)</strong>
+    </dt>
+    <dd>
+    Eine bestimmte Menge an Rohstoffen in einer Mine muss erreicht werden.
+<p> Dieses Behavior eignet sich besonders für den Einsatz als versteckter
+ Quest um eine Reaktion auszulösen, wenn z.B. eine Mine leer ist.
+<p> <u>Relationen</u>
+ <ul>
+ <li>> - Mehr als Anzahl</li>
+ <li>< - Weniger als Anzahl</li>
+ </ul>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_ScriptName</span>
+         Skriptname der Mine
+        </li>
+        <li><span class="parameter">_Relation</span>
+           Mengenrelation
+        </li>
+        <li><span class="parameter">_Amount</span>
+             Menge an Rohstoffen
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_SatisfyNeed"></a>
+    <strong>Goal_SatisfyNeed (_PlayerID, _Need)</strong>
+    </dt>
+    <dd>
+    Die Siedler des Spielers dürfen nicht aufgrund des Bedürfnisses streiken.
+<p> <u>Bedürfnisse</u>
+ <ul>
+ <li>Clothes: Kleidung</li>
+ <li>Entertainment: Unterhaltung</li>
+ <li>Nutrition: Nahrung</li>
+ <li>Hygiene: Hygiene</li>
+ <li>Medicine: Medizin</li>
+ </ul>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+         ID des Spielers
+        </li>
+        <li><span class="parameter">_Need</span>
+             Bedürfnis
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_SettlersNumber"></a>
+    <strong>Goal_SettlersNumber (_Amount, _PlayerID)</strong>
+    </dt>
+    <dd>
+    Der angegebene Spieler muss eine Menge an Siedlern in der Stadt haben.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Amount</span>
+           Menge an Siedlern
+        </li>
+        <li><span class="parameter">_PlayerID</span>
+         ID des Spielers (Default: 1)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_SoldierCount"></a>
+    <strong>Goal_SoldierCount (_PlayerID, _Relation, _Amount)</strong>
+    </dt>
+    <dd>
+    Ein Spieler muss eine Menge an Soldaten haben.
+<p> <u>Relationen</u>
+ <ul>
+ <li>>= - Anzahl als Mindestmenge</li>
+ <li>< - Weniger als Anzahl</li>
+ </ul>
+<p> Dieses Behavior kann verwendet werden um die Menge an feindlichen
+ Soldaten zu zählen oder die Menge an Soldaten des Spielers.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+         ID des Spielers
+        </li>
+        <li><span class="parameter">_Relation</span>
+         Mengenrelation
+        </li>
+        <li><span class="parameter">_Amount</span>
+           Menge an Soldaten
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_Spouses"></a>
+    <strong>Goal_Spouses (_Amount)</strong>
+    </dt>
+    <dd>
+    Der Auftragnehmer muss eine Menge von Ehefrauen in der Stadt haben.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Amount</span>
+         Menge an Ehefrauen
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_StealInformation"></a>
+    <strong>Goal_StealInformation (_PlayerID)</strong>
+    </dt>
+    <dd>
+    Es sollen Informationen aus der Burg gestohlen werden.
+<p> Der Spieler muss einen Dieb entsenden um Informationen aus der Burg zu
+ stehlen.
+<p> <b>Achtung:</b> Das ist nur bei Feinden möglich!
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+         ID der Partei
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_TributeClaim"></a>
+    <strong>Goal_TributeClaim (_Territory, _PlayerID, _Cost, _Periode, _Time, _StartMsg, _SuccessMsg, _FailMsg, _HowOften, _OtherOwner, _Abort)</strong>
+    </dt>
+    <dd>
+    Erlaubt es dem Spieler ein Territorium zu "mieten".
+<p> Zerstört der Spieler den Außenposten, schlägt der Quest fehl und das
+ Territorium wird an den Vermieter übergeben. Wenn der Spieler die Pacht
+ nicht bezahlt, geht der Besitz an den Vermieter über.
+<p> Die Zeit zum Bezahlen des Tributes muss immer kleiner sein als die
+ Wiederholungsperiode.
+<p> <b>Hinweis</b>: Je mehr Zeit sich der Spieler lässt um den Tribut zu
+ begleichen, desto mehr wird sich der Start der nächsten Periode verzögern.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Territory</span>
+          Name des Territorium
+        </li>
+        <li><span class="parameter">_PlayerID</span>
+           PlayerID des Zahlungsanforderer
+        </li>
+        <li><span class="parameter">_Cost</span>
+               Menge an Gold
+        </li>
+        <li><span class="parameter">_Periode</span>
+            Zahlungsperiode in Sekunden
+        </li>
+        <li><span class="parameter">_Time</span>
+               Zeitbegrenzung in Sekunden
+        </li>
+        <li><span class="parameter">_StartMsg</span>
+           Vorschlagnachricht
+        </li>
+        <li><span class="parameter">_SuccessMsg</span>
+         Erfolgsnachricht
+        </li>
+        <li><span class="parameter">_FailMsg</span>
+            Fehlschlagnachricht
+        </li>
+        <li><span class="parameter">_HowOften</span>
+           Anzahl an Zahlungen (0 = endlos)
+        </li>
+        <li><span class="parameter">_OtherOwner</span>
+         Eroberung durch Dritte beendet Quest
+        </li>
+        <li><span class="parameter">_Abort</span>
+              Nach nichtbezahlen abbrechen
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_TributeDiplomacy"></a>
+    <strong>Goal_TributeDiplomacy (_GoldAmount, _Periode, _Time, _StartMsg, _SuccessMsg, _FailureMsg, _Restart)</strong>
+    </dt>
+    <dd>
+    Der Spieler kann durch regelmäßiges Begleichen eines Tributes bessere
+ Diplomatie zu einem Spieler erreichen.
+<p> Die Zeit zum Bezahlen des Tributes muss immer kleiner sein als die
+ Wiederholungsperiode.
+<p> <b>Hinweis</b>: Je mehr Zeit sich der Spieler lässt um den Tribut zu
+ begleichen, desto mehr wird sich der Start der nächsten Periode verzögern.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_GoldAmount</span>
+         Menge an Gold
+        </li>
+        <li><span class="parameter">_Periode</span>
+            Zahlungsperiode in Sekunden
+        </li>
+        <li><span class="parameter">_Time</span>
+               Zeitbegrenzung in Sekunden
+        </li>
+        <li><span class="parameter">_StartMsg</span>
+           Vorschlagnachricht
+        </li>
+        <li><span class="parameter">_SuccessMsg</span>
+         Erfolgsnachricht
+        </li>
+        <li><span class="parameter">_FailureMsg</span>
+         Fehlschlagnachricht
+        </li>
+        <li><span class="parameter">_Restart</span>
+            Nach nichtbezahlen neu starten
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Goal_UnitsOnTerritory"></a>
+    <strong>Goal_UnitsOnTerritory (_Territory, _PlayerID, _Category, _Relation, _Amount)</strong>
+    </dt>
+    <dd>
+    Eine bestimmte Anzahl an Einheiten einer Kategorie muss sich auf dem
+ Territorium befinden.
+<p> Es kann entweder gefordert werden, weniger als die angegebene Menge auf
+ dem Territorium zu haben (z.B. "<"" 1 für 0) oder mindestens so
+ viele Entities (z.B. ">=" 5 für mindestens 5).
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Territory</span>
+          TerritoryID oder TerritoryName
+        </li>
+        <li><span class="parameter">_PlayerID</span>
+           PlayerID der Einheiten
+        </li>
+        <li><span class="parameter">_Category</span>
+           Kategorie der Einheiten
+        </li>
+        <li><span class="parameter">_Relation</span>
+           Mengenrelation (< oder >=)
+        </li>
+        <li><span class="parameter">_Amount</span>
+             Menge an Einheiten
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Werkzeugkasten"></a>Werkzeugkasten</h2>
+
+    <dl class="function">
     <dt>
     <a name = "API.ChangeEntityHealth"></a>
     <strong>API.ChangeEntityHealth (_Entity, _Health, _Relative)</strong>
@@ -1623,156 +2587,6 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 
 
-
-</dd>
-    <dt>
-    <a name = "API.ClearNotes"></a>
-    <strong>API.ClearNotes ()</strong>
-    </dt>
-    <dd>
-    Löscht alle Nachrichten im Debug Window.
-
-
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.ClearNotes();</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.ConvertFloatToInteger"></a>
-    <strong>API.ConvertFloatToInteger (_Value)</strong>
-    </dt>
-    <dd>
-    Konvertirert den Wert in eine Gleitkommazahl.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Value</span>
-            <span class="types"><span class="type">number</span></span>
-         Gleitkommazahl
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Konvertierte Ganzzahl
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Converted = API.ConvertFloatToInteger(Value)</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.ConvertIntegerToFloat"></a>
-    <strong>API.ConvertIntegerToFloat (_Value)</strong>
-    </dt>
-    <dd>
-    Konvertirert den Wert in eine Ganzzahl.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Value</span>
-            <span class="types"><span class="type">number</span></span>
-         Gleitkommazahl
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Konvertierte Ganzzahl
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Converted = API.ConvertIntegerToFloat(Value)</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.ConvertPlaceholders"></a>
-    <strong>API.ConvertPlaceholders (_Message)</strong>
-    </dt>
-    <dd>
-    Ersetzt alle Platzhalter im Text oder in der Table.
-<p> Mögliche Platzhalter:
- <ul>
- <li>{n:xyz} - Ersetzt einen Skriptnamen mit dem zuvor gesetzten Wert.</li>
- <li>{t:xyz} - Ersetzt einen Typen mit dem zuvor gesetzten Wert.</li>
- <li>{v:xyz} - Ersetzt mit dem Inhalt der angegebenen Variable. Der Wert muss
- in der Umgebung vorhanden sein, in der er ersetzt wird.</li>
- </ul>
-<p> Außerdem werden einige Standardfarben ersetzt.
- <pre>{COLOR}</pre>
- Ersetze {COLOR} in deinen Texten mit einer der gelisteten Farben.
-<p> <table border="1">
- <tr><th><b>Platzhalter</b></th><th><b>Farbe</b></th><th><b>RGBA</b></th></tr>
-<p> <tr><td>red</td>     <td>Rot</td>           <td>255,80,80,255</td></tr>
- <tr><td>blue</td>    <td>Blau</td>          <td>104,104,232,255</td></tr>
- <tr><td>yellow</td>  <td>Gelp</td>          <td>255,255,80,255</td></tr>
- <tr><td>green</td>   <td>Grün</td>          <td>80,180,0,255</td></tr>
- <tr><td>white</td>   <td>Weiß</td>          <td>255,255,255,255</td></tr>
- <tr><td>black</td>   <td>Schwarz</td>       <td>0,0,0,255</td></tr>
- <tr><td>grey</td>    <td>Grau</td>          <td>140,140,140,255</td></tr>
- <tr><td>azure</td>   <td>Azurblau</td>      <td>255,176,30,255</td></tr>
- <tr><td>orange</td>  <td>Orange</td>        <td>255,176,30,255</td></tr>
- <tr><td>amber</td>   <td>Bernstein</td>     <td>224,197,117,255</td></tr>
- <tr><td>violet</td>  <td>Violett</td>       <td>180,100,190,255</td></tr>
- <tr><td>pink</td>    <td>Rosa</td>          <td>255,170,200,255</td></tr>
- <tr><td>scarlet</td> <td>Scharlachrot</td>  <td>190,0,0,255</td></tr>
- <tr><td>magenta</td> <td>Magenta</td>       <td>190,0,89,255</td></tr>
- <tr><td>olive</td>   <td>Olivgrün</td>      <td>74,120,0,255</td></tr>
- <tr><td>sky</td>     <td>Himmelsblau</td>   <td>145,170,210,255</td></tr>
- <tr><td>tooltip</td> <td>Tooltip-Blau</td>  <td>51,51,120,255</td></tr>
- <tr><td>lucid</td>   <td>Transparent</td>   <td>0,0,0,0</td></tr>
- <tr><td>none</td>    <td>Standardfarbe</td> <td>(Abhängig vom Widget)</td></tr>
- </table>
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Message</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Text
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-        Ersetzter Text
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <li><pre class="example"><span class="comment">-- Beispiel #1: Vordefinierte Farbe austauschen
-</span><span class="keyword">local</span> Replaced = API.ConvertPlaceholders(<span class="string">"{scarlet}Dieser Text ist jetzt rot!"</span>);</pre></li>
-        <li><pre class="example"><span class="comment">-- Beispiel #2: Skriptnamen austauschen
-</span><span class="keyword">local</span> Replaced = API.ConvertPlaceholders(<span class="string">"{n:placeholder2} wurde ersetzt!"</span>);</pre></li>
-        <li><pre class="example"><span class="comment">-- Beispiel #3: Typen austauschen
-</span><span class="keyword">local</span> Replaced = API.ConvertPlaceholders(<span class="string">"{t:U_KnightHealing} wurde ersetzt!"</span>);</pre></li>
-        <li><pre class="example"><span class="comment">-- Beispiel #4: Variable austauschen
-</span><span class="keyword">local</span> Replaced = API.ConvertPlaceholders(<span class="string">"{v:MyVariable.1.MyValue} wurde ersetzt!"</span>);</pre></li>
-    </ul>
 
 </dd>
     <dt>
@@ -1824,167 +2638,6 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
         Skriptname
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.DisableAutoSave"></a>
-    <strong>API.DisableAutoSave (_Flag)</strong>
-    </dt>
-    <dd>
-    Deaktiviert das automatische Speichern der History Edition.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Flag</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Auto-Speichern ist deaktiviert
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.DisableLoading"></a>
-    <strong>API.DisableLoading (_Flag)</strong>
-    </dt>
-    <dd>
-    Deaktiviert das Laden von Spielständen.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Flag</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Laden ist deaktiviert
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.DisableSaving"></a>
-    <strong>API.DisableSaving (_Flag)</strong>
-    </dt>
-    <dd>
-    Deaktiviert das Speichern des Spiels.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Flag</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Speichern ist deaktiviert
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.EndJob"></a>
-    <strong>API.EndJob (_JobID)</strong>
-    </dt>
-    <dd>
-    Beendet den Job mit der übergebenen ID endgültig.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_JobID</span>
-            <span class="types"><span class="type">number</span></span>
-         ID des Jobs
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.EndJob(AnyJobID);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.FailQuest"></a>
-    <strong>API.FailQuest (_QuestName, _NoMessage)</strong>
-    </dt>
-    <dd>
-    Lässt den Quest fehlschlagen.
-<p> Der Status wird auf Over und das Resultat auf Failure gesetzt.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_QuestName</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Name des Quest
-        </li>
-        <li><span class="parameter">_NoMessage</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Meldung nicht anzeigen
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetActivePlayers"></a>
-    <strong>API.GetActivePlayers ()</strong>
-    </dt>
-    <dd>
-    Gibt eine Liste aller Spieler im Spiel zurück.
-<p> <h5>Multiplayer</h5>
- Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
-
-
-
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-        Liste der aktiven Spieler
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetDelayedPlayers"></a>
-    <strong>API.GetDelayedPlayers ()</strong>
-    </dt>
-    <dd>
-    Gibt alle Spieler zurück, auf die gerade gewartet wird.
-<p> <h5>Multiplayer</h5>
- Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
-
-
-
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-        Liste der aktiven Spieler
     </ol>
 
 
@@ -2190,41 +2843,6 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 </dd>
     <dt>
-    <a name = "API.GetFloat"></a>
-    <strong>API.GetFloat (_Entity, _SV)</strong>
-    </dt>
-    <dd>
-    Gibt den Wert auf dem übergebenen Index für das Entity zurück.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-            <span class="types"><span class="type">number</span></span>
-         Entity
-        </li>
-        <li><span class="parameter">_SV</span>
-            <span class="types"><span class="type">number</span></span>
-             Typ der Scripting Value
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Ermittelter Wert
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Size = API.GetFloat(<span class="string">"HansWurst"</span>, QSB.ScriptingValue.Size);</pre>
-    </ul>
-
-</dd>
-    <dt>
     <a name = "API.GetGroupLeader"></a>
     <strong>API.GetGroupLeader (_Entity)</strong>
     </dt>
@@ -2277,103 +2895,6 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 </dd>
     <dt>
-    <a name = "API.GetInteger"></a>
-    <strong>API.GetInteger (_Entity, _SV)</strong>
-    </dt>
-    <dd>
-    Gibt den Wert auf dem übergebenen Index für das Entity zurück.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-            <span class="types"><span class="type">number</span></span>
-         Entity
-        </li>
-        <li><span class="parameter">_SV</span>
-            <span class="types"><span class="type">number</span></span>
-             Typ der Scripting Value
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Ermittelter Wert
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> PlayerID = API.GetInteger(<span class="string">"HansWurst"</span>, QSB.ScriptingValue.Player);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.GetPlayerSlotID"></a>
-    <strong>API.GetPlayerSlotID (_PlayerID)</strong>
-    </dt>
-    <dd>
-    Gibt den Slot zurück, den der Spieler einnimmt.  Hat der Spieler keinen
- Slot okkupiert oder ist nicht menschlich, wird -1 zurückgegeben.
-<p> <h5>Multiplayer</h5>
- Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-        <li>
-           <span class="types"><span class="type">number</span></span>
-        ID des Player</li>
-        <li>
-           <span class="types"><span class="type">number</span></span>
-        Slot ID des Player</li>
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetQuestID"></a>
-    <strong>API.GetQuestID (_Name)</strong>
-    </dt>
-    <dd>
-    Gibt die ID des Quests mit dem angegebenen Namen zurück.  Existiert der
- Quest nicht, wird nil zurückgegeben.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Name</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Name des Quest
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        ID des Quest
-    </ol>
-
-
-
-
-</dd>
-    <dt>
     <a name = "API.GetResourceAmount"></a>
     <strong>API.GetResourceAmount (_Entity)</strong>
     </dt>
@@ -2395,39 +2916,6 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
            <span class="types"><span class="type">number</span></span>
         Menge an Rohstoffen
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetSlotPlayerID"></a>
-    <strong>API.GetSlotPlayerID (_SlotID)</strong>
-    </dt>
-    <dd>
-    Gibt den Spieler zurück, welcher den Slot okkupiert.  Hat der Slot keinen
- Spieler oder ist der Spieler nicht menschlich, wird -1 zurückgegeben.
-<p> <h5>Multiplayer</h5>
- Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_SlotID</span>
-
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-        <li>
-           <span class="types"><span class="type">number</span></span>
-        Slot ID des Player</li>
-        <li>
-           <span class="types"><span class="type">number</span></span>
-        ID des Player</li>
     </ol>
 
 
@@ -2491,7 +2979,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 </dd>
     <dt>
     <a name = "API.InteractiveObjectActivate"></a>
-    <strong>API.InteractiveObjectActivate (_EntityName, _State)</strong>
+    <strong>API.InteractiveObjectActivate (_ScriptName, _State)</strong>
     </dt>
     <dd>
     Aktiviert ein Interaktives Objekt.
@@ -2499,7 +2987,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">_EntityName</span>
+        <li><span class="parameter">_ScriptName</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
          Skriptname des Objektes
         </li>
@@ -2516,7 +3004,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 </dd>
     <dt>
     <a name = "API.InteractiveObjectDeactivate"></a>
-    <strong>API.InteractiveObjectDeactivate (_EntityName)</strong>
+    <strong>API.InteractiveObjectDeactivate (_ScriptName)</strong>
     </dt>
     <dd>
     Deaktiviert ein interaktives Objekt.
@@ -2524,7 +3012,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">_EntityName</span>
+        <li><span class="parameter">_ScriptName</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
          Scriptname des Objektes
         </li>
@@ -2562,348 +3050,6 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
     </ol>
 
 
-
-
-</dd>
-    <dt>
-    <a name = "API.IsHistoryEditionNetworkGame"></a>
-    <strong>API.IsHistoryEditionNetworkGame ()</strong>
-    </dt>
-    <dd>
-    Prüft, ob das laufende Spiel eine Multiplayerpartie in der History Edition
- ist.
-<p> <b>Hinweis</b>: Es ist unmöglich, dass Original und History Edition in einer
- Partie aufeinander treffen, da die alten Server längst abgeschaltet und die
- Option zum LAN-Spiel in der HE nicht verfügbar ist.
-
-
-
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">boolean</span></span>
-        Spiel ist History Edition
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.IsValidQuest"></a>
-    <strong>API.IsValidQuest (_QuestID)</strong>
-    </dt>
-    <dd>
-    Prüft, ob zu der angegebenen ID ein Quest existiert.  Wird ein Questname
- angegeben wird dessen Quest-ID ermittelt und geprüft.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_QuestID</span>
-            <span class="types"><span class="type">number</span></span>
-         ID oder Name des Quest
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">boolean</span></span>
-        Quest existiert
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.IsValidQuestName"></a>
-    <strong>API.IsValidQuestName (_Name)</strong>
-    </dt>
-    <dd>
-    Prüft den angegebenen Questnamen auf verbotene Zeichen.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Name</span>
-            <span class="types"><span class="type">number</span></span>
-         Name des Quest
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">boolean</span></span>
-        Name ist gültig
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.JobIsRunning"></a>
-    <strong>API.JobIsRunning (_JobID)</strong>
-    </dt>
-    <dd>
-    Gibt zurück, ob der Job mit der übergebenen ID aktiv ist.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_JobID</span>
-            <span class="types"><span class="type">number</span></span>
-         ID des Jobs
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">boolean</span></span>
-        Job ist aktiv
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">if</span> API.JobIsRunning(AnyJobID) <span class="keyword">then</span>
-    <span class="comment">-- Mach was
-</span><span class="keyword">end</span>;</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.Localize"></a>
-    <strong>API.Localize (_Text)</strong>
-    </dt>
-    <dd>
-    Ermittelt den lokalisierten Text anhand der eingestellten Sprache der QSB.
-<p> Wird ein normaler String übergeben, wird dieser sofort zurückgegeben.
- Bei einem Table mit einem passenden Sprach-Key (de, en, fr, ...) wird die
- entsprechende Sprache zurückgegeben. Sollte ein Nested Table übergeben
- werden, werden alle Texte innerhalb des Tables rekursiv übersetzt als Table
- zurückgegeben. Alle anderen Werte sind nicht in der Rückgabe enthalten.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Text</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-         Table mit Übersetzungen
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-        Übersetzten Text oder Table mit Texten
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <li><pre class="example"><span class="comment">-- Beispiel #1: Table lokalisieren
-</span><span class="keyword">local</span> Text = API.Localize({de = <span class="string">"Deutsch"</span>, en = <span class="string">"English"</span>});
-<span class="comment">-- Rückgabe: "Deutsch"</span></pre></li>
-        <li><pre class="example"><span class="comment">-- Beispiel #2: Mehrstufige (Nested) Tables
-</span><span class="comment">-- (Nested Tables sind in dem Fall mit Vorsicht zu genießen!)
-</span>API.Localize{{de = <span class="string">"Deutsch"</span>, en = <span class="string">"English"</span>}, {{<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>, de = <span class="string">"A"</span>, en = <span class="string">"B"</span>}}}
-<span class="comment">-- Rückgabe: {"Deutsch", {"A"}}</span></pre></li>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.Message"></a>
-    <strong>API.Message (_Text, _Sound)</strong>
-    </dt>
-    <dd>
-    Schreibt eine Nachricht unten in das Nachrichtenfenster.  Die Nachricht
- verschwindet nach einigen Sekunden.
-
- <i>Platzhalter werden automatisch im aufrufenden Environment ersetzt.</i><br>
- <i>Multilinguale Texte werden automatisch im aufrufenden Environment übersetzt.</i>
-<p> <b>Hinweis:</b> Texte werden automatisch lokalisiert und Platzhalter ersetzt.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Text</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-          Anzeigetext
-        </li>
-        <li><span class="parameter">_Sound</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         (Optional) Soundeffekt der Nachricht
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <li><pre class="example"><span class="comment">-- Beispiel #1: Einfache Nachricht
-</span>API.Message(<span class="string">"Das ist eine Nachricht!"</span>);</pre></li>
-        <li><pre class="example"><span class="comment">-- Beispiel #2: Nachricht und Ton
-</span>API.Message(<span class="string">"Das ist eine WERTVOLLE Nachricht!"</span>, <span class="string">"ui/menu_left_gold_pay"</span>);</pre></li>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.Note"></a>
-    <strong>API.Note (_Text)</strong>
-    </dt>
-    <dd>
-    Schreibt eine Nachricht in das Debug Window.  Der Text erscheint links am
- Bildschirm und ist nicht statisch.
-
- <i>Platzhalter werden automatisch im aufrufenden Environment ersetzt.</i><br>
- <i>Multilinguale Texte werden automatisch im aufrufenden Environment übersetzt.</i>
-<p> <b>Hinweis:</b> Texte werden automatisch lokalisiert und Platzhalter ersetzt.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Text</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Anzeigetext
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.Note(<span class="string">"Das ist eine flüchtige Information!"</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.ObtainCustomVariable"></a>
-    <strong>API.ObtainCustomVariable (_Name, _Default)</strong>
-    </dt>
-    <dd>
-    Gibt den aktuellen Wert der Custom Variable zurück oder den Default-Wert.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Name</span>
-            <span class="types"><span class="type">boolean</span></span>
-            Name der Custom Variable
-        </li>
-        <li><span class="parameter">_Default</span>
-         (Optional) Defaultwert falls leer
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-        Wert
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Value = API.ObtainCustomVariable(<span class="string">"MyVariable"</span>, <span class="number">0</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.RealTimeGetSecondsPassedSinceGameStart"></a>
-    <strong>API.RealTimeGetSecondsPassedSinceGameStart ()</strong>
-    </dt>
-    <dd>
-    Gibt die real vergangene Zeit seit dem Spielstart in Sekunden zurück.
-
-
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Vergangene reale Zeit
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> RealTime = API.RealTimeGetSecondsPassedSinceGameStart();</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.RegisterScriptEvent"></a>
-    <strong>API.RegisterScriptEvent (_Name)</strong>
-    </dt>
-    <dd>
-    Legt ein neues Script Event an.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Name</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-             Identifier des Event
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        ID des neuen Script Event
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> EventID = API.RegisterScriptEvent(<span class="string">"MyNewEvent"</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.RemoveScriptEventListener"></a>
-    <strong>API.RemoveScriptEventListener (_EventID, _ID)</strong>
-    </dt>
-    <dd>
-    Entfernt einen Listener von dem Event.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_EventID</span>
-            <span class="types"><span class="type">number</span></span>
-         ID des Event
-        </li>
-        <li><span class="parameter">_ID</span>
-            <span class="types"><span class="type">number</span></span>
-              ID des Listener
-        </li>
-    </ul>
-
-
-
-    <h3>Verwandte Themen:</h3>
-    <ul>
-         <a href="../modules/qsb.html#API.AddScriptEventListener">API.AddScriptEventListener</a>
-    </ul>
 
 
 </dd>
@@ -2969,60 +3115,6 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 </dd>
     <dt>
-    <a name = "API.RestartQuest"></a>
-    <strong>API.RestartQuest (_QuestName, _NoMessage)</strong>
-    </dt>
-    <dd>
-    Startet den Quest neu.
-<p> Der Quest muss beendet sein um ihn wieder neu zu starten. Wird ein Quest
- neu gestartet, müssen auch alle Trigger wieder neu ausgelöst werden, außer
- der Quest wird manuell getriggert.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_QuestName</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Name des Quest
-        </li>
-        <li><span class="parameter">_NoMessage</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Meldung nicht anzeigen
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.ResumeJob"></a>
-    <strong>API.ResumeJob (_JobID)</strong>
-    </dt>
-    <dd>
-    Aktiviert einen pausierten Job.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_JobID</span>
-            <span class="types"><span class="type">number</span></span>
-         ID des Jobs
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.ResumeJob(AnyJobID);</pre>
-    </ul>
-
-</dd>
-    <dt>
     <a name = "API.Round"></a>
     <strong>API.Round (_Value, _DecimalDigits)</strong>
     </dt>
@@ -3054,38 +3146,6 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 
 
-
-</dd>
-    <dt>
-    <a name = "API.SaveCustomVariable"></a>
-    <strong>API.SaveCustomVariable (_Name, _Value)</strong>
-    </dt>
-    <dd>
-    Speichert den Wert der Custom Variable im globalen und lokalen Skript.
-<p> Des weiteren wird in beiden Umgebungen ein Event ausgelöst, wenn der Wert
- gesetzt wird. Das Event bekommt den Namen der Variable, den alten Wert und
- den neuen Wert übergeben.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Name</span>
-            <span class="types"><span class="type">boolean</span></span>
-          Name der Custom Variable
-        </li>
-        <li><span class="parameter">_Value</span>
-         Neuer Wert
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Value = API.ObtainCustomVariable(<span class="string">"MyVariable"</span>, <span class="number">0</span>);</pre>
-    </ul>
 
 </dd>
     <dt>
@@ -3146,69 +3206,6 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 </dd>
     <dt>
-    <a name = "API.SendScriptEvent"></a>
-    <strong>API.SendScriptEvent (_EventID, ...)</strong>
-    </dt>
-    <dd>
-    Sendet das Script Event mit der übergebenen ID und überträgt optional
- Parameter.
-<p> <h5>Multiplayer</h5>
- Im Multiplayer kann diese Funktion nicht benutzt werden, um Script Events
- synchron oder asynchron aus dem lokalen im globalen Skript auszuführen.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_EventID</span>
-            <span class="types"><span class="type">number</span></span>
-         ID des Event
-        </li>
-        <li><span class="parameter">...</span>
-         Optionale Parameter (nil, string, number, boolean, (array) table)
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.SendScriptEvent(SomeEventID, Param1, Param2, ...);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.SendScriptEventToGlobal"></a>
-    <strong>API.SendScriptEventToGlobal (_EventName, ...)</strong>
-    </dt>
-    <dd>
-    Triggerd ein Script Event im globalen Skript aus dem lokalen Skript.
-<p> Das Event wird asynchron für den kontrollierenden Spieler gesendet.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_EventName</span>
-            <span class="types"><span class="type">number</span></span>
-         Name des Event
-        </li>
-        <li><span class="parameter">...</span>
-         Optionale Parameter (nil, string, number, boolean, (array) table)
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.SendScriptEventToGlobal(<span class="string">"SomeEventName"</span>, Param1, Param2, ...);</pre>
-    </ul>
-
-</dd>
-    <dt>
     <a name = "API.SetEntityModel"></a>
     <strong>API.SetEntityModel (_Entity, _NewModel, _AnimSet)</strong>
     </dt>
@@ -3261,157 +3258,6 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 </dd>
     <dt>
-    <a name = "API.SetEntityVulnerableFlag"></a>
-    <strong>API.SetEntityVulnerableFlag (_Entity, _Flag)</strong>
-    </dt>
-    <dd>
-    Setzt das Entity oder das Battalion verwundbar oder unverwundbar.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-         Entity (Scriptname oder ID)
-        </li>
-        <li><span class="parameter">_Flag</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Verwundbar
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.SetFloat"></a>
-    <strong>API.SetFloat (_Entity, _SV, _Value)</strong>
-    </dt>
-    <dd>
-    Setzt den Wert auf dem übergebenen Index für das Entity.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-            <span class="types"><span class="type">number</span></span>
-         Entity
-        </li>
-        <li><span class="parameter">_SV</span>
-            <span class="types"><span class="type">number</span></span>
-             Typ der Scripting Value
-        </li>
-        <li><span class="parameter">_Value</span>
-            <span class="types"><span class="type">number</span></span>
-          Zu setzender Wert
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.SetFloat(<span class="string">"HansWurst"</span>, QSB.ScriptingValue.Size, <span class="number">1.5</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.SetInteger"></a>
-    <strong>API.SetInteger (_Entity, _SV, _Value)</strong>
-    </dt>
-    <dd>
-    Setzt den Wert auf dem übergebenen Index für das Entity.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-            <span class="types"><span class="type">number</span></span>
-         Entity
-        </li>
-        <li><span class="parameter">_SV</span>
-            <span class="types"><span class="type">number</span></span>
-             Typ der Scripting Value
-        </li>
-        <li><span class="parameter">_Value</span>
-            <span class="types"><span class="type">number</span></span>
-          Zu setzender Wert
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.SetInteger(<span class="string">"HansWurst"</span>, QSB.ScriptingValue.Player, <span class="number">2</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.SetLogLevel"></a>
-    <strong>API.SetLogLevel (_ScreenLogLevel, _FileLogLevel)</strong>
-    </dt>
-    <dd>
-    Setzt, ab wann Log-Nachrichten geschrieben werden.
-<p> Es wird zwischen der Ausgabe am Bildschirm und dem Wegschreiben ins Log
- unterschieden. Die Anzeige am Bildschirm kann strenger eingestellt sein,
- als das Speichern in der Log-Datei.
-<p> Mögliche Level:
- <table border=1>
- <tr>
- <td><b>Name</b></td>
- <td><b>Beschreibung</b></td>
- </tr>
- <tr>
- <td>QSB.LogLevel.ALL</td>
- <td>Alle Stufen ausgeben (Debug, Info, Warning, Error)</td>
- </tr>
- <tr>
- <td>QSB.LogLevel.INFO</td>
- <td>Erst ab Stufe Info ausgeben (Info, Warning, Error)</td>
- </tr>
- <tr>
- <td>QSB.LogLevel.WARNING</td>
- <td>Erst ab Stufe Warning ausgeben (Warning, Error)</td>
- </tr>
- <tr>
- <td>QSB.LogLevel.ERROR</td>
- <td>Erst ab Stufe Error ausgeben (Error)</td>
- </tr>
- <tr>
- <td>QSB.LogLevel.OFF</td>
- <td>Keine Meldungen ausgeben</td>
- </tr>
- </table>
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_ScreenLogLevel</span>
-            <span class="types"><span class="type">number</span></span>
-         Level für Bildschirmausgabe
-        </li>
-        <li><span class="parameter">_FileLogLevel</span>
-            <span class="types"><span class="type">number</span></span>
-           Level für Dateiausgaabe
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.SetLogLevel(QSB.LogLevel.ERROR, QSB.LogLevel.WARNING);</pre>
-    </ul>
-
-</dd>
-    <dt>
     <a name = "API.SetResourceAmount"></a>
     <strong>API.SetResourceAmount (_Entity, _StartAmount, _RefillAmount)</strong>
     </dt>
@@ -3444,32 +3290,256 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
     </ul>
 
 </dd>
+</dl>
+    <h2 class="section-header "><a name="Multiplayer"></a>Multiplayer</h2>
+
+    <dl class="function">
     <dt>
-    <a name = "API.ShowTextInput"></a>
-    <strong>API.ShowTextInput (_PlayerID, _AllowDebug)</strong>
+    <a name = "API.GetActivePlayers"></a>
+    <strong>API.GetActivePlayers ()</strong>
     </dt>
     <dd>
-    Offnet das Chatfenster für eine Eingabe.
-<p> <b>Hinweis</b>: Im Multiplayer kann der Chat nicht über Skript gesteuert
- werden.
+    Gibt eine Liste aller Spieler im Spiel zurück.
+<p> <h5>Multiplayer</h5>
+ Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
+
+
+
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Liste der aktiven Spieler
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.GetDelayedPlayers"></a>
+    <strong>API.GetDelayedPlayers ()</strong>
+    </dt>
+    <dd>
+    Gibt alle Spieler zurück, auf die gerade gewartet wird.
+<p> <h5>Multiplayer</h5>
+ Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
+
+
+
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Liste der aktiven Spieler
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.GetPlayerSlotID"></a>
+    <strong>API.GetPlayerSlotID (_PlayerID)</strong>
+    </dt>
+    <dd>
+    Gibt den Slot zurück, den der Spieler einnimmt.  Hat der Spieler keinen
+ Slot okkupiert oder ist nicht menschlich, wird -1 zurückgegeben.
+<p> <h5>Multiplayer</h5>
+ Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
 
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">_PlayerID</span>
-            <span class="types"><span class="type">number</span></span>
-           Spieler für den der Chat geöffnet wird
+
         </li>
-        <li><span class="parameter">_AllowDebug</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Debug Eingaben werden bearbeitet
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ID des Player</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Slot ID des Player</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.GetSlotPlayerID"></a>
+    <strong>API.GetSlotPlayerID (_SlotID)</strong>
+    </dt>
+    <dd>
+    Gibt den Spieler zurück, welcher den Slot okkupiert.  Hat der Slot keinen
+ Spieler oder ist der Spieler nicht menschlich, wird -1 zurückgegeben.
+<p> <h5>Multiplayer</h5>
+ Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_SlotID</span>
+
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Slot ID des Player</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ID des Player</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.IsHistoryEditionNetworkGame"></a>
+    <strong>API.IsHistoryEditionNetworkGame ()</strong>
+    </dt>
+    <dd>
+    Prüft, ob das laufende Spiel eine Multiplayerpartie in der History Edition
+ ist.
+<p> <b>Hinweis</b>: Es ist unmöglich, dass Original und History Edition in einer
+ Partie aufeinander treffen, da die alten Server längst abgeschaltet und die
+ Option zum LAN-Spiel in der HE nicht verfügbar ist.
+
+
+
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Spiel ist History Edition
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Job"></a>Job</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.EndJob"></a>
+    <strong>API.EndJob (_JobID)</strong>
+    </dt>
+    <dd>
+    Beendet den Job mit der übergebenen ID endgültig.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_JobID</span>
+            <span class="types"><span class="type">number</span></span>
+         ID des Jobs
         </li>
     </ul>
 
 
 
 
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.EndJob(AnyJobID);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.JobIsRunning"></a>
+    <strong>API.JobIsRunning (_JobID)</strong>
+    </dt>
+    <dd>
+    Gibt zurück, ob der Job mit der übergebenen ID aktiv ist.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_JobID</span>
+            <span class="types"><span class="type">number</span></span>
+         ID des Jobs
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Job ist aktiv
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">if</span> API.JobIsRunning(AnyJobID) <span class="keyword">then</span>
+    <span class="comment">-- Mach was
+</span><span class="keyword">end</span>;</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.RealTimeGetSecondsPassedSinceGameStart"></a>
+    <strong>API.RealTimeGetSecondsPassedSinceGameStart ()</strong>
+    </dt>
+    <dd>
+    Gibt die real vergangene Zeit seit dem Spielstart in Sekunden zurück.
+
+
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Vergangene reale Zeit
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> RealTime = API.RealTimeGetSecondsPassedSinceGameStart();</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.ResumeJob"></a>
+    <strong>API.ResumeJob (_JobID)</strong>
+    </dt>
+    <dd>
+    Aktiviert einen pausierten Job.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_JobID</span>
+            <span class="types"><span class="type">number</span></span>
+         ID des Jobs
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.ResumeJob(AnyJobID);</pre>
+    </ul>
 
 </dd>
     <dt>
@@ -3696,33 +3766,6 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 </dd>
     <dt>
-    <a name = "API.StartQuest"></a>
-    <strong>API.StartQuest (_QuestName, _NoMessage)</strong>
-    </dt>
-    <dd>
-    Startet den Quest sofort, sofern er existiert.
-<p> Dabei ist es unerheblich, ob die Bedingungen zum Start erfüllt sind.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_QuestName</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Name des Quest
-        </li>
-        <li><span class="parameter">_NoMessage</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Meldung nicht anzeigen
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
     <a name = "API.StartRealTimeDelay"></a>
     <strong>API.StartRealTimeDelay (_Waittime, _Function, ...)</strong>
     </dt>
@@ -3771,6 +3814,402 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 </dd>
     <dt>
+    <a name = "API.YieldJob"></a>
+    <strong>API.YieldJob (_JobID)</strong>
+    </dt>
+    <dd>
+    Pausiert einen aktivien Job.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_JobID</span>
+            <span class="types"><span class="type">number</span></span>
+         ID des Jobs
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.YieldJob(AnyJobID);</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Spielstand"></a>Spielstand</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.DisableAutoSave"></a>
+    <strong>API.DisableAutoSave (_Flag)</strong>
+    </dt>
+    <dd>
+    Deaktiviert das automatische Speichern der History Edition.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Flag</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Auto-Speichern ist deaktiviert
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.DisableLoading"></a>
+    <strong>API.DisableLoading (_Flag)</strong>
+    </dt>
+    <dd>
+    Deaktiviert das Laden von Spielständen.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Flag</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Laden ist deaktiviert
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.DisableSaving"></a>
+    <strong>API.DisableSaving (_Flag)</strong>
+    </dt>
+    <dd>
+    Deaktiviert das Speichern des Spiels.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Flag</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Speichern ist deaktiviert
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Chat"></a>Chat</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.ShowTextInput"></a>
+    <strong>API.ShowTextInput (_PlayerID, _AllowDebug)</strong>
+    </dt>
+    <dd>
+    Offnet das Chatfenster für eine Eingabe.
+<p> <b>Hinweis</b>: Im Multiplayer kann der Chat nicht über Skript gesteuert
+ werden.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+            <span class="types"><span class="type">number</span></span>
+           Spieler für den der Chat geöffnet wird
+        </li>
+        <li><span class="parameter">_AllowDebug</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Debug Eingaben werden bearbeitet
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Text"></a>Text</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.AddEntityTypePlaceholder"></a>
+    <strong>API.AddEntityTypePlaceholder (_Type, _Replacement)</strong>
+    </dt>
+    <dd>
+    Fügt einen Platzhalter für einen Entity-Typ hinzu.
+<p> Innerhalb des Textes wird der Plathalter wie folgt geschrieben:
+ <pre>{t:ENTITY_TYP}</pre>
+ ENTITY_TYP muss mit einem Entity-Typ ersetzt werden. Der Typ wird ohne
+ Entities. davor geschrieben.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Type</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+                Typname, der ersetzt werden soll
+        </li>
+        <li><span class="parameter">_Replacement</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Wert, der ersetzt wird
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.AddNamePlaceholder(<span class="string">"U_KnightHealing"</span>, <span class="string">"Arroganze Ziege"</span>);
+API.AddNamePlaceholder(<span class="string">"B_Castle_SE"</span>, {de = <span class="string">"Festung des Bösen"</span>, en = <span class="string">"Fortress of Evil"</span>});</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.AddNamePlaceholder"></a>
+    <strong>API.AddNamePlaceholder (_Name, _Replacement)</strong>
+    </dt>
+    <dd>
+    Fügt einen Platzhalter für den angegebenen Namen hinzu.
+<p> Innerhalb des Textes wird der Plathalter wie folgt geschrieben:
+ <pre>{n:SOME_NAME}</pre>
+ SOME_NAME muss mit dem Namen ersetzt werden.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+                Name, der ersetzt werden soll
+        </li>
+        <li><span class="parameter">_Replacement</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Wert, der ersetzt wird
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, <span class="string">"Horst"</span>);
+API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span class="string">"Kuchen"</span>, en = <span class="string">"Cake"</span>});</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.ClearNotes"></a>
+    <strong>API.ClearNotes ()</strong>
+    </dt>
+    <dd>
+    Löscht alle Nachrichten im Debug Window.
+
+
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.ClearNotes();</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.ConvertPlaceholders"></a>
+    <strong>API.ConvertPlaceholders (_Message)</strong>
+    </dt>
+    <dd>
+    Ersetzt alle Platzhalter im Text oder in der Table.
+<p> Mögliche Platzhalter:
+ <ul>
+ <li>{n:xyz} - Ersetzt einen Skriptnamen mit dem zuvor gesetzten Wert.</li>
+ <li>{t:xyz} - Ersetzt einen Typen mit dem zuvor gesetzten Wert.</li>
+ <li>{v:xyz} - Ersetzt mit dem Inhalt der angegebenen Variable. Der Wert muss
+ in der Umgebung vorhanden sein, in der er ersetzt wird.</li>
+ </ul>
+<p> Außerdem werden einige Standardfarben ersetzt.
+ <pre>{COLOR}</pre>
+ Ersetze {COLOR} in deinen Texten mit einer der gelisteten Farben.
+<p> <table border="1">
+ <tr><th><b>Platzhalter</b></th><th><b>Farbe</b></th><th><b>RGBA</b></th></tr>
+<p> <tr><td>red</td>     <td>Rot</td>           <td>255,80,80,255</td></tr>
+ <tr><td>blue</td>    <td>Blau</td>          <td>104,104,232,255</td></tr>
+ <tr><td>yellow</td>  <td>Gelp</td>          <td>255,255,80,255</td></tr>
+ <tr><td>green</td>   <td>Grün</td>          <td>80,180,0,255</td></tr>
+ <tr><td>white</td>   <td>Weiß</td>          <td>255,255,255,255</td></tr>
+ <tr><td>black</td>   <td>Schwarz</td>       <td>0,0,0,255</td></tr>
+ <tr><td>grey</td>    <td>Grau</td>          <td>140,140,140,255</td></tr>
+ <tr><td>azure</td>   <td>Azurblau</td>      <td>255,176,30,255</td></tr>
+ <tr><td>orange</td>  <td>Orange</td>        <td>255,176,30,255</td></tr>
+ <tr><td>amber</td>   <td>Bernstein</td>     <td>224,197,117,255</td></tr>
+ <tr><td>violet</td>  <td>Violett</td>       <td>180,100,190,255</td></tr>
+ <tr><td>pink</td>    <td>Rosa</td>          <td>255,170,200,255</td></tr>
+ <tr><td>scarlet</td> <td>Scharlachrot</td>  <td>190,0,0,255</td></tr>
+ <tr><td>magenta</td> <td>Magenta</td>       <td>190,0,89,255</td></tr>
+ <tr><td>olive</td>   <td>Olivgrün</td>      <td>74,120,0,255</td></tr>
+ <tr><td>sky</td>     <td>Himmelsblau</td>   <td>145,170,210,255</td></tr>
+ <tr><td>tooltip</td> <td>Tooltip-Blau</td>  <td>51,51,120,255</td></tr>
+ <tr><td>lucid</td>   <td>Transparent</td>   <td>0,0,0,0</td></tr>
+ <tr><td>none</td>    <td>Standardfarbe</td> <td>(Abhängig vom Widget)</td></tr>
+ </table>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Message</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Text
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+        Ersetzter Text
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <li><pre class="example"><span class="comment">-- Beispiel #1: Vordefinierte Farbe austauschen
+</span><span class="keyword">local</span> Replaced = API.ConvertPlaceholders(<span class="string">"{scarlet}Dieser Text ist jetzt rot!"</span>);</pre></li>
+        <li><pre class="example"><span class="comment">-- Beispiel #2: Skriptnamen austauschen
+</span><span class="keyword">local</span> Replaced = API.ConvertPlaceholders(<span class="string">"{n:placeholder2} wurde ersetzt!"</span>);</pre></li>
+        <li><pre class="example"><span class="comment">-- Beispiel #3: Typen austauschen
+</span><span class="keyword">local</span> Replaced = API.ConvertPlaceholders(<span class="string">"{t:U_KnightHealing} wurde ersetzt!"</span>);</pre></li>
+        <li><pre class="example"><span class="comment">-- Beispiel #4: Variable austauschen
+</span><span class="keyword">local</span> Replaced = API.ConvertPlaceholders(<span class="string">"{v:MyVariable.1.MyValue} wurde ersetzt!"</span>);</pre></li>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.Localize"></a>
+    <strong>API.Localize (_Text)</strong>
+    </dt>
+    <dd>
+    Ermittelt den lokalisierten Text anhand der eingestellten Sprache der QSB.
+<p> Wird ein normaler String übergeben, wird dieser sofort zurückgegeben.
+ Bei einem Table mit einem passenden Sprach-Key (de, en, fr, ...) wird die
+ entsprechende Sprache zurückgegeben. Sollte ein Nested Table übergeben
+ werden, werden alle Texte innerhalb des Tables rekursiv übersetzt als Table
+ zurückgegeben. Alle anderen Werte sind nicht in der Rückgabe enthalten.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Text</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Table mit Übersetzungen
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+        Übersetzten Text oder Table mit Texten
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <li><pre class="example"><span class="comment">-- Beispiel #1: Table lokalisieren
+</span><span class="keyword">local</span> Text = API.Localize({de = <span class="string">"Deutsch"</span>, en = <span class="string">"English"</span>});
+<span class="comment">-- Rückgabe: "Deutsch"</span></pre></li>
+        <li><pre class="example"><span class="comment">-- Beispiel #2: Mehrstufige (Nested) Tables
+</span><span class="comment">-- (Nested Tables sind in dem Fall mit Vorsicht zu genießen!)
+</span>API.Localize{{de = <span class="string">"Deutsch"</span>, en = <span class="string">"English"</span>}, {{<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>, de = <span class="string">"A"</span>, en = <span class="string">"B"</span>}}}
+<span class="comment">-- Rückgabe: {"Deutsch", {"A"}}</span></pre></li>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.Message"></a>
+    <strong>API.Message (_Text, _Sound)</strong>
+    </dt>
+    <dd>
+    Schreibt eine Nachricht unten in das Nachrichtenfenster.  Die Nachricht
+ verschwindet nach einigen Sekunden.
+
+ <i>Platzhalter werden automatisch im aufrufenden Environment ersetzt.</i><br>
+ <i>Multilinguale Texte werden automatisch im aufrufenden Environment übersetzt.</i>
+<p> <b>Hinweis:</b> Texte werden automatisch lokalisiert und Platzhalter ersetzt.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Text</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+          Anzeigetext
+        </li>
+        <li><span class="parameter">_Sound</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         (Optional) Soundeffekt der Nachricht
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <li><pre class="example"><span class="comment">-- Beispiel #1: Einfache Nachricht
+</span>API.Message(<span class="string">"Das ist eine Nachricht!"</span>);</pre></li>
+        <li><pre class="example"><span class="comment">-- Beispiel #2: Nachricht und Ton
+</span>API.Message(<span class="string">"Das ist eine WERTVOLLE Nachricht!"</span>, <span class="string">"ui/menu_left_gold_pay"</span>);</pre></li>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.Note"></a>
+    <strong>API.Note (_Text)</strong>
+    </dt>
+    <dd>
+    Schreibt eine Nachricht in das Debug Window.  Der Text erscheint links am
+ Bildschirm und ist nicht statisch.
+
+ <i>Platzhalter werden automatisch im aufrufenden Environment ersetzt.</i><br>
+ <i>Multilinguale Texte werden automatisch im aufrufenden Environment übersetzt.</i>
+<p> <b>Hinweis:</b> Texte werden automatisch lokalisiert und Platzhalter ersetzt.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Text</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Anzeigetext
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.Note(<span class="string">"Das ist eine flüchtige Information!"</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
     <a name = "API.StaticNote"></a>
     <strong>API.StaticNote (_Text)</strong>
     </dt>
@@ -3799,6 +4238,178 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
     <ul>
         <pre class="example">API.StaticNote(<span class="string">"Das ist eine dauerhafte Information!"</span>);</pre>
     </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Quest"></a>Quest</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.FailQuest"></a>
+    <strong>API.FailQuest (_QuestName, _NoMessage)</strong>
+    </dt>
+    <dd>
+    Lässt den Quest fehlschlagen.
+<p> Der Status wird auf Over und das Resultat auf Failure gesetzt.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_QuestName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name des Quest
+        </li>
+        <li><span class="parameter">_NoMessage</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Meldung nicht anzeigen
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.GetQuestID"></a>
+    <strong>API.GetQuestID (_Name)</strong>
+    </dt>
+    <dd>
+    Gibt die ID des Quests mit dem angegebenen Namen zurück.  Existiert der
+ Quest nicht, wird nil zurückgegeben.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name des Quest
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        ID des Quest
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.IsValidQuest"></a>
+    <strong>API.IsValidQuest (_QuestID)</strong>
+    </dt>
+    <dd>
+    Prüft, ob zu der angegebenen ID ein Quest existiert.  Wird ein Questname
+ angegeben wird dessen Quest-ID ermittelt und geprüft.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_QuestID</span>
+            <span class="types"><span class="type">number</span></span>
+         ID oder Name des Quest
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Quest existiert
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.IsValidQuestName"></a>
+    <strong>API.IsValidQuestName (_Name)</strong>
+    </dt>
+    <dd>
+    Prüft den angegebenen Questnamen auf verbotene Zeichen.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Name</span>
+            <span class="types"><span class="type">number</span></span>
+         Name des Quest
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Name ist gültig
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.RestartQuest"></a>
+    <strong>API.RestartQuest (_QuestName, _NoMessage)</strong>
+    </dt>
+    <dd>
+    Startet den Quest neu.
+<p> Der Quest muss beendet sein um ihn wieder neu zu starten. Wird ein Quest
+ neu gestartet, müssen auch alle Trigger wieder neu ausgelöst werden, außer
+ der Quest wird manuell getriggert.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_QuestName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name des Quest
+        </li>
+        <li><span class="parameter">_NoMessage</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Meldung nicht anzeigen
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.StartQuest"></a>
+    <strong>API.StartQuest (_QuestName, _NoMessage)</strong>
+    </dt>
+    <dd>
+    Startet den Quest sofort, sofern er existiert.
+<p> Dabei ist es unerheblich, ob die Bedingungen zum Start erfüllt sind.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_QuestName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name des Quest
+        </li>
+        <li><span class="parameter">_NoMessage</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Meldung nicht anzeigen
+        </li>
+    </ul>
+
+
+
+
 
 </dd>
     <dt>
@@ -3856,19 +4467,214 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 
 </dd>
+</dl>
+    <h2 class="section-header "><a name="Debug"></a>Debug</h2>
+
+    <dl class="function">
     <dt>
-    <a name = "API.YieldJob"></a>
-    <strong>API.YieldJob (_JobID)</strong>
+    <a name = "API.ActivateDebugMode"></a>
+    <strong>API.ActivateDebugMode (_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)</strong>
     </dt>
     <dd>
-    Pausiert einen aktivien Job.
+    Aktiviert oder deaktiviert Optionen des Debug Mode.
+<p> <b>Hinweis:</b> Du kannst alle Optionen unbegrenzt oft beliebig ein-
+ und ausschalten.
+<p> <ul>
+ <li><u>Prüfung zum Spielbeginn</u>: <br>
+ Quests werden auf konsistenz geprüft, bevor sie starten. </li>
+ <li><u>Questverfolgung</u>: <br>
+ Jede Statusänderung an einem Quest löst eine Nachricht auf dem Bildschirm
+ aus, die die Änderung wiedergibt. </li>
+ <li><u>Eintwickler Cheaks</u>: <br>
+ Aktivier die Entwickler Cheats. </li>
+ <li><u>Debug Chat-Eingabe</u>: <br>
+ Die Chat-Eingabe kann zur Eingabe von Befehlen genutzt werden. </li>
+ </ul>
+
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">_JobID</span>
+        <li><span class="parameter">_CheckAtRun</span>
+            <span class="types"><span class="type">boolean</span></span>
+               Custom Behavior prüfen an/aus
+        </li>
+        <li><span class="parameter">_TraceQuests</span>
+            <span class="types"><span class="type">boolean</span></span>
+              Quest Trace an/aus
+        </li>
+        <li><span class="parameter">_DevelopingCheats</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Cheats an/aus
+        </li>
+        <li><span class="parameter">_DevelopingShell</span>
+            <span class="types"><span class="type">boolean</span></span>
+          Eingabeaufforderung an/aus
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="ScriptingValue"></a>ScriptingValue</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.ConvertFloatToInteger"></a>
+    <strong>API.ConvertFloatToInteger (_Value)</strong>
+    </dt>
+    <dd>
+    Konvertirert den Wert in eine Gleitkommazahl.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Value</span>
             <span class="types"><span class="type">number</span></span>
-         ID des Jobs
+         Gleitkommazahl
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Konvertierte Ganzzahl
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Converted = API.ConvertFloatToInteger(Value)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.ConvertIntegerToFloat"></a>
+    <strong>API.ConvertIntegerToFloat (_Value)</strong>
+    </dt>
+    <dd>
+    Konvertirert den Wert in eine Ganzzahl.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Value</span>
+            <span class="types"><span class="type">number</span></span>
+         Gleitkommazahl
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Konvertierte Ganzzahl
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Converted = API.ConvertIntegerToFloat(Value)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetFloat"></a>
+    <strong>API.GetFloat (_Entity, _SV)</strong>
+    </dt>
+    <dd>
+    Gibt den Wert auf dem übergebenen Index für das Entity zurück.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+            <span class="types"><span class="type">number</span></span>
+         Entity
+        </li>
+        <li><span class="parameter">_SV</span>
+            <span class="types"><span class="type">number</span></span>
+             Typ der Scripting Value
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Ermittelter Wert
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Size = API.GetFloat(<span class="string">"HansWurst"</span>, QSB.ScriptingValue.Size);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetInteger"></a>
+    <strong>API.GetInteger (_Entity, _SV)</strong>
+    </dt>
+    <dd>
+    Gibt den Wert auf dem übergebenen Index für das Entity zurück.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+            <span class="types"><span class="type">number</span></span>
+         Entity
+        </li>
+        <li><span class="parameter">_SV</span>
+            <span class="types"><span class="type">number</span></span>
+             Typ der Scripting Value
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Ermittelter Wert
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> PlayerID = API.GetInteger(<span class="string">"HansWurst"</span>, QSB.ScriptingValue.Player);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.SetFloat"></a>
+    <strong>API.SetFloat (_Entity, _SV, _Value)</strong>
+    </dt>
+    <dd>
+    Setzt den Wert auf dem übergebenen Index für das Entity.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+            <span class="types"><span class="type">number</span></span>
+         Entity
+        </li>
+        <li><span class="parameter">_SV</span>
+            <span class="types"><span class="type">number</span></span>
+             Typ der Scripting Value
+        </li>
+        <li><span class="parameter">_Value</span>
+            <span class="types"><span class="type">number</span></span>
+          Zu setzender Wert
         </li>
     </ul>
 
@@ -3877,7 +4683,41 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
     <h3>Beispiel:</h3>
     <ul>
-        <pre class="example">API.YieldJob(AnyJobID);</pre>
+        <pre class="example">API.SetFloat(<span class="string">"HansWurst"</span>, QSB.ScriptingValue.Size, <span class="number">1.5</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.SetInteger"></a>
+    <strong>API.SetInteger (_Entity, _SV, _Value)</strong>
+    </dt>
+    <dd>
+    Setzt den Wert auf dem übergebenen Index für das Entity.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+            <span class="types"><span class="type">number</span></span>
+         Entity
+        </li>
+        <li><span class="parameter">_SV</span>
+            <span class="types"><span class="type">number</span></span>
+             Typ der Scripting Value
+        </li>
+        <li><span class="parameter">_Value</span>
+            <span class="types"><span class="type">number</span></span>
+          Zu setzender Wert
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.SetInteger(<span class="string">"HansWurst"</span>, QSB.ScriptingValue.Player, <span class="number">2</span>);</pre>
     </ul>
 
 </dd>
@@ -5137,1126 +5977,6 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 </dd>
 </dl>
-    <h2 class="section-header "><a name="Goal"></a>Goal</h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "Goal_ActivateBuff"></a>
-    <strong>Goal_ActivateBuff (_PlayerID, _Buff)</strong>
-    </dt>
-    <dd>
-    Der angegebene Spieler muss einen Buff aktivieren.
-<p> <u>Buffs "Aufstieg eines Königreich"</u>
- <li>Buff_Spice: Salz</li>
- <li>Buff_Colour: Farben</li>
- <li>Buff_Entertainers: Entertainer anheuern</li>
- <li>Buff_FoodDiversity: Vielfältige Nahrung</li>
- <li>Buff_ClothesDiversity: Vielfältige Kleidung</li>
- <li>Buff_HygieneDiversity: Vielfältige Hygiene</li>
- <li>Buff_EntertainmentDiversity: Vielfältige Unterhaltung</li>
- <li>Buff_Sermon: Predigt halten</li>
- <li>Buff_Festival: Fest veranstalten</li>
- <li>Buff_ExtraPayment: Bonussold auszahlen</li>
- <li>Buff_HighTaxes: Hohe Steuern verlangen</li>
- <li>Buff_NoPayment: Sold streichen</li>
- <li>Buff_NoTaxes: Keine Steuern verlangen</li>
- <br/>
- <u>Buffs "Reich des Ostens"</u>
- <li>Buff_Gems: Edelsteine</li>
- <li>Buff_MusicalInstrument: Musikinstrumente</li>
- <li>Buff_Olibanum: Weihrauch</li>
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-         Spieler, der den Buff aktivieren muss
-        </li>
-        <li><span class="parameter">_Buff</span>
-             Buff, der aktiviert werden soll
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_ActivateObject"></a>
-    <strong>Goal_ActivateObject (_ScriptName)</strong>
-    </dt>
-    <dd>
-    Ein Interaktives Objekt muss benutzt werden.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_ScriptName</span>
-         Skriptname des interaktiven Objektes
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_BuildRoad"></a>
-    <strong>Goal_BuildRoad (_Position1, _Position2, _OnlyRoads)</strong>
-    </dt>
-    <dd>
-    Zwei Punkte auf der Spielwelt müssen mit einer Straße verbunden werden.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Position1</span>
-         Erster Endpunkt der Straße
-        </li>
-        <li><span class="parameter">_Position2</span>
-         Zweiter Endpunkt der Straße
-        </li>
-        <li><span class="parameter">_OnlyRoads</span>
-         Keine Wege akzeptieren
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_BuildWall"></a>
-    <strong>Goal_BuildWall (_PlayerID, _Position1, _Position2)</strong>
-    </dt>
-    <dd>
-    Eine Mauer muss gebaut werden um die Bewegung eines Spielers einzuschränken.
-
- Einschränken bedeutet, dass sich der angegebene Spieler nicht von Punkt A
- nach Punkt B bewegen kann, weil eine Mauer im Weg ist. Die Punkte sind
- frei wählbar. In den meisten Fällen reicht es, Marktplätze anzugeben.
-<p> Beispiel: Spieler 3 ist der Feind von Spieler 1, aber Bekannt mit Spieler 2.
- Wenn er sich nicht mehr zwischen den Marktplätzen von Spieler 1 und 2
- bewegen kann, weil eine Mauer dazwischen ist, ist das Ziel erreicht.
-<p> <b>Achtung:</b> Bei Monsun kann dieses Ziel fälschlicher Weise als erfüllt
- gewertet werden, wenn der Weg durch Wasser blockiert wird!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-          PlayerID, die blockiert wird
-        </li>
-        <li><span class="parameter">_Position1</span>
-         Erste Position
-        </li>
-        <li><span class="parameter">_Position2</span>
-         Zweite Position
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_Capture"></a>
-    <strong>Goal_Capture (_ScriptName)</strong>
-    </dt>
-    <dd>
-    Der Auftragnehmer muss eine Einheit gefangen nehmen.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_ScriptName</span>
-         Ziel
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_CaptureType"></a>
-    <strong>Goal_CaptureType (_Typ, _Amount, _PlayerID)</strong>
-    </dt>
-    <dd>
-    Der Auftragnehmer muss eine Menge von Einheiten eines Typs von einem
- Spieler gefangen nehmen.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Typ</span>
-              Typ, der gefangen werden soll
-        </li>
-        <li><span class="parameter">_Amount</span>
-           Menge an Einheiten
-        </li>
-        <li><span class="parameter">_PlayerID</span>
-         Besitzer der Einheiten
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_Claim"></a>
-    <strong>Goal_Claim (_Territory)</strong>
-    </dt>
-    <dd>
-    Ein bestimmtes Territorium muss vom Auftragnehmer eingenommen werden.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Territory</span>
-         Territorium-ID oder Territoriumname
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_ClaimXTerritories"></a>
-    <strong>Goal_ClaimXTerritories (_Amount)</strong>
-    </dt>
-    <dd>
-    Der Auftragnehmer muss eine Menge an Territorien besitzen.
- Das Heimatterritorium des Spielers wird mitgezählt!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Amount</span>
-         Anzahl Territorien
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_Create"></a>
-    <strong>Goal_Create (_Type, _Amount, _Territory)</strong>
-    </dt>
-    <dd>
-    Der Auftragnehmer muss auf dem Territorium einen Entitytyp erstellen.
-<p> Dieses Behavior eignet sich für Aufgaben vom Schlag "Baue X Getreidefarmen
- Auf Territorium >".
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Type</span>
-              Typ des Entity
-        </li>
-        <li><span class="parameter">_Amount</span>
-            Menge an Entities
-        </li>
-        <li><span class="parameter">_Territory</span>
-         Territorium
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_CustomVariables"></a>
-    <strong>Goal_CustomVariables (_Name, _Relation, _Value)</strong>
-    </dt>
-    <dd>
-    Eine benutzerdefinierte Variable muss einen bestimmten Wert haben.
-<p> Custom Variables können ausschließlich Zahlen enthalten. Bevor eine
- Variable in einem Goal abgefragt werden kann, muss sie zuvor mit
- Reprisal_CustomVariables oder Reward_CutsomVariables initialisiert
- worden sein.
-<p> <p>Vergleichsoperatoren</p>
- <ul>
- <li>== - Werte müssen gleich sein</li>
- <li>~= - Werte müssen ungleich sein</li>
- <li>> - Variablenwert größer Vergleichswert</li>
- <li>>= - Variablenwert größer oder gleich Vergleichswert</li>
- <li>< - Variablenwert kleiner Vergleichswert</li>
- <li><= - Variablenwert kleiner oder gleich Vergleichswert</li>
- </ul>
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Name</span>
-             Name der Variable
-        </li>
-        <li><span class="parameter">_Relation</span>
-         Vergleichsoperator
-        </li>
-        <li><span class="parameter">_Value</span>
-            Wert oder andere Custom Variable mit wert.
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_Deliver"></a>
-    <strong>Goal_Deliver (_GoodType, _GoodAmount, _OtherTarget, _IgnoreCapture)</strong>
-    </dt>
-    <dd>
-    Einem Spieler müssen Rohstoffe oder Waren gesendet werden.
-<p> In der Regel wird zum Auftraggeber gesendet. Es ist aber möglich auch zu
- einem anderen Zielspieler schicken zu lassen. Wird ein Wagen gefangen
- genommen, dann muss erneut geschickt werden. Optional kann dem Spieler
- auch erlaubt werden, den Karren zurückzuerobern.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_GoodType</span>
-              Typ der Ware
-        </li>
-        <li><span class="parameter">_GoodAmount</span>
-            Menga der Ware
-        </li>
-        <li><span class="parameter">_OtherTarget</span>
-           Anderes Ziel als Auftraggeber
-        </li>
-        <li><span class="parameter">_IgnoreCapture</span>
-         Wagen kann zurückerobert werden
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_DestroyAllPlayerUnits"></a>
-    <strong>Goal_DestroyAllPlayerUnits (_PlayerID)</strong>
-    </dt>
-    <dd>
-    Alle Einheiten des Spielers müssen zerstört werden.
-<p> <b>Achtung</b>: Bei normalen Parteien, welche ein Dorf oder eine Stadt
- besitzen, ist Goal_DestroyPlayer besser geeignet!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-         ID des Spielers
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_DestroyPlayer"></a>
-    <strong>Goal_DestroyPlayer (_PlayerID)</strong>
-    </dt>
-    <dd>
-    Eine andere Partei muss besiegt werden.
-<p> Die Partei gilt als besiegt, wenn ein Hauptgebäude (Burg, Kirche, Lager)
- zerstört wurde.
-
- <b>Achtung:</b> Bei Banditen ist dieses Behavior wenig sinnvoll, da sie
- nicht durch zerstörung ihres Hauptzeltes vernichtet werden. Hier bietet
- sich Goal_DestroyAllPlayerUnits an.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-         ID des Spielers
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_DestroyScriptEntity"></a>
-    <strong>Goal_DestroyScriptEntity (_ScriptName)</strong>
-    </dt>
-    <dd>
-    Ein benanntes Entity muss zerstört werden.
-<p> Ein Entity gilt als zerstört, wenn es nicht mehr existiert oder während
- der Laufzeit des Quests seine Entity-ID oder den Besitzer verändert.
-<p> <b>Achtung</b>: Helden können nicht direkt zerstört werden. Bei ihnen
- genügt es, wenn sie sich "in die Burg zurückziehen".
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_ScriptName</span>
-         Skriptname des Ziels
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_DestroyType"></a>
-    <strong>Goal_DestroyType (_EntityType, _Amount, _PlayerID)</strong>
-    </dt>
-    <dd>
-    Eine Menge an Entities eines Typs müssen zerstört werden.
-<p> <b>Achtung</b>: Wenn Raubtiere zerstört werden sollen, muss Spieler 0
- als Besitzer angegeben werden.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_EntityType</span>
-         Typ des Entity
-        </li>
-        <li><span class="parameter">_Amount</span>
-             Menge an Entities des Typs
-        </li>
-        <li><span class="parameter">_PlayerID</span>
-           Besitzer des Entity
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_Diplomacy"></a>
-    <strong>Goal_Diplomacy (_PlayerID, _Relation, _State)</strong>
-    </dt>
-    <dd>
-    Es muss ein bestimmter Diplomatiestatus zu einer anderen Patei erreicht
- werden.  Der Status kann eine Verbesserung oder eine Verschlechterung zum
- aktuellen Status sein.
-<p> Die Relation kann entweder auf kleiner oder gleich (<=), größer oder gleich
- (>=), oder exakte Gleichheit (==) eingestellt werden. Exakte GLeichheit ist
- wegen der Gefahr eines Soft Locks mit Vorsicht zu genießen.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-         Partei, die Entdeckt werden muss
-        </li>
-        <li><span class="parameter">_Relation</span>
-         Größer-Kleiner-Relation
-        </li>
-        <li><span class="parameter">_State</span>
-            Diplomatiestatus
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_DiscoverPlayer"></a>
-    <strong>Goal_DiscoverPlayer (_PlayerID)</strong>
-    </dt>
-    <dd>
-    Das Heimatterritorium des Spielers muss entdeckt werden.
-<p> Das Heimatterritorium ist immer das, wo sich Burg oder Lagerhaus der
- zu entdeckenden Partei befinden.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-         ID der zu entdeckenden Partei
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_DiscoverTerritory"></a>
-    <strong>Goal_DiscoverTerritory (_Territory)</strong>
-    </dt>
-    <dd>
-    Ein Territorium muss erstmalig vom Auftragnehmer betreten werden.
-<p> Wenn ein Spieler zuvor mit seinen Einheiten auf dem Territorium war, ist
- es bereits entdeckt und das Ziel sofort erfüllt.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Territory</span>
-         Name oder ID des Territorium
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_EntityDistance"></a>
-    <strong>Goal_EntityDistance (_ScriptName1, _ScriptName2, _Relation, _Distance)</strong>
-    </dt>
-    <dd>
-    Eine Entfernung zwischen zwei Entities muss erreicht werden.
-<p> Je nach angegebener Relation muss die Entfernung unter- oder überschritten
- werden, um den Quest zu gewinnen.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_ScriptName1</span>
-          Erstes Entity
-        </li>
-        <li><span class="parameter">_ScriptName2</span>
-          Zweites Entity
-        </li>
-        <li><span class="parameter">_Relation</span>
-             Relation
-        </li>
-        <li><span class="parameter">_Distance</span>
-             Entfernung
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_Festivals"></a>
-    <strong>Goal_Festivals (_PlayerID, _Amount)</strong>
-    </dt>
-    <dd>
-    Der angegebene Spieler muss mindestens die Menge an Festen feiern.
-<p> Ein Fest wird gewertet, sobald die Metfässer auf dem Markt erscheinen. Diese
- Metfässer erscheinen im normalen Spielverlauf nur durch ein Fest!
-<p> <b>Achtung</b>: Wenn ein Spieler aus einem anderen Grund Metfässer besitzt,
- wird dieses Behavior nicht mehr richtig funktionieren!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-         ID des Spielers
-        </li>
-        <li><span class="parameter">_Amount</span>
-           Menge an Festen
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_GoodAmount"></a>
-    <strong>Goal_GoodAmount (_Type, _Amount, _Relation)</strong>
-    </dt>
-    <dd>
-    Der Spieler muss eine bestimmte Menge einer Ware erreichen.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Type</span>
-             Typ der Ware
-        </li>
-        <li><span class="parameter">_Amount</span>
-           Menge an Waren
-        </li>
-        <li><span class="parameter">_Relation</span>
-         Mengenrelation
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_InstantFailure"></a>
-    <strong>Goal_InstantFailure ()</strong>
-    </dt>
-    <dd>
-    Der Quest schlägt sofort fehl.
-
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_InstantSuccess"></a>
-    <strong>Goal_InstantSuccess ()</strong>
-    </dt>
-    <dd>
-    Der Quest wird sofort erfüllt.
-
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_KnightDistance"></a>
-    <strong>Goal_KnightDistance (_ScriptName, _Disctande)</strong>
-    </dt>
-    <dd>
-    Der Primary Knight des angegebenen Spielers muss sich dem Ziel nähern.
-<p> Die Distanz, die unterschritten werden muss, kann frei bestimmt werden.
- Wird die Distanz 0 belassen, wird sie automatisch 2500.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_ScriptName</span>
-         Skriptname des Ziels
-        </li>
-        <li><span class="parameter">_Disctande</span>
-          (optional) Entfernung zum Ziel
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_KnightTitle"></a>
-    <strong>Goal_KnightTitle (_Title)</strong>
-    </dt>
-    <dd>
-    Der Auftragnehmer muss wenigstens einen bestimmten Titel erreichen.
-<p> Folgende Titel können verwendet werden:
- <table border="1">
- <tr>
- <td><b>Titel</b></td>
- <td><b>Übersetzung</b></td>
- </tr>
- <tr>
- <td>Knight</td>
- <td>Ritter</td>
- </tr>
- <tr>
- <td>Mayor</td>
- <td>Landvogt</td>
- </tr>
- <tr>
- <td>Baron</td>
- <td>Baron</td>
- </tr>
- <tr>
- <td>Earl</td>
- <td>Graf</td>
- </tr>
- <tr>
- <td>Marquees</td>
- <td>Marktgraf</td>
- </tr>
- <tr>
- <td>Duke</td>
- <td>Herzog</td>
- </tr>
- </tr>
- <tr>
- <td>Archduke</td>
- <td>Erzherzog</td>
- </tr>
- <table>
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Title</span>
-         Titel, der erreicht werden muss
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_MapScriptFunction"></a>
-    <strong>Goal_MapScriptFunction (_FunctionName)</strong>
-    </dt>
-    <dd>
-    Führt eine Funktion im Skript als Goal aus.
-<p> Die Funktion muss entweder true, false oder nichts zurückgeben.
- <ul>
- <li>true: Erfolgreich abgeschlossen</li>
- <li>false: Fehlschlag</li>
- <li>nichts: Zustand unbestimmt</li>
- </ul>
-<p> Anstelle eines Strings kann beim Einsatz im Skript eine Funktionsreferenz
- übergeben werden. In diesem Fall werden alle weiteren Parameter direkt an
- die Funktion weitergereicht.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_FunctionName</span>
-         Name der Funktion
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_NoChange"></a>
-    <strong>Goal_NoChange ()</strong>
-    </dt>
-    <dd>
-    Der Zustand des Quests ändert sich niemals  Wenn ein Zeitlimit auf dem Quest liegt, wird dieses Behavior nicht
- fehlschlagen sondern automatisch erfüllt.
-
-
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_Produce"></a>
-    <strong>Goal_Produce (_Type, _Amount)</strong>
-    </dt>
-    <dd>
-    Der Auftragnehmer muss eine Menge von Rohstoffen produzieren.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Type</span>
-           Typ des Rohstoffs
-        </li>
-        <li><span class="parameter">_Amount</span>
-         Menge an Rohstoffen
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_Protect"></a>
-    <strong>Goal_Protect (_ScriptName)</strong>
-    </dt>
-    <dd>
-    Der Auftragnehmer muss das angegebene Entity beschützen.
-<p> Wird ein Wagen zerstört oder in das Lagerhaus / die Burg eines Feindes
- gebracht, schlägt das Ziel fehl.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_ScriptName</span>
-         Zu beschützendes Entity
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_Refill"></a>
-    <strong>Goal_Refill (_ScriptName)</strong>
-    </dt>
-    <dd>
-    Der Auftragnehmer muss eine Mine mit einem Geologen wieder auffüllen.
-<p> <b>Achtung</b>: Dieses Behavior ist nur in "Reich des Ostens" verfügbar.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_ScriptName</span>
-         Skriptname der Mine
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_ResourceAmount"></a>
-    <strong>Goal_ResourceAmount (_ScriptName, _Relation, _Amount)</strong>
-    </dt>
-    <dd>
-    Eine bestimmte Menge an Rohstoffen in einer Mine muss erreicht werden.
-<p> Dieses Behavior eignet sich besonders für den Einsatz als versteckter
- Quest um eine Reaktion auszulösen, wenn z.B. eine Mine leer ist.
-<p> <u>Relationen</u>
- <ul>
- <li>> - Mehr als Anzahl</li>
- <li>< - Weniger als Anzahl</li>
- </ul>
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_ScriptName</span>
-         Skriptname der Mine
-        </li>
-        <li><span class="parameter">_Relation</span>
-           Mengenrelation
-        </li>
-        <li><span class="parameter">_Amount</span>
-             Menge an Rohstoffen
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_SatisfyNeed"></a>
-    <strong>Goal_SatisfyNeed (_PlayerID, _Need)</strong>
-    </dt>
-    <dd>
-    Die Siedler des Spielers dürfen nicht aufgrund des Bedürfnisses streiken.
-<p> <u>Bedürfnisse</u>
- <ul>
- <li>Clothes: Kleidung</li>
- <li>Entertainment: Unterhaltung</li>
- <li>Nutrition: Nahrung</li>
- <li>Hygiene: Hygiene</li>
- <li>Medicine: Medizin</li>
- </ul>
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-         ID des Spielers
-        </li>
-        <li><span class="parameter">_Need</span>
-             Bedürfnis
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_SettlersNumber"></a>
-    <strong>Goal_SettlersNumber (_Amount, _PlayerID)</strong>
-    </dt>
-    <dd>
-    Der angegebene Spieler muss eine Menge an Siedlern in der Stadt haben.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Amount</span>
-           Menge an Siedlern
-        </li>
-        <li><span class="parameter">_PlayerID</span>
-         ID des Spielers (Default: 1)
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_SoldierCount"></a>
-    <strong>Goal_SoldierCount (_PlayerID, _Relation, _Amount)</strong>
-    </dt>
-    <dd>
-    Ein Spieler muss eine Menge an Soldaten haben.
-<p> <u>Relationen</u>
- <ul>
- <li>>= - Anzahl als Mindestmenge</li>
- <li>< - Weniger als Anzahl</li>
- </ul>
-<p> Dieses Behavior kann verwendet werden um die Menge an feindlichen
- Soldaten zu zählen oder die Menge an Soldaten des Spielers.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-         ID des Spielers
-        </li>
-        <li><span class="parameter">_Relation</span>
-         Mengenrelation
-        </li>
-        <li><span class="parameter">_Amount</span>
-           Menge an Soldaten
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_Spouses"></a>
-    <strong>Goal_Spouses (_Amount)</strong>
-    </dt>
-    <dd>
-    Der Auftragnehmer muss eine Menge von Ehefrauen in der Stadt haben.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Amount</span>
-         Menge an Ehefrauen
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_StealInformation"></a>
-    <strong>Goal_StealInformation (_PlayerID)</strong>
-    </dt>
-    <dd>
-    Es sollen Informationen aus der Burg gestohlen werden.
-<p> Der Spieler muss einen Dieb entsenden um Informationen aus der Burg zu
- stehlen.
-<p> <b>Achtung:</b> Das ist nur bei Feinden möglich!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-         ID der Partei
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_TributeClaim"></a>
-    <strong>Goal_TributeClaim (_Territory, _PlayerID, _Cost, _Periode, _Time, _StartMsg, _SuccessMsg, _FailMsg, _HowOften, _OtherOwner, _Abort)</strong>
-    </dt>
-    <dd>
-    Erlaubt es dem Spieler ein Territorium zu "mieten".
-<p> Zerstört der Spieler den Außenposten, schlägt der Quest fehl und das
- Territorium wird an den Vermieter übergeben. Wenn der Spieler die Pacht
- nicht bezahlt, geht der Besitz an den Vermieter über.
-<p> Die Zeit zum Bezahlen des Tributes muss immer kleiner sein als die
- Wiederholungsperiode.
-<p> <b>Hinweis</b>: Je mehr Zeit sich der Spieler lässt um den Tribut zu
- begleichen, desto mehr wird sich der Start der nächsten Periode verzögern.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Territory</span>
-          Name des Territorium
-        </li>
-        <li><span class="parameter">_PlayerID</span>
-           PlayerID des Zahlungsanforderer
-        </li>
-        <li><span class="parameter">_Cost</span>
-               Menge an Gold
-        </li>
-        <li><span class="parameter">_Periode</span>
-            Zahlungsperiode in Sekunden
-        </li>
-        <li><span class="parameter">_Time</span>
-               Zeitbegrenzung in Sekunden
-        </li>
-        <li><span class="parameter">_StartMsg</span>
-           Vorschlagnachricht
-        </li>
-        <li><span class="parameter">_SuccessMsg</span>
-         Erfolgsnachricht
-        </li>
-        <li><span class="parameter">_FailMsg</span>
-            Fehlschlagnachricht
-        </li>
-        <li><span class="parameter">_HowOften</span>
-           Anzahl an Zahlungen (0 = endlos)
-        </li>
-        <li><span class="parameter">_OtherOwner</span>
-         Eroberung durch Dritte beendet Quest
-        </li>
-        <li><span class="parameter">_Abort</span>
-              Nach nichtbezahlen abbrechen
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_TributeDiplomacy"></a>
-    <strong>Goal_TributeDiplomacy (_GoldAmount, _Periode, _Time, _StartMsg, _SuccessMsg, _FailureMsg, _Restart)</strong>
-    </dt>
-    <dd>
-    Der Spieler kann durch regelmäßiges Begleichen eines Tributes bessere
- Diplomatie zu einem Spieler erreichen.
-<p> Die Zeit zum Bezahlen des Tributes muss immer kleiner sein als die
- Wiederholungsperiode.
-<p> <b>Hinweis</b>: Je mehr Zeit sich der Spieler lässt um den Tribut zu
- begleichen, desto mehr wird sich der Start der nächsten Periode verzögern.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_GoldAmount</span>
-         Menge an Gold
-        </li>
-        <li><span class="parameter">_Periode</span>
-            Zahlungsperiode in Sekunden
-        </li>
-        <li><span class="parameter">_Time</span>
-               Zeitbegrenzung in Sekunden
-        </li>
-        <li><span class="parameter">_StartMsg</span>
-           Vorschlagnachricht
-        </li>
-        <li><span class="parameter">_SuccessMsg</span>
-         Erfolgsnachricht
-        </li>
-        <li><span class="parameter">_FailureMsg</span>
-         Fehlschlagnachricht
-        </li>
-        <li><span class="parameter">_Restart</span>
-            Nach nichtbezahlen neu starten
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Goal_UnitsOnTerritory"></a>
-    <strong>Goal_UnitsOnTerritory (_Territory, _PlayerID, _Category, _Relation, _Amount)</strong>
-    </dt>
-    <dd>
-    Eine bestimmte Anzahl an Einheiten einer Kategorie muss sich auf dem
- Territorium befinden.
-<p> Es kann entweder gefordert werden, weniger als die angegebene Menge auf
- dem Territorium zu haben (z.B. "<"" 1 für 0) oder mindestens so
- viele Entities (z.B. ">=" 5 für mindestens 5).
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Territory</span>
-          TerritoryID oder TerritoryName
-        </li>
-        <li><span class="parameter">_PlayerID</span>
-           PlayerID der Einheiten
-        </li>
-        <li><span class="parameter">_Category</span>
-           Kategorie der Einheiten
-        </li>
-        <li><span class="parameter">_Relation</span>
-           Mengenrelation (< oder >=)
-        </li>
-        <li><span class="parameter">_Amount</span>
-             Menge an Einheiten
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-</dl>
     <h2 class="section-header "><a name="Reprisal"></a>Reprisal</h2>
 
     <dl class="function">
@@ -7236,7 +6956,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-12-13 23:49:33 </i>
+<i style="float:right;">Last updated 2022-12-14 18:36:22 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 

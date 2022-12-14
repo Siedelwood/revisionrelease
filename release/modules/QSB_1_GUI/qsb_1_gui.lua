@@ -51,6 +51,12 @@ function ModuleGUI.Global:OnGameStart()
     QSB.ScriptEvents.ImageScreenShown = API.RegisterScriptEvent("Event_ImageScreenShown");
     QSB.ScriptEvents.ImageScreenHidden = API.RegisterScriptEvent("Event_ImageScreenHidden");
 
+    API.RegisterScriptCommand("Cmd_UpdateTexturePosition", function(_Category, _Key, _Value)
+        g_TexturePositions = g_TexturePositions or {};
+        g_TexturePositions[_Category] = g_TexturePositions[_Category] or {};
+        g_TexturePositions[_Category][_Key] = _Value;
+    end);
+
     for i= 1, 8 do
         self.CinematicElementStatus[i] = {};
         self.CinematicElementQueue[i] = {};
@@ -189,6 +195,7 @@ function ModuleGUI.Local:OnGameStart()
     self:OverrideMissionGoodCounter();
     self:OverrideUpdateClaimTerritory();
     self:SetupHackRegisterHotkey();
+    self:PostTexturePositionsToGlobal();
 end
 
 function ModuleGUI.Local:OnEvent(_ID, ...)
@@ -213,6 +220,27 @@ function ModuleGUI.Local:OnEvent(_ID, ...)
         self:InterfaceDeactivateImageBackground(GUI.GetPlayerID());
         self:InterfaceActivateNormalInterface(GUI.GetPlayerID());
     end
+end
+
+-- -------------------------------------------------------------------------- --
+
+function ModuleGUI.Local:PostTexturePositionsToGlobal()
+    API.StartJob(function()
+        if Logic.GetTime() > 1 then
+            for k, v in pairs(g_TexturePositions) do
+                for kk, vv in pairs(v) do
+                    Revision.Event:DispatchScriptCommand(
+                        QSB.ScriptCommands.UpdateTexturePosition,
+                        GUI.GetPlayerID(),
+                        k,
+                        kk,
+                        vv
+                    );
+                end
+            end
+            return true;
+        end
+    end);
 end
 
 -- -------------------------------------------------------------------------- --
@@ -837,34 +865,15 @@ CinematicElement = {
 -- @field ImageScreenShown    Der schwarze Hintergrund wird angezeigt (Parameter: PlayerID)
 -- @field ImageScreenHidden   Der schwarze Hintergrund wird ausgeblendet (Parameter: PlayerID)
 --
--- @within Event
---
 QSB.ScriptEvents = QSB.ScriptEvents or {};
 
----
--- Blendet einen farbigen Hintergrund über der Spielwelt aber hinter dem
--- Interface ein.
---
--- @param[type=number] _PlayerID ID des Spielers
--- @param[type=number] _Red   (Optional) Rotwert (Standard: 0)
--- @param[type=number] _Green (Optional) Grünwert (Standard: 0)
--- @param[type=number] _Blue  (Optional) Blauwert (Standard: 0)
--- @param[type=number] _Alpha (Optional) Alphawert (Standard: 255)
--- @within Anwenderfunktionen
---
+-- Just to be compatible with the old version.
 function API.ActivateColoredScreen(_PlayerID, _Red, _Green, _Blue, _Alpha)
-    -- Just to be compatible with the old version.
     API.ActivateImageScreen(_PlayerID, "", _Red or 0, _Green or 0, _Blue or 0, _Alpha);
 end
 
----
--- Deaktiviert den farbigen Hintergrund, wenn er angezeigt wird.
---
--- @param[type=number] _PlayerID ID des Spielers
--- @within Anwenderfunktionen
---
+-- Just to be compatible with the old version.
 function API.DeactivateColoredScreen(_PlayerID)
-    -- Just to be compatible with the old version.
     API.DeactivateImageScreen(_PlayerID)
 end
 
@@ -1016,7 +1025,8 @@ end
 ---
 -- Propagiert das Ende des Kinoevent.
 --
--- @param[type=string] _Name Bezeichner
+-- @param[type=string] _Name     Bezeichner
+-- @param[type=number] _PlayerID ID des Spielers
 -- @within Anwenderfunktionen
 --
 function API.FinishCinematicElement(_Name, _PlayerID)
@@ -1033,7 +1043,8 @@ end
 ---
 -- Gibt den Zustand des Kinoevent zurück.
 --
--- @param _Identifier Bezeichner oder ID
+-- @param _Identifier            Bezeichner oder ID
+-- @param[type=number] _PlayerID ID des Spielers
 -- @return[type=number] Zustand des Kinoevent
 -- @within Anwenderfunktionen
 --
@@ -1340,6 +1351,7 @@ end
 -- @param[type=string] _Description Beschreibung des Hotkey
 -- @return[type=number] Index oder Fehlercode
 -- @within Anwenderfunktionen
+-- @local
 --
 function API.AddShortcutEntry(_Key, _Description)
     if not GUI then
@@ -1361,6 +1373,7 @@ end
 --
 -- @param[type=number] _ID Index in Table
 -- @within Anwenderfunktionen
+-- @local
 --
 function API.RemoveShortcutEntry(_ID)
     if not GUI then

@@ -450,8 +450,6 @@ end
 -- @field QuestSuccess    Ein Quest wurde erfolgreich abgeschlossen (Parameter: QuestID)
 -- @field QuestTrigger    Ein Quest wurde aktiviert (Parameter: QuestID)
 --
--- @within Event
---
 QSB.ScriptEvents = QSB.ScriptEvents or {};
 
 QSB.Environment = {
@@ -808,7 +806,7 @@ end
 -- <b>Achtung</b>: Die Funktion Framework.RestartMap kann nicht mehr verwendet
 -- werden, da es sonst zu Fehlern mit dem Ladebildschirm kommt!
 --
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.RestartMap()
     Camera.RTS_FollowEntity(0);
@@ -825,7 +823,7 @@ end
 -- Option zum LAN-Spiel in der HE nicht verfügbar ist.
 --
 -- @return[type=boolean] Spiel ist History Edition
--- @within Anwenderfunktionen
+-- @within Multiplayer
 --
 function API.IsHistoryEditionNetworkGame()
     return Revision.GameVersion == QSB.GameVersion.HISTORY_EDITION and Framework.IsNetworkGame();
@@ -840,7 +838,7 @@ end
 --
 -- @return[type=number] ID des Player
 -- @return[type=number] Slot ID des Player
--- @within Anwenderfunktionen
+-- @within Multiplayer
 --
 function API.GetPlayerSlotID(_PlayerID)
     for i= 1, 8 do
@@ -864,7 +862,7 @@ end
 --
 -- @return[type=number] Slot ID des Player
 -- @return[type=number] ID des Player
--- @within Anwenderfunktionen
+-- @within Multiplayer
 --
 function API.GetSlotPlayerID(_SlotID)
     if Network.IsNetworkSlotIDUsed(_SlotID) then
@@ -883,7 +881,7 @@ end
 -- Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
 --
 -- @return[type=table] Liste der aktiven Spieler
--- @within Anwenderfunktionen
+-- @within Multiplayer
 --
 function API.GetActivePlayers()
     local PlayerList = {};
@@ -905,7 +903,7 @@ end
 -- Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
 --
 -- @return[type=table] Liste der aktiven Spieler
--- @within Anwenderfunktionen
+-- @within Multiplayer
 --
 function API.GetDelayedPlayers()
     local PlayerList = {};
@@ -1226,7 +1224,7 @@ end
 --
 -- @param _Value Wahrheitswert
 -- @return[type=boolean] Wahrheitswert
--- @within Anwenderfunktionen
+-- @within Base
 -- @local
 --
 -- @usage local Bool = API.ToBoolean("+")  --> Bool = true
@@ -1244,7 +1242,7 @@ end
 --
 -- @param[type=table]  _Table Tabelle, die gedumpt wird
 -- @param[type=string] _Name Optionaler Name im Log
--- @within Anwenderfunktionen
+-- @within Base
 -- @local
 -- @usage
 -- Table = {1, 2, 3, {a = true}}
@@ -1402,222 +1400,14 @@ end
 --
 -- @param[type=number] _ScreenLogLevel Level für Bildschirmausgabe
 -- @param[type=number] _FileLogLevel   Level für Dateiausgaabe
--- @within Anwenderfunktionen
+-- @within Base
+-- @local
 --
 -- @usage
 -- API.SetLogLevel(QSB.LogLevel.ERROR, QSB.LogLevel.WARNING);
 --
 function API.SetLogLevel(_ScreenLogLevel, _FileLogLevel)
     Revision.Logging:SetLogLevel(_ScreenLogLevel, _FileLogLevel);
-end
-
---[[
-Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
-
-This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
-You may use and modify this file unter the terms of the MIT licence.
-(See https://en.wikipedia.org/wiki/MIT_License)
-]]
-
--- -------------------------------------------------------------------------- --
-
----
--- Stellt Cheats und Befehle für einfacheres Testen bereit.
---
--- @set sort=true
--- @within Beschreibung
--- @local
---
-
-Revision.Debug = {
-    CheckAtRun           = false;
-    TraceQuests          = false;
-    DevelopingCheats     = false;
-    DevelopingShell      = false;
-};
-
-function Revision.Debug:Initalize()
-    QSB.ScriptEvents.DebugChatConfirmed = Revision.Event:CreateScriptEvent("Event_DebugChatConfirmed");
-    QSB.ScriptEvents.DebugConfigChanged = Revision.Event:CreateScriptEvent("Event_DebugConfigChanged");
-
-    if Revision.Environment == QSB.Environment.LOCAL then
-        self:InitalizeQsbDebugHotkeys();
-
-        API.AddScriptEventListener(
-            QSB.ScriptEvents.ChatClosed,
-            function(...)
-                Revision.Debug:ProcessDebugInput(unpack(arg));
-            end
-        );
-    end
-end
-
-function Revision.Debug:OnSaveGameLoaded()
-    if Revision.Environment == QSB.Environment.LOCAL then
-        self:InitalizeQuestTrace();
-        self:InitalizeDebugWidgets();
-        self:InitalizeQsbDebugHotkeys();
-    end
-end
-
-function Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)
-    if Revision.Environment == QSB.Environment.LOCAL then
-        return;
-    end
-
-    self.CheckAtRun       = _CheckAtRun == true;
-    self.TraceQuests      = _TraceQuests == true;
-    self.DevelopingCheats = _DevelopingCheats == true;
-    self.DevelopingShell  = _DevelopingShell == true;
-
-    Revision.Event:DispatchScriptEvent(
-        QSB.ScriptEvents.DebugModeStatusChanged,
-        self.CheckAtRun,
-        self.TraceQuests,
-        self.DevelopingCheats,
-        self.DevelopingShell
-    );
-    self:InitalizeQuestTrace();
-
-    Logic.ExecuteInLuaLocalState(string.format(
-        [[
-            Revision.Debug.CheckAtRun       = %s;
-            Revision.Debug.TraceQuests      = %s;
-            Revision.Debug.DevelopingCheats = %s;
-            Revision.Debug.DevelopingShell  = %s;
-
-            Revision.Event:DispatchScriptEvent(
-                QSB.ScriptEvents.DebugModeStatusChanged,
-                Revision.Debug.CheckAtRun,
-                Revision.Debug.TraceQuests,
-                Revision.Debug.DevelopingCheats,
-                Revision.Debug.DevelopingShell
-            );
-            Revision.Debug:InitalizeDebugWidgets();
-        ]],
-        tostring(self.CheckAtRun),
-        tostring(self.TraceQuests),
-        tostring(self.DevelopingCheats),
-        tostring(self.DevelopingShell)
-    ));
-end
-
-function Revision.Debug:InitalizeQuestTrace()
-    DEBUG_EnableQuestDebugKeys();
-    DEBUG_QuestTrace(self.TraceQuests == true);
-end
-
-function Revision.Debug:InitalizeDebugWidgets()
-    if Network.IsNATReady ~= nil and Framework.IsNetworkGame() then
-        return;
-    end
-    if self.DevelopingCheats then
-        KeyBindings_EnableDebugMode(1);
-        KeyBindings_EnableDebugMode(2);
-        KeyBindings_EnableDebugMode(3);
-        XGUIEng.ShowWidget("/InGame/Root/Normal/AlignTopLeft/GameClock", 1);
-        self.GameClock = true;
-    else
-        KeyBindings_EnableDebugMode(0);
-        XGUIEng.ShowWidget("/InGame/Root/Normal/AlignTopLeft/GameClock", 0);
-        self.GameClock = false;
-    end
-end
-
-function Revision.Debug:InitalizeQsbDebugHotkeys()
-    if Framework.IsNetworkGame() then
-        return;
-    end
-    -- Restart map
-    Input.KeyBindDown(
-        Keys.ModifierControl + Keys.ModifierShift + Keys.ModifierAlt + Keys.R,
-        "Revision.Debug:ProcessDebugShortcut('RestartMap')",
-        30,
-        false
-    );
-    -- Open chat
-    Input.KeyBindDown(
-        Keys.ModifierShift + Keys.OemPipe,
-        "Revision.Debug:ProcessDebugShortcut('Terminal')",
-        30,
-        false
-    );
-end
-
-function Revision.Debug:ProcessDebugShortcut(_Type, _Params)
-    if self.DevelopingCheats then
-        if _Type == "RestartMap" then
-            API.RestartMap();
-        elseif _Type == "Terminal" then
-            API.ShowTextInput(GUI.GetPlayerID(), true);
-        end
-    end
-end
-
-function Revision.Debug:ProcessDebugInput(_Input, _PlayerID, _DebugAllowed)
-    if _DebugAllowed then
-        if _Input:lower():find("^restartmap") then
-            self:ProcessDebugShortcut("RestartMap");
-        elseif _Input:lower():find("^clear") then
-            GUI.ClearNotes();
-        elseif _Input:lower():find("^version") then
-            local Slices = _Input:slice(" ");
-            if Slices[2] then
-                for i= 1, #Revision.ModuleRegister do
-                    if Revision.ModuleRegister[i].Properties.Name ==  Slices[2] then
-                        GUI.AddStaticNote("Version: " ..Revision.ModuleRegister[i].Properties.Version);
-                    end
-                end
-                return;
-            end
-            GUI.AddStaticNote("Version: " ..QSB.Version);
-        elseif _Input:find("^> ") then
-            GUI.SendScriptCommand(_Input:sub(3), true);
-        elseif _Input:find("^>> ") then
-            GUI.SendScriptCommand(string.format(
-                "Logic.ExecuteInLuaLocalState(\"%s\")",
-                _Input:sub(4)
-            ), true);
-        elseif _Input:find("^< ") then
-            GUI.SendScriptCommand(string.format(
-                [[Script.Load("%s")]],
-                _Input:sub(3)
-            ));
-        elseif _Input:find("^<< ") then
-            Script.Load(_Input:sub(4));
-        end
-    end
-end
-
--- -------------------------------------------------------------------------- --
--- API
-
----
--- Aktiviert oder deaktiviert Optionen des Debug Mode.
---
--- <b>Hinweis:</b> Du kannst alle Optionen unbegrenzt oft beliebig ein-
--- und ausschalten.
---
--- <ul>
--- <li><u>Prüfung zum Spielbeginn</u>: <br>
--- Quests werden auf konsistenz geprüft, bevor sie starten. </li>
--- <li><u>Questverfolgung</u>: <br>
--- Jede Statusänderung an einem Quest löst eine Nachricht auf dem Bildschirm
--- aus, die die Änderung wiedergibt. </li>
--- <li><u>Eintwickler Cheaks</u>: <br>
--- Aktivier die Entwickler Cheats. </li>
--- <li><u>Debug Chat-Eingabe</u>: <br>
--- Die Chat-Eingabe kann zur Eingabe von Befehlen genutzt werden. </li>
--- </ul>
---
--- @param[type=boolean] _CheckAtRun       Custom Behavior prüfen an/aus
--- @param[type=boolean] _TraceQuests      Quest Trace an/aus
--- @param[type=boolean] _DevelopingCheats Cheats an/aus
--- @param[type=boolean] _DevelopingShell  Eingabeaufforderung an/aus
--- @within Anwenderfunktionen
---
-function API.ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)
-    Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell);
 end
 
 --[[
@@ -1651,6 +1441,7 @@ function Revision.Event:Initalize()
     self:OverrideSoldierPayment();
     if Revision.Environment == QSB.Environment.GLOBAL then
         self:CreateScriptCommand("Cmd_SendScriptEvent", function(_Event, ...)
+            assert(QSB.ScriptEvents[_Event] ~= nil);
             API.SendScriptEvent(QSB.ScriptEvents[_Event], unpack(arg));
         end);
     end
@@ -1883,7 +1674,8 @@ end
 --
 -- @param[type=string]   _Name     Identifier des Event
 -- @return[type=number] ID des neuen Script Event
--- @within Anwenderfunktionen
+-- @within Event
+-- @local
 --
 -- @usage
 -- local EventID = API.RegisterScriptEvent("MyNewEvent");
@@ -1902,7 +1694,8 @@ end
 --
 -- @param[type=number] _EventID ID des Event
 -- @param              ... Optionale Parameter (nil, string, number, boolean, (array) table)
--- @within Anwenderfunktionen
+-- @within Event
+-- @local
 --
 -- @usage
 -- API.SendScriptEvent(SomeEventID, Param1, Param2, ...);
@@ -1918,7 +1711,8 @@ end
 --
 -- @param[type=number] _EventName Name des Event
 -- @param              ... Optionale Parameter (nil, string, number, boolean, (array) table)
--- @within Anwenderfunktionen
+-- @within Event
+-- @local
 --
 -- @usage
 -- API.SendScriptEventToGlobal("SomeEventName", Param1, Param2, ...);
@@ -1942,7 +1736,8 @@ end
 --
 -- @param[type=number] _EventName Name des Event
 -- @param              ... Optionale Parameter (nil, string, number, boolean, (array) table)
--- @within Anwenderfunktionen
+-- @within Event
+-- @local
 --
 -- @usage
 -- API.SendScriptEventToGlobal("SomeEventName", Param1, Param2, ...);
@@ -1971,7 +1766,7 @@ end
 -- @param[type=number]   _EventID  ID des Event
 -- @param[type=function] _Function Listener Funktion
 -- @return[type=number] ID des Listener
--- @within Anwenderfunktionen
+-- @within Event
 -- @see API.RemoveScriptEventListener
 --
 -- @usage
@@ -1997,7 +1792,7 @@ end
 --
 -- @param[type=number] _EventID ID des Event
 -- @param[type=number] _ID      ID des Listener
--- @within Anwenderfunktionen
+-- @within Event
 -- @see API.AddScriptEventListener
 --
 function API.RemoveScriptEventListener(_EventID, _ID)
@@ -2098,7 +1893,7 @@ end
 ---
 -- Gibt die real vergangene Zeit seit dem Spielstart in Sekunden zurück.
 -- @return[type=number] Vergangene reale Zeit
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- local RealTime = API.RealTimeGetSecondsPassedSinceGameStart();
@@ -2123,7 +1918,7 @@ end
 -- @param _Function      Funktion (Funktionsreferenz oder String)
 -- @param ...            Optionale Argumente des Job
 -- @return[type=number] ID des Jobs
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- API.StartJobByEventType(
@@ -2149,7 +1944,7 @@ end
 -- @param _Function Funktion (Funktionsreferenz oder String)
 -- @param ...       Liste von Argumenten
 -- @return[type=number] Job ID
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- -- Führt eine Funktion nach 15 Sekunden aus.
@@ -2184,7 +1979,7 @@ StartSimpleJobEx = API.StartJob;
 -- @param _Function Funktion (Funktionsreferenz oder String)
 -- @param ...       Liste von Argumenten
 -- @return[type=number] Job ID
--- @within Anwenderfunktionen
+-- @within Job
 -- @see API.StartJob
 --
 function API.StartHiResJob(_Function, ...)
@@ -2202,7 +1997,7 @@ StartSimpleHiResJobEx = API.StartHiResJob;
 -- Beendet den Job mit der übergebenen ID endgültig.
 --
 -- @param[type=number] _JobID ID des Jobs
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- API.EndJob(AnyJobID);
@@ -2221,7 +2016,7 @@ end
 --
 -- @param[type=number] _JobID ID des Jobs
 -- @return[type=boolean] Job ist aktiv
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- if API.JobIsRunning(AnyJobID) then
@@ -2239,7 +2034,7 @@ end
 -- Aktiviert einen pausierten Job.
 --
 -- @param[type=number] _JobID ID des Jobs
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- API.ResumeJob(AnyJobID);
@@ -2258,7 +2053,7 @@ end
 -- Pausiert einen aktivien Job.
 --
 -- @param[type=number] _JobID ID des Jobs
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- API.YieldJob(AnyJobID);
@@ -2285,7 +2080,7 @@ end
 -- @param[type=function] _Function Callback-Funktion
 -- @param ... Liste der Argumente
 -- @return[type=number] ID der Verzögerung
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- API.StartDelay(
@@ -2327,7 +2122,7 @@ end
 -- @param[type=function] _Function Callback-Funktion
 -- @param ... Liste der Argumente
 -- @return[type=number] ID der Verzögerung
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- API.StartHiResDelay(
@@ -2370,7 +2165,7 @@ end
 -- @param[type=function] _Function Callback-Funktion
 -- @param ... Liste der Argumente
 -- @return[type=number] ID der Verzögerung
--- @within Anwenderfunktionen
+-- @within Job
 --
 -- @usage
 -- API.StartRealTimeDelay(
@@ -2517,7 +2312,7 @@ end
 ---
 -- Deaktiviert das automatische Speichern der History Edition.
 -- @param[type=boolean] _Flag Auto-Speichern ist deaktiviert
--- @within Anwenderfunktionen
+-- @within Spielstand
 --
 function API.DisableAutoSave(_Flag)
     if Revision.Environment == QSB.Environment.GLOBAL then
@@ -2532,7 +2327,7 @@ end
 ---
 -- Deaktiviert das Speichern des Spiels.
 -- @param[type=boolean] _Flag Speichern ist deaktiviert
--- @within Anwenderfunktionen
+-- @within Spielstand
 --
 function API.DisableSaving(_Flag)
     Revision.Save:DisableSaving(_Flag);
@@ -2541,7 +2336,7 @@ end
 ---
 -- Deaktiviert das Laden von Spielständen.
 -- @param[type=boolean] _Flag Laden ist deaktiviert
--- @within Anwenderfunktionen
+-- @within Spielstand
 --
 function API.DisableLoading(_Flag)
     Revision.Save:DisableLoading(_Flag);
@@ -2701,7 +2496,7 @@ end
 -- 
 -- @param[type=number]  _PlayerID   Spieler für den der Chat geöffnet wird
 -- @param[type=boolean] _AllowDebug Debug Eingaben werden bearbeitet
--- @within Anwenderfunktionen
+-- @within Chat
 --
 function API.ShowTextInput(_PlayerID, _AllowDebug)
     Revision.Chat:ShowTextInput(_PlayerID, _AllowDebug);
@@ -2991,7 +2786,7 @@ end
 --
 -- @param[type=table] _Text Table mit Übersetzungen
 -- @return Übersetzten Text oder Table mit Texten
--- @within Anwenderfunktionen
+-- @within Text
 --
 -- @usage
 -- -- Beispiel #1: Table lokalisieren
@@ -3018,7 +2813,7 @@ end
 -- <b>Hinweis:</b> Texte werden automatisch lokalisiert und Platzhalter ersetzt.
 --
 -- @param[type=string] _Text Anzeigetext
--- @within Anwenderfunktionen
+-- @within Text
 --
 -- @usage
 -- API.Note("Das ist eine flüchtige Information!");
@@ -3042,7 +2837,7 @@ end
 -- <b>Hinweis:</b> Texte werden automatisch lokalisiert und Platzhalter ersetzt.
 --
 -- @param[type=string] _Text Anzeigetext
--- @within Anwenderfunktionen
+-- @within Text
 --
 -- @usage
 -- API.StaticNote("Das ist eine dauerhafte Information!");
@@ -3070,7 +2865,7 @@ end
 --
 -- @param[type=string] _Text  Anzeigetext
 -- @param[type=string] _Sound (Optional) Soundeffekt der Nachricht
--- @within Anwenderfunktionen
+-- @within Text
 --
 -- @usage
 -- -- Beispiel #1: Einfache Nachricht
@@ -3100,7 +2895,7 @@ end
 ---
 -- Löscht alle Nachrichten im Debug Window.
 --
--- @within Anwenderfunktionen
+-- @within Text
 --
 -- @usage
 -- API.ClearNotes();
@@ -3154,7 +2949,7 @@ end
 --
 -- @param[type=string] _Message Text
 -- @return Ersetzter Text
--- @within Anwenderfunktionen
+-- @within Text
 --
 -- @usage
 -- -- Beispiel #1: Vordefinierte Farbe austauschen
@@ -3194,7 +2989,7 @@ end
 --
 -- @param[type=string] _Name        Name, der ersetzt werden soll
 -- @param[type=string] _Replacement Wert, der ersetzt wird
--- @within Anwenderfunktionen
+-- @within Text
 --
 -- @usage
 -- API.AddNamePlaceholder("Scriptname", "Horst");
@@ -3218,7 +3013,7 @@ end
 --
 -- @param[type=string] _Type        Typname, der ersetzt werden soll
 -- @param[type=string] _Replacement Wert, der ersetzt wird
--- @within Anwenderfunktionen
+-- @within Text
 --
 -- @usage
 -- API.AddNamePlaceholder("U_KnightHealing", "Arroganze Ziege");
@@ -3566,7 +3361,7 @@ end
 -- @param[type=string] _Value         Zu rundender Wert
 -- @param[type=string] _DecimalDigits Maximale Dezimalstellen
 -- @return[type=number] Abgerundete Zahl
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.Round(_Value, _DecimalDigits)
     _DecimalDigits = _DecimalDigits or 2;
@@ -3615,7 +3410,8 @@ end
 --
 -- @param[type=boolean] _Name  Name der Custom Variable
 -- @param               _Value Neuer Wert
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
+-- @local
 --
 -- @usage
 -- local Value = API.ObtainCustomVariable("MyVariable", 0);
@@ -3629,7 +3425,8 @@ end
 -- @param[type=boolean] _Name    Name der Custom Variable
 -- @param               _Default (Optional) Defaultwert falls leer
 -- @return Wert
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
+-- @local
 --
 -- @usage
 -- local Value = API.ObtainCustomVariable("MyVariable", 0);
@@ -3659,7 +3456,7 @@ end
 -- @param[type=number] _Type     Neuer Typ
 -- @param[type=number] _NewOwner (optional) Neuer Besitzer
 -- @return[type=number] Entity-ID des Entity
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 -- @usage
 -- API.ReplaceEntity("Stein", Entities.XD_ScriptEntity)
 --
@@ -3687,7 +3484,7 @@ ReplaceEntity = API.ReplaceEntity;
 --
 -- @param _Entity Entity (Scriptname oder ID)
 -- @return[type=number] Typ des Entity
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetEntityType(_Entity)
     local EntityID = GetID(_Entity);
@@ -3703,7 +3500,7 @@ end
 --
 -- @param _Entity Entity (Scriptname oder ID)
 -- @return[type=string] Typname des Entity
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetEntityTypeName(_Entity)
     if not IsExisting(_Entity) then
@@ -3718,7 +3515,8 @@ end
 --
 -- @param               _Entity Entity (Scriptname oder ID)
 -- @param[type=boolean] _Flag Verwundbar
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
+-- @local
 --
 function API.SetEntityVulnerableFlag(_Entity, _Flag)
     if GUI then
@@ -3755,7 +3553,7 @@ end
 -- @param[type=boolean] _IgnoreReservation (optional) Marktplatzreservation ignorieren
 -- @param[type=boolean] _Overtake          (optional) Mit Position austauschen
 -- @return[type=number] Entity-ID des erzeugten Wagens
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 -- @usage
 -- -- API-Call
 -- API.SendCart(Logic.GetStoreHouse(1), 2, Goods.G_Grain, 45)
@@ -3832,7 +3630,7 @@ end
 --
 -- @param _Entity Entity (Scriptname oder ID)
 -- @return[type=number] Aktuelle Gesundheit
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetEntityHealth(_Entity)
     local EntityID = GetID(_Entity);
@@ -3852,7 +3650,7 @@ end
 -- @param               _Entity   Entity (Scriptname oder ID)
 -- @param[type=number]  _Health   Neue aktuelle Gesundheit
 -- @param[type=boolean] _Relative (Optional) Relativ zur maximalen Gesundheit
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.ChangeEntityHealth(_Entity, _Health, _Relative)
     if GUI then
@@ -3894,7 +3692,7 @@ end
 --
 -- @param              _Entity Entity (Skriptname oder ID)
 -- @return[type=table] Kategorien des Entity
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetEntityCategoyList(_Entity)
     local EntityID = GetID(_Entity);
@@ -3910,7 +3708,7 @@ end
 --
 -- @param              _Type Typ des Entity
 -- @return[type=table] Kategorien des Entity
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetEntityTypeCategoyList(_Type)
     local Categories = {};
@@ -3928,7 +3726,7 @@ end
 -- @param              _Entity Entity (Skriptname oder ID)
 -- @param[type=number] ...     Liste mit Kategorien
 -- @return[type=boolean] Entity hat Kategorie
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.IsEntityInAtLeastOneCategory(_Entity, ...)
     local EntityID = GetID(_Entity);
@@ -3949,7 +3747,7 @@ end
 --
 -- @param _Entity Entity (Scriptname oder ID)
 -- @return[type=number] Tasklist
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetEntityTaskList(_Entity)
     local EntityID = GetID(_Entity);
@@ -3967,7 +3765,7 @@ end
 -- @param              _Entity  Entity (Scriptname oder ID)
 -- @param[type=number] _NewModel Neues Model
 -- @param[type=number] _AnimSet  (optional) Animation Set
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.SetEntityModel(_Entity, _NewModel, _AnimSet)
     if GUI then
@@ -3998,7 +3796,7 @@ end
 --
 -- @param              _Entity  Entity (Scriptname oder ID)
 -- @param[type=number] _NewTask Neuer Task
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.SetEntityTaskList(_Entity, _NewTask)
     if GUI then
@@ -4022,7 +3820,7 @@ end
 --
 -- @param _Entity  Entity (Scriptname oder ID)
 -- @return[type=number] Menge an Rohstoffen
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetResourceAmount(_Entity)
     local EntityID = GetID(_Entity);
@@ -4040,7 +3838,7 @@ end
 -- @param              _Entity       Rohstoffvorkommen (Skriptname oder ID)
 -- @param[type=number] _StartAmount  Menge an Rohstoffen
 -- @param[type=number] _RefillAmount Minimale Nachfüllmenge (> 0)
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 -- @usage
 -- API.SetResourceAmount("mine1", 250, 150);
@@ -4072,7 +3870,7 @@ end
 -- @param[type=number] _PlayerID  PlayerID [0-8] oder -1 für alle
 -- @param[type=number] _Category  Kategorie, der die Entities angehören
 -- @param[type=number] _Territory Zielterritorium
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 -- @local
 -- @usage
 -- local Found = API.GetEntitiesOfCategoryInTerritory(1, EntityCategories.Hero, 5)
@@ -4109,7 +3907,7 @@ end
 -- @param _Category    Kategorien oder Table mit Kategorien (Einzelne Kategorie oder Table)
 -- @param _Territory   Zielterritorium oder Table mit Territorien (Einzelnes Territorium oder Table)
 -- @return[type=table] Liste mit Resultaten
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 -- @usage
 -- local Result = API.GetEntitiesOfCategoriesInTerritories({1, 2, 3}, EntityCategories.Hero, {5, 12, 23, 24});
@@ -4138,7 +3936,7 @@ end
 -- zurückgegeben.
 -- @param[type=number] _EntityID Entity ID
 -- @return[type=string] Skriptname
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.CreateEntityName(_EntityID)
     if type(_EntityID) == "string" then
@@ -4192,7 +3990,7 @@ QSB.PossibleSettlerTypes = {
 -- weiblich sein.
 --
 -- @return[type=number] Zufälliger Typ
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 -- @local
 --
 function API.GetRandomSettlerType()
@@ -4206,7 +4004,7 @@ end
 -- werden nur Stadtsiedler zurückgegeben.
 --
 -- @return[type=number] Zufälliger Typ
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 -- @local
 --
 function API.GetRandomMaleSettlerType()
@@ -4219,7 +4017,7 @@ end
 -- werden nur Stadtsiedler zurückgegeben.
 --
 -- @return[type=number] Zufälliger Typ
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 -- @local
 --
 function API.GetRandomFemaleSettlerType()
@@ -4235,7 +4033,7 @@ end
 --
 -- @param _Entity Entity (Skriptname oder ID)
 -- @return[type=number] Menge an Soldaten
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.CountSoldiersOfGroup(_Entity)
     local EntityID = GetID(_Entity);
@@ -4255,7 +4053,7 @@ end
 --
 -- @param _Entity Entity (Skriptname oder ID)
 -- @return[type=table] Liste aller Soldaten
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetGroupSoldiers(_Entity)
     local EntityID = GetID(_Entity);
@@ -4276,7 +4074,7 @@ end
 --
 -- @param _Entity Entity (Skriptname oder ID)
 -- @return[type=number] Menge an Soldaten
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GetGroupLeader(_Entity)
     local EntityID = GetID(_Entity);
@@ -4295,7 +4093,7 @@ end
 --
 -- @param               _Entity   Entity (Scriptname oder ID)
 -- @param[type=number]  _Amount   Geheilte Gesundheit
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GroupHeal(_Entity, _Amount)
     if GUI then
@@ -4321,7 +4119,7 @@ end
 -- @param               _Entity   Entity (Scriptname oder ID)
 -- @param[type=number] _Damage   Schaden
 -- @param[type=string] _Attacker Angreifer
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.GroupHurt(_Entity, _Damage, _Attacker)
     if GUI then
@@ -4369,9 +4167,9 @@ end
 ---
 -- Aktiviert ein Interaktives Objekt.
 --
--- @param[type=string] _EntityName Skriptname des Objektes
+-- @param[type=string] _ScriptName Skriptname des Objektes
 -- @param[type=number] _State      State des Objektes
--- @within Anwenderfunktionen
+-- @within Werkzeugkasten
 --
 function API.InteractiveObjectActivate(_ScriptName, _State)
     _State = _State or 0;
@@ -4387,8 +4185,8 @@ InteractiveObjectActivate = API.InteractiveObjectActivate;
 ---
 -- Deaktiviert ein interaktives Objekt.
 --
--- @param[type=string] _EntityName Scriptname des Objektes
--- @within Anwenderfunktionen
+-- @param[type=string] _ScriptName Scriptname des Objektes
+-- @within Werkzeugkasten
 --
 function API.InteractiveObjectDeactivate(_ScriptName)
     if GUI or not IsExisting(_ScriptName) then
@@ -4516,7 +4314,7 @@ end
 --
 -- @param[type=string] _Name Name des Quest
 -- @return[type=number] ID des Quest
--- @within Anwenderfunktionen
+-- @within Quest
 --
 function API.GetQuestID(_Name)
     if type(_Name) == "number" then
@@ -4538,7 +4336,7 @@ GetQuestID = API.GetQuestID;
 --
 -- @param[type=number] _QuestID ID oder Name des Quest
 -- @return[type=boolean] Quest existiert
--- @within Anwenderfunktionen
+-- @within Quest
 --
 function API.IsValidQuest(_QuestID)
     return Quests[_QuestID] ~= nil or Quests[API.GetQuestID(_QuestID)] ~= nil;
@@ -4550,7 +4348,7 @@ IsValidQuest = API.IsValidQuest;
 --
 -- @param[type=number] _Name Name des Quest
 -- @return[type=boolean] Name ist gültig
--- @within Anwenderfunktionen
+-- @within Quest
 --
 function API.IsValidQuestName(_Name)
     return string.find(_Name, "^[A-Za-z0-9_ @ÄÖÜäöüß]+$") ~= nil;
@@ -4564,7 +4362,7 @@ IsValidQuestName = API.IsValidQuestName;
 --
 -- @param[type=string]  _QuestName Name des Quest
 -- @param[type=boolean] _NoMessage Meldung nicht anzeigen
--- @within Anwenderfunktionen
+-- @within Quest
 --
 function API.FailQuest(_QuestName, _NoMessage)
     local QuestID = GetQuestID(_QuestName);
@@ -4588,7 +4386,7 @@ end
 --
 -- @param[type=string]  _QuestName Name des Quest
 -- @param[type=boolean] _NoMessage Meldung nicht anzeigen
--- @within Anwenderfunktionen
+-- @within Quest
 --
 function API.RestartQuest(_QuestName, _NoMessage)
     -- All changes on default behavior must be considered in this function.
@@ -4686,7 +4484,7 @@ end
 --
 -- @param[type=string]  _QuestName Name des Quest
 -- @param[type=boolean] _NoMessage Meldung nicht anzeigen
--- @within Anwenderfunktionen
+-- @within Quest
 --
 function API.StartQuest(_QuestName, _NoMessage)
     local QuestID = GetQuestID(_QuestName);
@@ -4710,7 +4508,7 @@ end
 --
 -- @param[type=string]  _QuestName Name des Quest
 -- @param[type=boolean] _NoMessage Meldung nicht anzeigen
--- @within Anwenderfunktionen
+-- @within Quest
 --
 function API.StopQuest(_QuestName, _NoMessage)
     local QuestID = GetQuestID(_QuestName);
@@ -4732,7 +4530,7 @@ end
 --
 -- @param[type=string]  _QuestName Name des Quest
 -- @param[type=boolean] _NoMessage Meldung nicht anzeigen
--- @within Anwenderfunktionen
+-- @within Quest
 --
 function API.WinQuest(_QuestName, _NoMessage)
     local QuestID = GetQuestID(_QuestName);
@@ -4950,7 +4748,7 @@ end
 -- @param[type=boolean] _TraceQuests      Quest Trace an/aus
 -- @param[type=boolean] _DevelopingCheats Cheats an/aus
 -- @param[type=boolean] _DevelopingShell  Eingabeaufforderung an/aus
--- @within Anwenderfunktionen
+-- @within Debug
 --
 function API.ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)
     Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell);
@@ -5125,7 +4923,7 @@ end
 -- @param[type=number] _Entity Entity
 -- @param[type=number] _SV     Typ der Scripting Value
 -- @return[type=number] Ermittelter Wert
--- @within Anwenderfunktionen
+-- @within ScriptingValue
 --
 -- @usage
 -- local PlayerID = API.GetInteger("HansWurst", QSB.ScriptingValue.Player);
@@ -5144,7 +4942,7 @@ end
 -- @param[type=number] _Entity Entity
 -- @param[type=number] _SV     Typ der Scripting Value
 -- @return[type=number] Ermittelter Wert
--- @within Anwenderfunktionen
+-- @within ScriptingValue
 --
 -- @usage
 -- local Size = API.GetFloat("HansWurst", QSB.ScriptingValue.Size);
@@ -5164,7 +4962,7 @@ end
 -- @param[type=number] _Entity Entity
 -- @param[type=number] _SV     Typ der Scripting Value
 -- @param[type=number] _Value  Zu setzender Wert
--- @within Anwenderfunktionen
+-- @within ScriptingValue
 --
 -- @usage
 -- API.SetInteger("HansWurst", QSB.ScriptingValue.Player, 2);
@@ -5183,7 +4981,7 @@ end
 -- @param[type=number] _Entity Entity
 -- @param[type=number] _SV     Typ der Scripting Value
 -- @param[type=number] _Value  Zu setzender Wert
--- @within Anwenderfunktionen
+-- @within ScriptingValue
 --
 -- @usage
 -- API.SetFloat("HansWurst", QSB.ScriptingValue.Size, 1.5);
@@ -5201,7 +4999,7 @@ end
 --
 -- @param[type=number] _Value Gleitkommazahl
 -- @return[type=number] Konvertierte Ganzzahl
--- @within Anwenderfunktionen
+-- @within ScriptingValue
 --
 -- @usage
 -- local Converted = API.ConvertIntegerToFloat(Value)
@@ -5215,7 +5013,7 @@ end
 --
 -- @param[type=number] _Value Gleitkommazahl
 -- @return[type=number] Konvertierte Ganzzahl
--- @within Anwenderfunktionen
+-- @within ScriptingValue
 --
 -- @usage
 -- local Converted = API.ConvertFloatToInteger(Value)
@@ -14173,6 +13971,12 @@ function ModuleGUI.Global:OnGameStart()
     QSB.ScriptEvents.ImageScreenShown = API.RegisterScriptEvent("Event_ImageScreenShown");
     QSB.ScriptEvents.ImageScreenHidden = API.RegisterScriptEvent("Event_ImageScreenHidden");
 
+    API.RegisterScriptCommand("Cmd_UpdateTexturePosition", function(_Category, _Key, _Value)
+        g_TexturePositions = g_TexturePositions or {};
+        g_TexturePositions[_Category] = g_TexturePositions[_Category] or {};
+        g_TexturePositions[_Category][_Key] = _Value;
+    end);
+
     for i= 1, 8 do
         self.CinematicElementStatus[i] = {};
         self.CinematicElementQueue[i] = {};
@@ -14311,6 +14115,7 @@ function ModuleGUI.Local:OnGameStart()
     self:OverrideMissionGoodCounter();
     self:OverrideUpdateClaimTerritory();
     self:SetupHackRegisterHotkey();
+    self:PostTexturePositionsToGlobal();
 end
 
 function ModuleGUI.Local:OnEvent(_ID, ...)
@@ -14335,6 +14140,27 @@ function ModuleGUI.Local:OnEvent(_ID, ...)
         self:InterfaceDeactivateImageBackground(GUI.GetPlayerID());
         self:InterfaceActivateNormalInterface(GUI.GetPlayerID());
     end
+end
+
+-- -------------------------------------------------------------------------- --
+
+function ModuleGUI.Local:PostTexturePositionsToGlobal()
+    API.StartJob(function()
+        if Logic.GetTime() > 1 then
+            for k, v in pairs(g_TexturePositions) do
+                for kk, vv in pairs(v) do
+                    Revision.Event:DispatchScriptCommand(
+                        QSB.ScriptCommands.UpdateTexturePosition,
+                        GUI.GetPlayerID(),
+                        k,
+                        kk,
+                        vv
+                    );
+                end
+            end
+            return true;
+        end
+    end);
 end
 
 -- -------------------------------------------------------------------------- --
@@ -14959,34 +14785,15 @@ CinematicElement = {
 -- @field ImageScreenShown    Der schwarze Hintergrund wird angezeigt (Parameter: PlayerID)
 -- @field ImageScreenHidden   Der schwarze Hintergrund wird ausgeblendet (Parameter: PlayerID)
 --
--- @within Event
---
 QSB.ScriptEvents = QSB.ScriptEvents or {};
 
----
--- Blendet einen farbigen Hintergrund über der Spielwelt aber hinter dem
--- Interface ein.
---
--- @param[type=number] _PlayerID ID des Spielers
--- @param[type=number] _Red   (Optional) Rotwert (Standard: 0)
--- @param[type=number] _Green (Optional) Grünwert (Standard: 0)
--- @param[type=number] _Blue  (Optional) Blauwert (Standard: 0)
--- @param[type=number] _Alpha (Optional) Alphawert (Standard: 255)
--- @within Anwenderfunktionen
---
+-- Just to be compatible with the old version.
 function API.ActivateColoredScreen(_PlayerID, _Red, _Green, _Blue, _Alpha)
-    -- Just to be compatible with the old version.
     API.ActivateImageScreen(_PlayerID, "", _Red or 0, _Green or 0, _Blue or 0, _Alpha);
 end
 
----
--- Deaktiviert den farbigen Hintergrund, wenn er angezeigt wird.
---
--- @param[type=number] _PlayerID ID des Spielers
--- @within Anwenderfunktionen
---
+-- Just to be compatible with the old version.
 function API.DeactivateColoredScreen(_PlayerID)
-    -- Just to be compatible with the old version.
     API.DeactivateImageScreen(_PlayerID)
 end
 
@@ -15138,7 +14945,8 @@ end
 ---
 -- Propagiert das Ende des Kinoevent.
 --
--- @param[type=string] _Name Bezeichner
+-- @param[type=string] _Name     Bezeichner
+-- @param[type=number] _PlayerID ID des Spielers
 -- @within Anwenderfunktionen
 --
 function API.FinishCinematicElement(_Name, _PlayerID)
@@ -15155,7 +14963,8 @@ end
 ---
 -- Gibt den Zustand des Kinoevent zurück.
 --
--- @param _Identifier Bezeichner oder ID
+-- @param _Identifier            Bezeichner oder ID
+-- @param[type=number] _PlayerID ID des Spielers
 -- @return[type=number] Zustand des Kinoevent
 -- @within Anwenderfunktionen
 --
@@ -15462,6 +15271,7 @@ end
 -- @param[type=string] _Description Beschreibung des Hotkey
 -- @return[type=number] Index oder Fehlercode
 -- @within Anwenderfunktionen
+-- @local
 --
 function API.AddShortcutEntry(_Key, _Description)
     if not GUI then
@@ -15483,6 +15293,7 @@ end
 --
 -- @param[type=number] _ID Index in Table
 -- @within Anwenderfunktionen
+-- @local
 --
 function API.RemoveShortcutEntry(_ID)
     if not GUI then
@@ -17714,8 +17525,6 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @field GoodsPurchased Güter werden bei einem Händler gekauft (Parameter: OfferID, TraderType, GoodType, OfferGoodAmount, Price, PlayerID, TraderPlayerID)
 -- @field GoodsSold      Güter werden im eigenen Lagerhaus verkauft (Parameter: TraderType, GoodType, GoodAmount, Price, PlayerID, TargetPlayerID)
 --
--- @within Event
---
 QSB.ScriptEvents = QSB.ScriptEvents or {};
 
 ---
@@ -18248,6 +18057,7 @@ end
 -- @param[type=number] _OfferAmount Menge an Angeboten
 -- @param[type=number] _RefreshRate (Optional) Regenerationsrate des Angebot
 -- @within Anwenderfunktionen
+-- @local
 --
 -- @usage
 -- -- Spieler 2 bietet Brot an
@@ -18312,6 +18122,7 @@ end
 -- @param[type=number] _OfferAmount Menge an Söldnern
 -- @param[type=number] _RefreshRate (Optional) Regenerationsrate des Angebot
 -- @within Anwenderfunktionen
+-- @local
 --
 -- @usage
 -- -- Spieler 2 bietet Sölder an
@@ -18372,6 +18183,7 @@ end
 -- @param[type=number] _VendorID    Spieler-ID des Verkäufers
 -- @param[type=number] _OfferType   Typ des Entertainer
 -- @within Anwenderfunktionen
+-- @local
 --
 -- @usage
 -- -- Spieler 2 bietet einen Feuerschlucker an
@@ -18419,6 +18231,7 @@ end
 -- @param[type=number] _PlayerID Player ID
 -- @return[type=table] Angebotsinformationen
 -- @within Anwenderfunktionen
+-- @local
 --
 -- @usage
 -- local Info = API.GetOfferInformation(2);
@@ -18449,6 +18262,7 @@ end
 -- @param[type=number] _PlayerID Player ID
 -- @return[type=number] Anzahl angebote
 -- @within Anwenderfunktionen
+-- @local
 --
 -- @usage
 -- -- Angebote von Spieler 5 zählen
@@ -18469,6 +18283,7 @@ end
 -- @param[type=number] _GoodOrEntityType Warentyp oder Entitytyp
 -- @return[type=boolean] Ware wird angeboten
 -- @within Anwenderfunktionen
+-- @local
 --
 -- @usage
 -- -- Wird die Ware angeboten?
@@ -18491,6 +18306,7 @@ end
 -- @param[type=number] _GoodOrEntityType Warentyp oder Entitytyp
 -- @return[type=number] Menge an Angeboten
 -- @within Anwenderfunktionen
+-- @local
 --
 -- @usage
 -- -- Wie viel wird aktuell angeboten?
@@ -18554,6 +18370,4278 @@ function API.ModifyTradeOffer(_PlayerID, _GoodOrEntityType, _NewAmount)
         return;
     end
     return ModuleTrade.Global:ModifyTradeOffer(_PlayerID, _GoodOrEntityType, _NewAmount);
+end
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+ModuleNpcInteraction = {
+    Properties = {
+        Name = "ModuleNpcInteraction",
+    },
+
+    Global = {
+        Interactions = {},
+        NPC = {},
+        UseMarker = true,
+    };
+    Local  = {};
+    -- This is a shared structure but the values are asynchronous!
+    Shared = {
+        Text = {
+            StartConversation = {
+                de = "Gespräch beginnen",
+                en = "Start conversation",
+                fr = "Commencer la conversation",
+            }
+        }
+    };
+};
+
+QSB.Npc = {
+    LastNpcEntityID = 0,
+    LastHeroEntityID = 0,
+}
+
+-- Global Script ------------------------------------------------------------ --
+
+function ModuleNpcInteraction.Global:OnGameStart()
+    QSB.ScriptEvents.NpcInteraction = API.RegisterScriptEvent("Event_NpcInteraction");
+
+    self:OverrideQuestFunctions();
+
+    API.StartHiResJob(function()
+        if Logic.GetTime() > 1 then
+            ModuleNpcInteraction.Global:InteractionTriggerController();
+        end
+    end);
+    API.StartJob(function()
+        ModuleNpcInteraction.Global:InteractableMarkerController();
+    end);
+end
+
+function ModuleNpcInteraction.Global:OnEvent(_ID, _Event, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.NpcInteraction then
+        QSB.Npc.LastNpcEntityID = arg[1];
+        QSB.Npc.LastHeroEntityID = arg[2];
+        self.Interactions[arg[1]] = self.Interactions[arg[1]] or {};
+        if self.Interactions[arg[1]][arg[2]] then
+            if Logic.GetCurrentTurn() <= self.Interactions[arg[1]][arg[2]] + 5 then
+                return;
+            end
+        end
+        self.Interactions[arg[1]][arg[2]] = Logic.GetCurrentTurn();
+        self:PerformNpcInteraction(arg[3]);
+    end
+end
+
+function ModuleNpcInteraction.Global:CreateNpc(_Data)
+    self.NPC[_Data.Name] = {
+        Name              = _Data.Name,
+        Active            = true,
+        Type              = _Data.Type or 1,
+        Player            = _Data.Player or {1, 2, 3, 4, 5, 6, 7, 8},
+        WrongPlayerAction = _Data.WrongPlayerAction,
+        Hero              = _Data.Hero,
+        WrongHeroAction   = _Data.WrongHeroAction,
+        Distance          = _Data.Distance or 350,
+        Condition         = _Data.Condition,
+        Callback          = _Data.Callback,
+        UseMarker         = self.UseMarker == true,
+        MarkerID          = 0
+    }
+    self:UpdateNpc(_Data);
+    return self.NPC[_Data.Name];
+end
+
+function ModuleNpcInteraction.Global:DestroyNpc(_Data)
+    _Data.Active = false;
+    self:UpdateNpc(_Data);
+    self:DestroyMarker(_Data.Name);
+    self.NPC[_Data.Name] = nil;
+end
+
+function ModuleNpcInteraction.Global:GetNpc(_ScriptName)
+    return self.NPC[_ScriptName];
+end
+
+function ModuleNpcInteraction.Global:UpdateNpc(_Data)
+    if not IsExisting(_Data.Name) then
+        return;
+    end
+    if not self.NPC[_Data.Name] then
+        local EntityID = GetID(_Data.Name);
+        Logic.SetOnScreenInformation(EntityID, 0);
+        return;
+    end
+    for k, v in pairs(_Data) do
+        self.NPC[_Data.Name][k] = v;
+    end
+    self:CreateMarker(_Data.Name);
+    if self.NPC[_Data.Name].Active then
+        local EntityID = GetID(_Data.Name);
+        Logic.SetOnScreenInformation(EntityID, self.NPC[_Data.Name].Type);
+    else
+        local EntityID = GetID(_Data.Name);
+        Logic.SetOnScreenInformation(EntityID, 0);
+    end
+end
+
+function ModuleNpcInteraction.Global:PerformNpcInteraction(_PlayerID)
+    local ScriptName = Logic.GetEntityName(QSB.Npc.LastNpcEntityID);
+    if self.NPC[ScriptName] then
+        local Data = self.NPC[ScriptName];
+        self:RotateActorsToEachother(_PlayerID);
+        self:AdjustHeroTalkingDistance(Data.Distance);
+
+        if not self:InteractionIsAppropriatePlayer(ScriptName, _PlayerID, QSB.Npc.LastHeroEntityID) then
+            return;
+        end
+        Data.TalkedTo = QSB.Npc.LastHeroEntityID;
+
+        if not self:InteractionIsAppropriateHero(ScriptName) then
+            return;
+        end
+
+        if Data.Condition == nil or Data:Condition(_PlayerID, QSB.Npc.LastHeroEntityID) then
+            Data.Active = false;
+            if Data.Callback then
+                Data:Callback(_PlayerID, QSB.Npc.LastHeroEntityID);
+            end
+        else
+            Data.TalkedTo = 0;
+        end
+
+        self:UpdateNpc(Data);
+    end
+end
+
+function ModuleNpcInteraction.Global:InteractionIsAppropriatePlayer(_ScriptName, _PlayerID, _HeroID)
+    local Appropriate = true;
+    if self.NPC[_ScriptName] then
+        local Data = self.NPC[_ScriptName];
+        if Data.Player ~= nil then
+            if type(Data.Player) == "table" then
+                Appropriate = table.contains(Data.Player, _PlayerID);
+            else
+                Appropriate = Data.Player == _PlayerID;
+            end
+
+            if not Appropriate then
+                local LastTime = (Data.WrongHeroTick or 0) +1;
+                local CurrentTime = Logic.GetTime();
+                if Data.WrongPlayerAction and LastTime < CurrentTime then
+                    self.NPC[_ScriptName].LastWongPlayerTick = CurrentTime;
+                    Data:WrongPlayerAction(_PlayerID);
+                end
+            end
+        end
+    end
+    return Appropriate;
+end
+
+function ModuleNpcInteraction.Global:InteractionIsAppropriateHero(_ScriptName)
+    local Appropriate = true;
+    if self.NPC[_ScriptName] then
+        local Data = self.NPC[_ScriptName];
+        if Data.Hero ~= nil then
+            if type(Data.Hero) == "table" then
+                Appropriate = table.contains(Data.Hero, Logic.GetEntityName(QSB.Npc.LastHeroEntityID));
+            end
+            Appropriate = Data.Hero == Logic.GetEntityName(QSB.Npc.LastHeroEntityID);
+
+            if not Appropriate then
+                local LastTime = (Data.WrongHeroTick or 0) +1;
+                local CurrentTime = Logic.GetTime();
+                if Data.WrongHeroAction and LastTime < CurrentTime then
+                    self.NPC[_ScriptName].WrongHeroTick = CurrentTime;
+                    Data:WrongHeroAction(QSB.Npc.LastHeroEntityID);
+                end
+            end
+        end
+    end
+    return Appropriate;
+end
+
+function ModuleNpcInteraction.Global:RotateActorsToEachother(_PlayerID)
+    local PlayerKnights = {};
+    Logic.GetKnights(_PlayerID, PlayerKnights);
+    for k, v in pairs(PlayerKnights) do
+        local Target = API.GetEntityMovementTarget(v);
+        local x, y, z = Logic.EntityGetPos(QSB.Npc.LastNpcEntityID);
+        if math.floor(Target.X) == math.floor(x) and math.floor(Target.Y) == math.floor(y) then
+            x, y, z = Logic.EntityGetPos(v);
+            Logic.MoveEntity(v, x, y);
+            API.LookAt(v, QSB.Npc.LastNpcEntityID);
+        end
+    end
+    API.LookAt(QSB.Npc.LastHeroEntityID, QSB.Npc.LastNpcEntityID);
+    API.LookAt(QSB.Npc.LastNpcEntityID, QSB.Npc.LastHeroEntityID);
+end
+
+function ModuleNpcInteraction.Global:AdjustHeroTalkingDistance(_Distance)
+    local Distance = _Distance * API.GetEntityScale(QSB.Npc.LastNpcEntityID);
+    if API.GetDistance(QSB.Npc.LastHeroEntityID, QSB.Npc.LastNpcEntityID) <= Distance * 0.7 then
+        local Orientation = Logic.GetEntityOrientation(QSB.Npc.LastNpcEntityID);
+        local x1, y1, z1 = Logic.EntityGetPos(QSB.Npc.LastHeroEntityID);
+        local x2 = x1 + ((Distance * 0.5) * math.cos(math.rad(Orientation)));
+        local y2 = y1 + ((Distance * 0.5) * math.sin(math.rad(Orientation)));
+        local ID = Logic.CreateEntityOnUnblockedLand(Entities.XD_ScriptEntity, x2, y2, 0, 0);
+        local x3, y3, z3 = Logic.EntityGetPos(ID);
+        Logic.MoveSettler(QSB.Npc.LastHeroEntityID, x3, y3);
+        API.StartHiResJob( function(_HeroID, _NPCID, _Time)
+            if Logic.GetTime() > _Time +0.5 and Logic.IsEntityMoving(_HeroID) == false then
+                API.Confront(_HeroID, _NPCID);
+                return true;
+            end
+        end, QSB.Npc.LastHeroEntityID, QSB.Npc.LastNpcEntityID, Logic.GetTime());
+    end
+end
+
+function ModuleNpcInteraction.Global:OverrideQuestFunctions()
+    GameCallback_OnNPCInteraction_Orig_QSB_ModuleNpcInteraction = GameCallback_OnNPCInteraction;
+    GameCallback_OnNPCInteraction = function(_EntityID, _PlayerID, _KnightID)
+        GameCallback_OnNPCInteraction_Orig_QSB_ModuleNpcInteraction(_EntityID, _PlayerID, _KnightID);
+
+        local ClosestKnightID = _KnightID or ModuleNpcInteraction.Global:GetClosestKnight(_EntityID, _PlayerID);
+        API.SendScriptEvent(QSB.ScriptEvents.NpcInteraction, _EntityID, ClosestKnightID, _PlayerID);
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[API.SendScriptEvent(QSB.ScriptEvents.NpcInteraction, %d, %d, %d)]],
+            _EntityID,
+            ClosestKnightID,
+            _PlayerID
+        ));
+    end
+
+    QuestTemplate.RemoveQuestMarkers_Orig_ModuleNpcInteraction = QuestTemplate.RemoveQuestMarkers
+    QuestTemplate.RemoveQuestMarkers = function(self)
+        for i=1, self.Objectives[0] do
+            if self.Objectives[i].Type == Objective.Distance then
+                if self.Objectives[i].Data[1] ~= -65565 then
+                    QuestTemplate.RemoveQuestMarkers_Orig_ModuleNpcInteraction(self);
+                else
+                    if self.Objectives[i].Data[4] then
+                        API.NpcDispose(self.Objectives[i].Data[4].NpcInstance);
+                        self.Objectives[i].Data[4].NpcInstance = nil;
+                    end
+                end
+            else
+                QuestTemplate.RemoveQuestMarkers_Orig_ModuleNpcInteraction(self);
+            end
+        end
+    end
+
+    QuestTemplate.ShowQuestMarkers_Orig_ModuleNpcInteraction = QuestTemplate.ShowQuestMarkers
+    QuestTemplate.ShowQuestMarkers = function(self)
+        for i=1, self.Objectives[0] do
+            if self.Objectives[i].Type == Objective.Distance then
+                if self.Objectives[i].Data[1] ~= -65565 then
+                    QuestTemplate.ShowQuestMarkers_Orig_ModuleNpcInteraction(self);
+                else
+                    if not self.Objectives[i].Data[4].NpcInstance then
+                        self.Objectives[i].Data[4].NpcInstance = API.NpcCompose {
+                            Name   = self.Objectives[i].Data[3],
+                            Hero   = self.Objectives[i].Data[2],
+                            Player = self.ReceivingPlayer,
+                        }
+                    end
+                end
+            end
+        end
+    end
+
+    QuestTemplate.IsObjectiveCompleted_Orig_ModuleNpcInteraction = QuestTemplate.IsObjectiveCompleted;
+    QuestTemplate.IsObjectiveCompleted = function(self, objective)
+        local objectiveType = objective.Type;
+        local data = objective.Data;
+        if objective.Completed ~= nil then
+            return objective.Completed;
+        end
+
+        if objectiveType ~= Objective.Distance then
+            return self:IsObjectiveCompleted_Orig_ModuleNpcInteraction(objective);
+        else
+            if data[1] == -65565 then
+                if not IsExisting(data[3]) then
+                    error(data[3].. " is dead! :(");
+                    objective.Completed = false;
+                else
+                    if API.NpcTalkedTo(data[4].NpcInstance, data[2], self.ReceivingPlayer) then
+                        objective.Completed = true;
+                    end
+                end
+            else
+                return self:IsObjectiveCompleted_Orig_ModuleNpcInteraction(objective);
+            end
+        end
+    end
+end
+
+function ModuleNpcInteraction.Global:GetClosestKnight(_EntityID, _PlayerID)
+    local KnightIDs = {};
+    Logic.GetKnights(_PlayerID, KnightIDs);
+    return API.GetClosestToTarget(_EntityID, KnightIDs);
+end
+
+function ModuleNpcInteraction.Global:ToggleMarkerUsage(_Flag)
+    self.UseMarker = _Flag == true;
+    for k, v in pairs(self.NPC) do
+        self.NPC[k].UseMarker = _Flag == true;
+        self:HideMarker(k);
+    end
+end
+
+function ModuleNpcInteraction.Global:CreateMarker(_ScriptName)
+    if self.NPC[_ScriptName] then
+        local x,y,z = Logic.EntityGetPos(GetID(_ScriptName));
+        local MarkerID = Logic.CreateEntity(Entities.XD_ScriptEntity, x, y, 0, 0);
+        DestroyEntity(self.NPC[_ScriptName].MarkerID);
+        self.NPC[_ScriptName].MarkerID = MarkerID;
+        self:HideMarker(_ScriptName);
+    end
+end
+
+function ModuleNpcInteraction.Global:DestroyMarker(_ScriptName)
+    if self.NPC[_ScriptName] then
+        DestroyEntity(self.NPC[_ScriptName].MarkerID);
+        self.NPC[_ScriptName].MarkerID = 0;
+    end
+end
+
+function ModuleNpcInteraction.Global:HideMarker(_ScriptName)
+    if self.NPC[_ScriptName] then
+        if IsExisting(self.NPC[_ScriptName].MarkerID) then
+            Logic.SetModel(self.NPC[_ScriptName].MarkerID, Models.Effects_E_NullFX);
+            Logic.SetVisible(self.NPC[_ScriptName].MarkerID, false);
+        end
+    end
+end
+
+function ModuleNpcInteraction.Global:ShowMarker(_ScriptName)
+    if self.NPC[_ScriptName] then
+        if self.NPC[_ScriptName].UseMarker == true and IsExisting(self.NPC[_ScriptName].MarkerID) then
+            local Size = API.GetEntityScale(_ScriptName);
+            API.SetEntityScale(self.NPC[_ScriptName].MarkerID, Size);
+            Logic.SetModel(self.NPC[_ScriptName].MarkerID, Models.Effects_E_Wealth);
+            Logic.SetVisible(self.NPC[_ScriptName].MarkerID, true);
+        end
+    end
+end
+
+function ModuleNpcInteraction.Global:InteractionTriggerController()
+    for PlayerID = 1, 8, 1 do
+        local PlayersKnights = {};
+        Logic.GetKnights(PlayerID, PlayersKnights);
+        for i= 1, #PlayersKnights, 1 do
+            if Logic.GetCurrentTaskList(PlayersKnights[i]) == "TL_NPC_INTERACTION" then
+                local x1, y1 = Logic.EntityGetPos(PlayersKnights[i]);
+                for k, v in pairs(self.NPC) do
+                    if v.Distance >= 350 then
+                        local Target = API.GetEntityMovementTarget(PlayersKnights[i]);
+                        local x2, y2 = Logic.EntityGetPos(GetID(k));
+                        if math.floor(Target.X) == math.floor(x2) and math.floor(Target.Y) == math.floor(y2) then
+                            if IsExisting(k) and IsNear(PlayersKnights[i], k, v.Distance) then
+                                GameCallback_OnNPCInteraction(GetID(k), PlayerID, PlayersKnights[i]);
+                                return;
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+function ModuleNpcInteraction.Global:InteractableMarkerController()
+    for k, v in pairs(self.NPC) do
+        if v.Active then
+            if v.UseMarker and IsExisting(v.MarkerID) and API.IsEntityVisible(v.MarkerID) then
+                self:HideMarker(k);
+            else
+                self:ShowMarker(k);
+            end
+            local x1,y1,z1 = Logic.EntityGetPos(v.MarkerID);
+            local x2,y2,z2 = Logic.EntityGetPos(GetID(k));
+            if math.abs(x1-x2) > 20 or math.abs(y1-y2) > 20 then
+                Logic.DEBUG_SetPosition(v.MarkerID, x2, y2);
+            end
+        end
+    end
+end
+
+-- Local Script ------------------------------------------------------------- --
+
+function ModuleNpcInteraction.Local:OnGameStart()
+    QSB.ScriptEvents.NpcInteraction = API.RegisterScriptEvent("Event_NpcInteraction");
+
+    self:OverrideQuestFunctions();
+end
+
+function ModuleNpcInteraction.Local:OnEvent(_ID, _Event, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.NpcInteraction then
+        QSB.Npc.LastNpcEntityID = arg[1];
+        QSB.Npc.LastHeroEntityID = arg[2];
+    end
+end
+
+function ModuleNpcInteraction.Local:OverrideQuestFunctions()
+    GUI_Interaction.DisplayQuestObjective_Orig_ModuleNpcInteraction = GUI_Interaction.DisplayQuestObjective
+    GUI_Interaction.DisplayQuestObjective = function(_QuestIndex, _MessageKey)
+        local QuestIndexTemp = tonumber(_QuestIndex);
+        if QuestIndexTemp then
+            _QuestIndex = QuestIndexTemp;
+        end
+
+        local Quest, QuestType = GUI_Interaction.GetPotentialSubQuestAndType(_QuestIndex);
+        local QuestObjectivesPath = "/InGame/Root/Normal/AlignBottomLeft/Message/QuestObjectives";
+        XGUIEng.ShowAllSubWidgets("/InGame/Root/Normal/AlignBottomLeft/Message/QuestObjectives", 0);
+        local QuestObjectiveContainer;
+        local QuestTypeCaption;
+
+        g_CurrentDisplayedQuestID = _QuestIndex;
+
+        if QuestType == Objective.Distance then
+            QuestObjectiveContainer = QuestObjectivesPath .. "/List";
+            QuestTypeCaption = Wrapped_GetStringTableText(_QuestIndex, "UI_Texts/QuestInteraction");
+            local ObjectList = {};
+
+            if Quest.Objectives[1].Data[1] == -65565 then
+                QuestObjectiveContainer = QuestObjectivesPath .. "/Distance";
+                QuestTypeCaption = Wrapped_GetStringTableText(_QuestIndex, "UI_Texts/QuestMoveHere");
+                SetIcon(QuestObjectiveContainer .. "/QuestTypeIcon",{7,10});
+
+                local MoverEntityID = GetID(Quest.Objectives[1].Data[2]);
+                local MoverEntityType = Logic.GetEntityType(MoverEntityID);
+                local MoverIcon = g_TexturePositions.Entities[MoverEntityType];
+                if not MoverIcon then
+                    MoverIcon = {7, 9};
+                end
+                SetIcon(QuestObjectiveContainer .. "/IconMover", MoverIcon);
+
+                local TargetEntityID = GetID(Quest.Objectives[1].Data[3]);
+                local TargetEntityType = Logic.GetEntityType(TargetEntityID);
+                local TargetIcon = g_TexturePositions.Entities[TargetEntityType];
+                if not TargetIcon then
+                    TargetIcon = {14, 10};
+                end
+
+                local IconWidget = QuestObjectiveContainer .. "/IconTarget";
+                local ColorWidget = QuestObjectiveContainer .. "/TargetPlayerColor";
+
+                SetIcon(IconWidget, TargetIcon);
+                XGUIEng.SetMaterialColor(ColorWidget, 0, 255, 255, 255, 0);
+
+                SetIcon(QuestObjectiveContainer .. "/QuestTypeIcon",{16,12});
+                local caption = ModuleNpcInteraction.Shared.Text.StartConversation;
+                QuestTypeCaption = API.Localize(caption);
+
+                XGUIEng.SetText(QuestObjectiveContainer.."/Caption","{center}"..QuestTypeCaption);
+                XGUIEng.ShowWidget(QuestObjectiveContainer, 1);
+            else
+                GUI_Interaction.DisplayQuestObjective_Orig_ModuleNpcInteraction(_QuestIndex, _MessageKey);
+            end
+        else
+            GUI_Interaction.DisplayQuestObjective_Orig_ModuleNpcInteraction(_QuestIndex, _MessageKey);
+        end
+    end
+
+    GUI_Interaction.GetEntitiesOrTerritoryListForQuest_Orig_ModuleNpcInteraction = GUI_Interaction.GetEntitiesOrTerritoryListForQuest
+    GUI_Interaction.GetEntitiesOrTerritoryListForQuest = function( _Quest, _QuestType )
+        local EntityOrTerritoryList = {}
+        local IsEntity = true
+
+        if _QuestType == Objective.Distance then
+            if _Quest.Objectives[1].Data[1] == -65565 then
+                local Entity = GetID(_Quest.Objectives[1].Data[3]);
+                table.insert(EntityOrTerritoryList, Entity);
+            else
+                return GUI_Interaction.GetEntitiesOrTerritoryListForQuest_Orig_ModuleNpcInteraction(_Quest, _QuestType);
+            end
+
+        else
+            return GUI_Interaction.GetEntitiesOrTerritoryListForQuest_Orig_ModuleNpcInteraction(_Quest, _QuestType);
+        end
+        return EntityOrTerritoryList, IsEntity
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+
+Revision:RegisterModule(ModuleNpcInteraction);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Dieses Modul erlaubt NPC-Charaktere interaktiv zu machen.
+--
+-- Ein NPC ist ein Charakter, der durch den Helden eines Spielers angesprochen
+-- werden kann. Auf das Ansprechen kann eine beliebige Aktion folgen. Mittels
+-- einer Bedingung kann festgelegt werden, wer mit dem NPC sprechen kann und
+-- unter welchen Umständen es nicht möglich ist.
+--
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
+-- <li><a href="QSB_1_GUI.api.html">(1) Benutzerschnittstelle</a></li>
+-- </ul>
+--
+-- @within Beschreibung
+-- @set sort=true
+--
+
+---
+-- Events, auf die reagiert werden kann.
+--
+-- @field NpcInteraction  (Parameter: NpcEntityID, HeroEntityID)
+--
+-- @within Event
+--
+QSB.ScriptEvents = QSB.ScriptEvents or {};
+
+---
+-- Erstellt einen neuen NPC für den angegebenen Siedler.
+--
+-- Mögliche Einstellungen für den NPC:
+-- <table border="1">
+-- <tr>
+-- <th><b>Eigenschaft</b></th>
+-- <th><b>Beschreibung</b></th>
+-- </tr>
+-- <tr>
+-- <td>Name</td>
+-- <td>(string) Skriptname des NPC. Dieses Attribut wird immer benötigt!</td>
+-- </tr>
+-- <tr>
+-- <td>Type</td>
+-- <td>(number) Typ des NPC. Zahl zwischen 1 und 4 möglich. Bestimmt, falls
+-- vorhanden, den Anzeigemodus des NPC Icon.</td>
+-- </tr>
+-- <tr>
+-- <td>Condition</td>
+-- <td>(function) Bedingung, um die Konversation auszuführen. Muss boolean zurückgeben.</td>
+-- </tr>
+-- <tr>
+-- <td>Callback</td>
+-- <td>(function) Funktion, die bei erfolgreicher Aktivierung ausgeführt wird.</td>
+-- </tr>
+-- <tr>
+-- <td>Player</td>
+-- <td>(number|table) Spieler, der/die mit dem NPC sprechen kann/können.</td>
+-- </tr>
+-- <tr>
+-- <td>WrongPlayerAction</td>
+-- <td>(function) Funktion, die für einen falschen Spieler ausgeführt wird.</td>
+-- </tr>
+-- <tr>
+-- <td>Hero</td>
+-- <td>(string) Skriptnamen von Helden, die mit dem NPC sprechen können.</td>
+-- </tr>
+-- <tr>
+-- <td>WrongHeroAction</td>
+-- <td>(function) Funktion, die für einen falschen Helden ausgeführt wird.</td>
+-- </tr>
+-- </table>
+--
+-- @param[type=table]  _Data Definition des NPC
+-- @return[type=table] NPC Table
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- -- Beispiel #1: Einfachen NPC erstellen
+-- MyNpc = API.NpcCompose {
+--     Name     = "HansWurst",
+--     Callback = function(_Data)
+--         local HeroID = QSB.LastHeroEntityID;
+--         local NpcID = GetID(_Data.Name);
+--         -- mach was tolles
+--     end
+-- }
+--
+-- @usage
+-- -- Beispiel #2: NPC mit Bedingung erstellen
+-- MyNpc = API.NpcCompose {
+--     Name      = "HansWurst",
+--     Condition = function(_Data)
+--         local NpcID = GetID(_Data.Name);
+--         -- prüfe irgend was
+--         return MyConditon == true;
+--     end
+--     Callback  = function(_Data)
+--         local HeroID = QSB.LastHeroEntityID;
+--         local NpcID = GetID(_Data.Name);
+--         -- mach was tolles
+--     end
+-- }
+--
+-- @usage
+-- -- Beispiel #3: NPC auf Spieler beschränken
+-- MyNpc = API.NpcCompose {
+--     Name              = "HansWurst",
+--     Player            = {1, 2},
+--     WrongPlayerAction = function(_Data)
+--         API.Note("Ich rede nicht mit Euch!");
+--     end,
+--     Callback          = function(_Data)
+--         local HeroID = QSB.LastHeroEntityID;
+--         local NpcID = GetID(_Data.Name);
+--         -- mach was tolles
+--     end
+-- }
+--
+function API.NpcCompose(_Data)
+    if GUI or not type(_Data) == "table" or not _Data.Name then
+        return;
+    end
+    if not IsExisting(_Data.Name) then
+        error("API.NpcCompose: '" .._Data.Name.. "' NPC does not exist!");
+        return;
+    end
+    local Npc = ModuleNpcInteraction.Global:GetNpc(_Data.Name);
+    if Npc ~= nil and Npc.Active then
+        error("API.NpcCompose: '" .._Data.Name.. "' is already composed as NPC!");
+        return;
+    end
+    if _Data.Type and (not type(_Data.Type) == "number" or (_Data.Type < 1 or _Data.Type > 4)) then
+        error("API.NpcCompose: Type must be a value between 1 and 4!");
+        return;
+    end
+    return ModuleNpcInteraction.Global:CreateNpc(_Data);
+end
+
+---
+-- Entfernt den NPC komplett vom Entity. Das Entity bleibt dabei erhalten.
+--
+-- @param[type=table] _Data NPC Table
+-- @within Anwenderfunktionen
+-- @usage
+-- API.NpcDispose(MyNpc);
+--
+function API.NpcDispose(_Data)
+    if GUI then
+        return;
+    end
+    if not IsExisting(_Data.Name) then
+        error("API.NpcDispose: '" .._Data.Name.. "' NPC does not exist!");
+        return;
+    end
+    if ModuleNpcInteraction.Global:GetNpc(_Data.Name) ~= nil then
+        error("API.NpcDispose: '" .._Data.Name.. "' NPC must first be composed!");
+        return;
+    end
+
+    ModuleNpcInteraction.Global:DestroyNpc(_Data);
+end
+
+---
+-- Aktualisiert die Daten des NPC.
+--
+-- Mögliche Einstellungen für den NPC:
+-- <table border="1">
+-- <tr>
+-- <th><b>Eigenschaft</b></th>
+-- <th><b>Beschreibung</b></th>
+-- </tr>
+-- <tr>
+-- <td>Name</td>
+-- <td>(string) Skriptname des NPC. Dieses Attribut wird immer benötigt!</td>
+-- </tr>
+-- <tr>
+-- <td>Type</td>
+-- <td>(number) Typ des NPC. Zahl zwischen 1 und 4 möglich. Bestimmt, falls
+-- vorhanden, den Anzeigemodus des NPC Icon.</td>
+-- </tr>
+-- <tr>
+-- <td>Condition</td>
+-- <td>(function) Bedingung, um die Konversation auszuführen. Muss boolean zurückgeben.</td>
+-- </tr>
+-- <tr>
+-- <td>Callback</td>
+-- <td>(function) Funktion, die bei erfolgreicher Aktivierung ausgeführt wird.</td>
+-- </tr>
+-- <tr>
+-- <td>Player</td>
+-- <td>(number) Spieler, die mit dem NPC sprechen können.</td>
+-- </tr>
+-- <tr>
+-- <td>WrongPlayerAction</td>
+-- <td>(function) Funktion, die für einen falschen Spieler ausgeführt wird.</td>
+-- </tr>
+-- <tr>
+-- <td>Hero</td>
+-- <td>(string) Skriptnamen von Helden, die mit dem NPC sprechen können.</td>
+-- </tr>
+-- <tr>
+-- <td>WrongHeroAction</td>
+-- <td>(function) Funktion, die für einen falschen Helden ausgeführt wird.</td>
+-- </tr>
+-- <tr>
+-- <td>Active</td>
+-- <td>(boolean) Steuert, ob der NPC aktiv ist.</td>
+-- </tr>
+-- </table>
+--
+-- @param[type=table] _Data NPC Table
+-- @within Anwenderfunktionen
+-- @usage
+-- -- Einen NPC wieder aktivieren
+-- MyNpc.Active = true;
+-- MyNpc.TalkedTo = 0;
+-- -- Die Aktion ändern
+-- MyNpc.Callback = function(_Data)
+--     -- mach was hier
+-- end;
+-- API.NpcUpdate(MyNpc);
+--
+function API.NpcUpdate(_Data)
+    if GUI then
+        return;
+    end
+    if not IsExisting(_Data.Name) then
+        error("API.NpcUpdate: '" .._Data.Name.. "' NPC does not exist!");
+        return;
+    end
+    if ModuleNpcInteraction.Global:GetNpc(_Data.Name) == nil then
+        error("API.NpcUpdate: '" .._Data.Name.. "' NPC must first be composed!");
+        return;
+    end
+
+    ModuleNpcInteraction.Global:UpdateNpc(_Data);
+end
+
+---
+-- Prüft, ob der NPC gerade aktiv ist.
+--
+-- @param[type=table] _Data NPC Table
+-- @return[type=boolean] NPC ist aktiv
+-- @within Anwenderfunktionen
+-- @usage
+-- if API.NpcIsActive(MyNpc) then
+--
+function API.NpcIsActive(_Data)
+    if GUI then
+        return;
+    end
+    if not IsExisting(_Data.Name) then
+        error("API.NpcIsActive: '" .._Data.Name.. "' NPC does not exist!");
+        return;
+    end
+    local NPC = ModuleNpcInteraction.Global:GetNpc(_Data.Name);
+    if NPC == nil then
+        error("API.NpcIsActive: '" .._Data.Name.. "' NPC must first be composed!");
+        return;
+    end
+
+    return NPC.Active == true and API.IsEntityActiveNpc(_Data.Name);
+end
+
+---
+-- Prüft, ob ein NPC schon gesprochen hat und optional auch mit wem.
+--
+-- @param[type=table]  _Data     NPC Table
+-- @param[type=string] _Hero     (Optional) Skriptname des Helden
+-- @param[type=number] _PlayerID (Optional) Spieler ID
+-- @within Anwenderfunktionen
+-- 
+-- @usage
+-- -- Beispiel #1: Wurde mit NPC gesprochen
+-- if API.NpcTalkedTo(MyNpc) then
+-- 
+-- @usage
+-- -- Beispiel #2: Spieler hat mit NPC gesprochen
+-- if API.NpcTalkedTo(MyNpc, nil, 1) then
+-- 
+-- @usage
+-- -- Beispiel #3: Held des Spielers hat mit NPC gesprochen
+-- if API.NpcTalkedTo(MyNpc, "Marcus", 1) then
+--
+function API.NpcTalkedTo(_Data, _Hero, _PlayerID)
+    if GUI then
+        return;
+    end
+    if not IsExisting(_Data.Name) then
+        error("API.NpcTalkedTo: '" .._Data.Name.. "' NPC does not exist!");
+        return;
+    end
+    if ModuleNpcInteraction.Global:GetNpc(_Data.Name) == nil then
+        error("API.NpcTalkedTo: '" .._Data.Name.. "' NPC must first be composed!");
+        return;
+    end
+
+    local NPC = ModuleNpcInteraction.Global:GetNpc(_Data.Name);
+    local TalkedTo = NPC.TalkedTo ~= nil and NPC.TalkedTo ~= 0;
+    if _Hero and TalkedTo then
+        TalkedTo = NPC.TalkedTo == GetID(_Hero);
+    end
+    if _PlayerID and TalkedTo then
+        TalkedTo = Logic.EntityGetPlayer(NPC.TalkedTo) == _PlayerID;
+    end
+    return TalkedTo;
+end
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+--
+-- Stellt neue Behavior für NPC.
+--
+
+---
+-- Der Held muss einen Nichtspielercharakter ansprechen.
+--
+-- Es wird automatisch ein NPC erzeugt und überwacht, sobald der Quest
+-- aktiviert wurde. Ein NPC darf nicht auf geblocktem Gebiet stehen oder
+-- seine Enity-ID verändern.
+--
+-- <b>Hinweis</b>: Jeder Siedler kann zu jedem Zeitpunkt nur <u>einen</u> NPC 
+-- haben. Wird ein weiterer NPC zugewiesen, wird der alte überschrieben und
+-- der verknüpfte Quest funktioniert nicht mehr!
+--
+-- @param[type=string] _NpcName  Skriptname des NPC
+-- @param[type=string] _HeroName (optional) Skriptname des Helden
+-- @within Goal
+--
+function Goal_NPC(...)
+    return B_Goal_NPC:new(...);
+end
+
+B_Goal_NPC = {
+    Name             = "Goal_NPC",
+    Description     = {
+        en = "Goal: The hero has to talk to a non-player character.",
+        de = "Ziel: Der Held muss einen Nichtspielercharakter ansprechen.",
+        fr = "Objectif: le héros doit interpeller un personnage non joueur.",
+    },
+    Parameter = {
+        { ParameterType.ScriptName, en = "NPC",  de = "NPC",  fr = "NPC" },
+        { ParameterType.ScriptName, en = "Hero", de = "Held", fr = "Héro" },
+    },
+}
+
+function B_Goal_NPC:GetGoalTable()
+    return {Objective.Distance, -65565, self.Hero, self.NPC, self}
+end
+
+function B_Goal_NPC:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.NPC = _Parameter
+    elseif (_Index == 1) then
+        self.Hero = _Parameter
+        if self.Hero == "-" then
+            self.Hero = nil
+        end
+   end
+end
+
+function B_Goal_NPC:GetIcon()
+    return {14,10}
+end
+
+Revision:RegisterBehavior(B_Goal_NPC);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+ModuleObjectInteraction = {
+    Properties = {
+        Name = "ModuleObjectInteraction",
+        Version = "4.0.0 (ALPHA 1.0.0)",
+    },
+
+    Global = {
+        SlaveSequence = 0,
+    };
+    Local  = {};
+
+    Shared = {
+        Text = {}
+    };
+};
+
+QSB.IO = {
+    LastHeroEntityID = 0,
+    LastObjectEntityID = 0
+};
+
+-- Global Script ------------------------------------------------------------ --
+
+function ModuleObjectInteraction.Global:OnGameStart()
+    QSB.ScriptEvents.ObjectClicked = API.RegisterScriptEvent("Event_ObjectClicked");
+    QSB.ScriptEvents.ObjectInteraction = API.RegisterScriptEvent("Event_ObjectInteraction");
+    QSB.ScriptEvents.ObjectReset = API.RegisterScriptEvent("Event_ObjectReset");
+    QSB.ScriptEvents.ObjectDelete = API.RegisterScriptEvent("Event_ObjectDelete");
+
+    IO = {};
+    IO_UserDefindedNames = {};
+    IO_SlaveToMaster = {};
+    IO_SlaveState = {};
+
+    self:OverrideObjectInteraction();
+    self:StartObjectDestructionController();
+    self:StartObjectConditionController();
+    self:CreateDefaultObjectNames();
+end
+
+function ModuleObjectInteraction.Global:OnEvent(_ID, _Event, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.ObjectInteraction then
+        self:OnObjectInteraction(arg[1], arg[2], arg[3]);
+    elseif _ID == QSB.ScriptEvents.ChatClosed then
+        if arg[3] then
+            self:ProcessChatInput(arg[1]);
+        end
+    end
+end
+
+function ModuleObjectInteraction.Global:OnObjectInteraction(_ScriptName, _KnightID, _PlayerID)
+    QSB.IO.LastObjectEntityID = GetID(_ScriptName);
+    QSB.IO.LastHeroEntityID = _KnightID;
+
+    if IO_SlaveToMaster[_ScriptName] then
+        _ScriptName = IO_SlaveToMaster[_ScriptName];
+    end
+    if IO[_ScriptName] then
+        IO[_ScriptName].IsUsed = true;
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[
+                local ScriptName = "%s"
+                if IO[ScriptName] then
+                    IO[ScriptName].IsUsed = true
+                end
+            ]],
+            _ScriptName
+        ));
+        if IO[_ScriptName].Action then
+            IO[_ScriptName]:Action(_PlayerID, _KnightID);
+        end
+    end
+end
+
+function ModuleObjectInteraction.Global:CreateObject(_Description)
+    local ID = GetID(_Description.Name);
+    if ID == 0 then
+        return;
+    end
+    self:DestroyObject(_Description.Name);
+
+    local TypeName = Logic.GetEntityTypeName(Logic.GetEntityType(ID));
+    if TypeName and not TypeName:find("^I_X_") then
+        self:CreateSlaveObject(_Description);
+    end
+
+    _Description.IsActive = true;
+    _Description.IsUsed = false;
+    _Description.Player = _Description.Player or {1, 2, 3, 4, 5, 6, 7, 8};
+    IO[_Description.Name] = _Description;
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[IO["%s"] = %s]],
+        _Description.Name,
+        table.tostring(IO[_Description.Name])
+    ));
+    self:SetupObject(_Description);
+    return _Description;
+end
+
+function ModuleObjectInteraction.Global:DestroyObject(_ScriptName)
+    if not IO[_ScriptName] then
+        return;
+    end
+    if IO[_ScriptName].Slave then
+        IO_SlaveToMaster[IO[_ScriptName].Slave] = nil;
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[IO_SlaveToMaster["%s"] = nil]],
+            IO[_ScriptName].Slave
+        ));
+        IO_SlaveState[IO[_ScriptName].Slave] = nil;
+        DestroyEntity(IO[_ScriptName].Slave);
+    end
+    self:SetObjectState(_ScriptName, 2);
+    API.SendScriptEvent(QSB.ScriptEvents.ObjectDelete, _ScriptName);
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[
+            local ScriptName = "%s"
+            API.SendScriptEvent(QSB.ScriptEvents.ObjectDelete, ScriptName)
+            IO[ScriptName] = nil
+        ]],
+        _ScriptName
+    ));
+    IO[_ScriptName] = nil;
+end
+
+function ModuleObjectInteraction.Global:CreateSlaveObject(_Object)
+    local Name;
+    for k, v in pairs(IO_SlaveToMaster) do
+        if v == _Object.Name and IsExisting(k) then
+            Name = k;
+        end
+    end
+    if Name == nil then
+        self.SlaveSequence = self.SlaveSequence +1;
+        Name = "QSB_SlaveObject_" ..self.SlaveSequence;
+    end
+
+    local SlaveID = GetID(Name);
+    if not IsExisting(Name) then
+        local x,y,z = Logic.EntityGetPos(GetID(_Object.Name));
+        SlaveID = Logic.CreateEntity(Entities.I_X_DragonBoatWreckage, x, y, 0, 0);
+        Logic.SetModel(SlaveID, Models.Effects_E_Mosquitos);
+        Logic.SetEntityName(SlaveID, Name);
+        IO_SlaveToMaster[Name] = _Object.Name;
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[IO_SlaveToMaster["%s"] = "%s"]],
+            Name,
+            _Object.Name
+        ));
+        _Object.Slave = Name;
+    end
+    IO_SlaveState[Name] = 1;
+    return SlaveID;
+end
+
+function ModuleObjectInteraction.Global:SetupObject(_Object)
+    local ID = GetID((_Object.Slave and _Object.Slave) or _Object.Name);
+    Logic.InteractiveObjectClearCosts(ID);
+    Logic.InteractiveObjectClearRewards(ID);
+    Logic.InteractiveObjectSetInteractionDistance(ID, _Object.Distance);
+    Logic.InteractiveObjectSetTimeToOpen(ID, _Object.Waittime);
+
+    local RewardResourceCart = _Object.RewardResourceCartType or Entities.U_ResourceMerchant;
+    Logic.InteractiveObjectSetRewardResourceCartType(ID, RewardResourceCart);
+    local RewardGoldCart = _Object.RewardGoldCartType or Entities.U_GoldCart;
+    Logic.InteractiveObjectSetRewardGoldCartType(ID, RewardGoldCart);
+    local CostResourceCart = _Object.CostResourceCartType or Entities.U_ResourceMerchant;
+    Logic.InteractiveObjectSetCostResourceCartType(ID, CostResourceCart);
+    local CostGoldCart = _Object.CostGoldCartType or Entities.U_GoldCart;
+    Logic.InteractiveObjectSetCostGoldCartType(ID, CostGoldCart);
+
+    if GetNameOfKeyInTable(Entities, _Object.Replacement) then
+        Logic.InteractiveObjectSetReplacingEntityType(ID, _Object.Replacement);
+    end
+    if _Object.Reward then
+        Logic.InteractiveObjectAddRewards(ID, _Object.Reward[1], _Object.Reward[2]);
+    end
+    if _Object.Costs and _Object.Costs[1] then
+        Logic.InteractiveObjectAddCosts(ID, _Object.Costs[1], _Object.Costs[2]);
+    end
+    if _Object.Costs and _Object.Costs[3] then
+        Logic.InteractiveObjectAddCosts(ID, _Object.Costs[3], _Object.Costs[4]);
+    end
+    table.insert(HiddenTreasures, ID);
+    API.InteractiveObjectActivate(Logic.GetEntityName(ID), _Object.State or 0);
+end
+
+function ModuleObjectInteraction.Global:ResetObject(_ScriptName)
+    local ID = GetID((IO[_ScriptName].Slave and IO[_ScriptName].Slave) or _ScriptName);
+    RemoveInteractiveObjectFromOpenedList(ID);
+    table.insert(HiddenTreasures, ID);
+    Logic.InteractiveObjectSetAvailability(ID, true);
+    self:SetObjectState(ID, IO[_ScriptName].State or 0);
+    IO[_ScriptName].IsUsed = false;
+    IO[_ScriptName].IsActive = true;
+
+    API.SendScriptEvent(QSB.ScriptEvents.ObjectReset, _ScriptName);
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[API.SendScriptEvent(QSB.ScriptEvents.ObjectReset, "%s")]],
+        _ScriptName
+    ));
+end
+
+function ModuleObjectInteraction.Global:SetObjectState(_ScriptName, _State, ...)
+    arg = ((not arg or #arg == 0) and {1, 2, 3, 4, 5, 6, 7, 8}) or arg;
+    for i= 1, 8 do
+        Logic.InteractiveObjectSetPlayerState(GetID(_ScriptName), i, 2);
+    end
+    for i= 1, #arg, 1 do
+        Logic.InteractiveObjectSetPlayerState(GetID(_ScriptName), arg[i], _State);
+    end
+    Logic.InteractiveObjectSetAvailability(GetID(_ScriptName), _State ~= 2);
+end
+
+function ModuleObjectInteraction.Global:CreateDefaultObjectNames()
+    IO_UserDefindedNames["D_X_ChestClosed"]    = {
+        de = "Schatztruhe",
+        en = "Treasure Chest",
+        fr = "Coffre au Trésor"
+    };
+    IO_UserDefindedNames["D_X_ChestOpenEmpty"] = {
+        de = "Leere Truhe",
+        en = "Empty Chest",
+        fr = "Coffre vide"
+    };
+
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[IO_UserDefindedNames = %s]],
+        table.tostring(IO_UserDefindedNames)
+    ));
+end
+
+function ModuleObjectInteraction.Global:OverrideObjectInteraction()
+    GameCallback_OnObjectInteraction = function(_EntityID, _PlayerID)
+        OnInteractiveObjectOpened(_EntityID, _PlayerID);
+        OnTreasureFound(_EntityID, _PlayerID);
+
+        local ScriptName = Logic.GetEntityName(_EntityID);
+        if IO_SlaveToMaster[ScriptName] then
+            ScriptName = IO_SlaveToMaster[ScriptName];
+        end
+        local KnightIDs = {};
+        Logic.GetKnights(_PlayerID, KnightIDs);
+        local KnightID = API.GetClosestToTarget(_EntityID, KnightIDs);
+        API.SendScriptEvent(QSB.ScriptEvents.ObjectInteraction, ScriptName, KnightID, _PlayerID);
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[API.SendScriptEvent(QSB.ScriptEvents.ObjectInteraction, "%s", %d, %d)]],
+            ScriptName,
+            KnightID,
+            _PlayerID
+        ));
+    end
+
+    QuestTemplate.AreObjectsActivated = function(self, _ObjectList)
+        for i=1, _ObjectList[0] do
+            if not _ObjectList[-i] then
+                _ObjectList[-i] = GetID(_ObjectList[i]);
+            end
+            local EntityName = Logic.GetEntityName(_ObjectList[-i]);
+            if IO_SlaveToMaster[EntityName] then
+                EntityName = IO_SlaveToMaster[EntityName];
+            end
+
+            if IO[EntityName] then
+                if IO[EntityName].IsUsed ~= true then
+                    return false;
+                end
+            elseif Logic.IsInteractiveObject(_ObjectList[-i]) then
+                if not IsInteractiveObjectOpen(_ObjectList[-i]) then
+                    return false;
+                end
+            end
+        end
+        return true;
+    end
+end
+
+function ModuleObjectInteraction.Global:ProcessChatInput(_Text)
+    local Commands = Revision.Text:CommandTokenizer(_Text);
+    for i= 1, #Commands, 1 do
+        if Commands[1] == "enableobject" then
+            local State = (Commands[3] and tonumber(Commands[3])) or nil;
+            local PlayerID = (Commands[4] and tonumber(Commands[4])) or nil;
+            if not IsExisting(Commands[2]) then
+                error("object " ..Commands[2].. " does not exist!");
+                return;
+            end
+            API.InteractiveObjectActivate(Commands[2], State, PlayerID);
+            info("activated object " ..Commands[2].. ".");
+        elseif Commands[1] == "disableobject" then
+            local PlayerID = (Commands[3] and tonumber(Commands[3])) or nil;
+            if not IsExisting(Commands[2]) then
+                error("object " ..Commands[2].. " does not exist!");
+                return;
+            end
+            API.InteractiveObjectDeactivate(Commands[2], PlayerID);
+            info("deactivated object " ..Commands[2].. ".");
+        elseif Commands[1] == "initobject" then
+            if not IsExisting(Commands[2]) then
+                error("object " ..Commands[2].. " does not exist!");
+                return;
+            end
+            API.SetupObject({
+                Name     = Commands[2],
+                Waittime = 0,
+                State    = 0
+            });
+            info("quick initalization of object " ..Commands[2].. ".");
+        end
+    end
+end
+
+function ModuleObjectInteraction.Global:StartObjectDestructionController()
+    API.StartJobByEventType(Events.LOGIC_EVENT_ENTITY_DESTROYED, function()
+        local DestryoedEntityID = Event.GetEntityID();
+        local SlaveName  = Logic.GetEntityName(DestryoedEntityID);
+        local MasterName = IO_SlaveToMaster[SlaveName];
+        if SlaveName and MasterName then
+            local Object = IO[MasterName];
+            if not Object then
+                return;
+            end
+            info("slave " ..SlaveName.. " of master " ..MasterName.. " has been deleted!");
+            info("try to create new slave...");
+            IO_SlaveToMaster[SlaveName] = nil;
+            Logic.ExecuteInLuaLocalState(string.format(
+                [[IO_SlaveToMaster["%s"] = nil]],
+                SlaveName
+            ));
+            local SlaveID = ModuleObjectInteraction.Global:CreateSlaveObject(Object);
+            if not IsExisting(SlaveID) then
+                error("failed to create slave!");
+                return;
+            end
+            ModuleObjectInteraction.Global:SetupObject(Object);
+            if Object.IsUsed == true or (IO_SlaveState[SlaveName] and IO_SlaveState[SlaveName] == 0) then
+                API.InteractiveObjectDeactivate(Object.Slave);
+            end
+            info("new slave created for master " ..MasterName.. ".");
+        end
+    end);
+end
+
+function ModuleObjectInteraction.Global:StartObjectConditionController()
+    API.StartHiResJob(function()
+        for k, v in pairs(IO) do
+            if v and not v.IsUsed and v.IsActive then
+                IO[k].IsFullfilled = true;
+                if IO[k].Condition then
+                    local IsFulfulled = v:Condition();
+                    IO[k].IsFullfilled = IsFulfulled;
+                end
+                Logic.ExecuteInLuaLocalState(string.format(
+                    [[
+                        local ScriptName = "%s"
+                        if IO[ScriptName] then
+                            IO[ScriptName].IsFullfilled = %s
+                        end
+                    ]],
+                    k,
+                    tostring(IO[k].IsFullfilled)
+                ))
+            end
+        end
+    end);
+end
+
+-- Local Script ------------------------------------------------------------- --
+
+function ModuleObjectInteraction.Local:OnGameStart()
+    QSB.ScriptEvents.ObjectClicked = API.RegisterScriptEvent("Event_ObjectClicked");
+    QSB.ScriptEvents.ObjectInteraction = API.RegisterScriptEvent("Event_ObjectInteraction");
+    QSB.ScriptEvents.ObjectReset = API.RegisterScriptEvent("Event_ObjectReset");
+    QSB.ScriptEvents.ObjectDelete = API.RegisterScriptEvent("Event_ObjectDelete");
+
+    IO = {};
+    IO_UserDefindedNames = {};
+    IO_SlaveToMaster = {};
+    IO_SlaveState = {};
+
+    self:OverrideGameFunctions();
+end
+
+function ModuleObjectInteraction.Local:OnEvent(_ID, _Event, _ScriptName, _KnightID, _PlayerID)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.ObjectReset then
+        if IO[_ScriptName] then
+            IO[_ScriptName].IsUsed = false;
+        end
+    elseif _ID == QSB.ScriptEvents.ObjectInteraction then
+        QSB.IO.LastObjectEntityID = GetID(_ScriptName);
+        QSB.IO.LastHeroEntityID = _KnightID;
+    end
+end
+
+function ModuleObjectInteraction.Local:OverrideGameFunctions()
+    g_CurrentDisplayedQuestID = 0;
+
+    GUI_Interaction.InteractiveObjectClicked_Orig_ModuleObjectInteraction = GUI_Interaction.InteractiveObjectClicked;
+    GUI_Interaction.InteractiveObjectClicked = function()
+        local i = tonumber(XGUIEng.GetWidgetNameByID(XGUIEng.GetCurrentWidgetID()));
+        local EntityID = g_Interaction.ActiveObjectsOnScreen[i];
+        local PlayerID = GUI.GetPlayerID();
+        if not EntityID then
+            return;
+        end
+        local ScriptName = Logic.GetEntityName(EntityID);
+        if IO_SlaveToMaster[ScriptName] then
+            ScriptName = IO_SlaveToMaster[ScriptName];
+        end
+        if IO[ScriptName] then
+            if not IO[ScriptName].IsFullfilled then
+                local Text = XGUIEng.GetStringTableText("UI_ButtonDisabled/PromoteKnight");
+                if IO[ScriptName].ConditionInfo then
+                    Text = API.ConvertPlaceholders(API.Localize(IO[ScriptName].ConditionInfo));
+                end
+                Message(Text);
+                return;
+            end
+            if type(IO[ScriptName].Costs) == "table" and #IO[ScriptName].Costs ~= 0 then
+                local StoreHouseID = Logic.GetStoreHouse(PlayerID);
+                local CastleID     = Logic.GetHeadquarters(PlayerID);
+                if StoreHouseID == nil or StoreHouseID == 0 or CastleID == nil or CastleID == 0 then
+                    API.Note("DEBUG: Player needs special buildings when using activation costs!");
+                    return;
+                end
+            end
+        end
+        GUI_Interaction.InteractiveObjectClicked_Orig_ModuleObjectInteraction();
+
+        -- Send additional click event
+        -- This is supposed to be used in singleplayer only!
+        if not Framework.IsNetworkGame() then
+            local KnightIDs = {};
+            Logic.GetKnights(PlayerID, KnightIDs);
+            local KnightID = API.GetClosestToTarget(EntityID, KnightIDs);
+            API.SendScriptEventToGlobal(QSB.ScriptEvents.ObjectClicked, ScriptName, KnightID, PlayerID);
+            API.SendScriptEvent(QSB.ScriptEvents.ObjectClicked, ScriptName, KnightID, PlayerID);
+        end
+    end
+
+    GUI_Interaction.InteractiveObjectUpdate = function()
+        if g_Interaction.ActiveObjects == nil then
+            return;
+        end
+
+        local PlayerID = GUI.GetPlayerID();
+        for i = 1, #g_Interaction.ActiveObjects do
+            local ObjectID = g_Interaction.ActiveObjects[i];
+            local MasterObjectID = ObjectID;
+            local ScriptName = Logic.GetEntityName(ObjectID);
+            if IO_SlaveToMaster[ScriptName] then
+                MasterObjectID = GetID(IO_SlaveToMaster[ScriptName]);
+            end
+            local X, Y = GUI.GetEntityInfoScreenPosition(MasterObjectID);
+            local ScreenSizeX, ScreenSizeY = GUI.GetScreenSize();
+            if X ~= 0 and Y ~= 0 and X > -50 and Y > -50 and X < (ScreenSizeX + 50) and Y < (ScreenSizeY + 50) then
+                if not table.contains(g_Interaction.ActiveObjectsOnScreen, ObjectID) then
+                    table.insert(g_Interaction.ActiveObjectsOnScreen, ObjectID);
+                end
+            else
+                for i = 1, #g_Interaction.ActiveObjectsOnScreen do
+                    if g_Interaction.ActiveObjectsOnScreen[i] == ObjectID then
+                        table.remove(g_Interaction.ActiveObjectsOnScreen, i);
+                    end
+                end
+            end
+        end
+
+        for i = 1, #g_Interaction.ActiveObjectsOnScreen do
+            local Widget = "/InGame/Root/Normal/InteractiveObjects/" ..i;
+            if XGUIEng.IsWidgetExisting(Widget) == 1 then
+                local ObjectID       = g_Interaction.ActiveObjectsOnScreen[i];
+                local MasterObjectID = ObjectID;
+                local ScriptName     = Logic.GetEntityName(ObjectID);
+                if IO_SlaveToMaster[ScriptName] then
+                    MasterObjectID = GetID(IO_SlaveToMaster[ScriptName]);
+                    ScriptName = Logic.GetEntityName(MasterObjectID);
+                end
+                local EntityType = Logic.GetEntityType(ObjectID);
+                local X, Y = GUI.GetEntityInfoScreenPosition(MasterObjectID);
+                local WidgetSize = {XGUIEng.GetWidgetScreenSize(Widget)};
+                XGUIEng.SetWidgetScreenPosition(Widget, X - (WidgetSize[1]/2), Y - (WidgetSize[2]/2));
+                local BaseCosts = {Logic.InteractiveObjectGetCosts(ObjectID)};
+                local EffectiveCosts = {Logic.InteractiveObjectGetEffectiveCosts(ObjectID, PlayerID)};
+                local IsAvailable = Logic.InteractiveObjectGetAvailability(ObjectID);
+                local HasSpace = Logic.InteractiveObjectHasPlayerEnoughSpaceForRewards(ObjectID, PlayerID);
+                local Disable = false;
+
+                if BaseCosts[1] ~= nil and EffectiveCosts[1] == nil and IsAvailable == true then
+                    Disable = true;
+                end
+                if HasSpace == false then
+                    Disable = true
+                end
+                if Disable == false then
+                    if IO[ScriptName] and type(IO[ScriptName].Player) == "table" then
+                        Disable = not self:IsAvailableForGuiPlayer(ScriptName);
+                    elseif IO[ScriptName] and type(IO[ScriptName].Player) == "number" then
+                        Disable = IO[ScriptName].Player ~= PlayerID;
+                    end
+                end
+
+                if Disable == true then
+                    XGUIEng.DisableButton(Widget, 1);
+                else
+                    XGUIEng.DisableButton(Widget, 0);
+                end
+                if GUI_Interaction.InteractiveObjectUpdateEx1 ~= nil then
+                    GUI_Interaction.InteractiveObjectUpdateEx1(Widget, EntityType);
+                end
+                XGUIEng.ShowWidget(Widget, 1);
+            end
+        end
+
+        for i = #g_Interaction.ActiveObjectsOnScreen + 1, 2 do
+            local Widget = "/InGame/Root/Normal/InteractiveObjects/" .. i;
+            XGUIEng.ShowWidget(Widget, 0);
+        end
+
+        for i = 1, #g_Interaction.ActiveObjectsOnScreen do
+            local Widget     = "/InGame/Root/Normal/InteractiveObjects/" ..i;
+            local ObjectID   = g_Interaction.ActiveObjectsOnScreen[i];
+            local ScriptName = Logic.GetEntityName(ObjectID);
+            if IO_SlaveToMaster[ScriptName] then
+                ScriptName = IO_SlaveToMaster[ScriptName];
+            end
+            if IO[ScriptName] and IO[ScriptName].Texture then
+                local FileBaseName;
+                local a = (IO[ScriptName].Texture[1]) or 14;
+                local b = (IO[ScriptName].Texture[2]) or 10;
+                local c = (IO[ScriptName].Texture[3]) or 0;
+                if type(c) == "string" then
+                    FileBaseName = c;
+                    c = 0;
+                end
+                API.SetIcon(Widget, {a, b, c}, nil, FileBaseName);
+            end
+        end
+    end
+
+    GUI_Interaction.InteractiveObjectMouseOver_Orig_ModuleObjectInteraction = GUI_Interaction.InteractiveObjectMouseOver;
+    GUI_Interaction.InteractiveObjectMouseOver = function()
+        local PlayerID = GUI.GetPlayerID();
+        local ButtonNumber = tonumber(XGUIEng.GetWidgetNameByID(XGUIEng.GetCurrentWidgetID()));
+        local ObjectID = g_Interaction.ActiveObjectsOnScreen[ButtonNumber];
+        local EntityType = Logic.GetEntityType(ObjectID);
+
+        if g_GameExtraNo > 0 then
+            local EntityTypeName = Logic.GetEntityTypeName(EntityType);
+            if table.contains ({"R_StoneMine", "R_IronMine", "B_Cistern", "B_Well", "I_X_TradePostConstructionSite"}, EntityTypeName) then
+                GUI_Interaction.InteractiveObjectMouseOver_Orig_ModuleObjectInteraction();
+                return;
+            end
+        end
+        local EntityTypeName = Logic.GetEntityTypeName(EntityType);
+        if string.find(EntityTypeName, "^I_X_") and tonumber(Logic.GetEntityName(ObjectID)) ~= nil then
+            GUI_Interaction.InteractiveObjectMouseOver_Orig_ModuleObjectInteraction();
+            return;
+        end
+        local Costs = {Logic.InteractiveObjectGetEffectiveCosts(ObjectID, PlayerID)};
+        local ScriptName = Logic.GetEntityName(ObjectID);
+        if IO_SlaveToMaster[ScriptName] then
+            ScriptName = IO_SlaveToMaster[ScriptName];
+        end
+
+        local CheckSettlement;
+        if IO[ScriptName] and IO[ScriptName].IsUsed ~= true then
+            local Key = "InteractiveObjectAvailable";
+            if (IO[ScriptName] and type(IO[ScriptName].Player) == "table" and not self:IsAvailableForGuiPlayer(ScriptName))
+            or (IO[ScriptName] and type(IO[ScriptName].Player) == "number" and IO[ScriptName].Player ~= PlayerID)
+            or Logic.InteractiveObjectGetAvailability(ObjectID) == false then
+                Key = "InteractiveObjectNotAvailable";
+            end
+            local DisabledKey;
+            if Logic.InteractiveObjectHasPlayerEnoughSpaceForRewards(ObjectID, PlayerID) == false then
+                DisabledKey = "InteractiveObjectAvailableReward";
+            end
+            local Title = IO[ScriptName].Title or ("UI_ObjectNames/" ..Key);
+            Title = API.ConvertPlaceholders(API.Localize(Title));
+            if Title and Title:find("^[A-Za-z0-9_]+/[A-Za-z0-9_]+$") then
+                Title = XGUIEng.GetStringTableText(Title);
+            end
+            local Text = IO[ScriptName].Text or ("UI_ObjectDescription/" ..Key);
+            Text = API.ConvertPlaceholders(API.Localize(Text));
+            if Text and Text:find("^[A-Za-z0-9_]+/[A-Za-z0-9_]+$") then
+                Text = XGUIEng.GetStringTableText(Text);
+            end
+            local Disabled = IO[ScriptName].DisabledText or DisabledKey;
+            if Disabled then
+                Disabled = API.ConvertPlaceholders(API.Localize(Disabled));
+                if Disabled and Disabled:find("^[A-Za-z0-9_]+/[A-Za-z0-9_]+$") then
+                    Disabled = XGUIEng.GetStringTableText(Disabled);
+                end
+            end
+            Costs = IO[ScriptName].Costs;
+            if Costs and Costs[1] and Costs[1] ~= Goods.G_Gold and Logic.GetGoodCategoryForGoodType(Costs[1]) ~= GoodCategories.GC_Resource then
+                CheckSettlement = true;
+            end
+            API.SetTooltipCosts(Title, Text, Disabled, Costs, CheckSettlement);
+            return;
+        end
+        GUI_Interaction.InteractiveObjectMouseOver_Orig_ModuleObjectInteraction();
+    end
+
+    GUI_Interaction.DisplayQuestObjective_Orig_ModuleObjectInteraction = GUI_Interaction.DisplayQuestObjective
+    GUI_Interaction.DisplayQuestObjective = function(_QuestIndex, _MessageKey)
+        local QuestIndexTemp = tonumber(_QuestIndex);
+        if QuestIndexTemp then
+            _QuestIndex = QuestIndexTemp;
+        end
+
+        local Quest, QuestType = GUI_Interaction.GetPotentialSubQuestAndType(_QuestIndex);
+        local QuestObjectivesPath = "/InGame/Root/Normal/AlignBottomLeft/Message/QuestObjectives";
+        XGUIEng.ShowAllSubWidgets("/InGame/Root/Normal/AlignBottomLeft/Message/QuestObjectives", 0);
+        local QuestObjectiveContainer;
+        local QuestTypeCaption;
+
+        g_CurrentDisplayedQuestID = _QuestIndex;
+
+        if QuestType == Objective.Object then
+            QuestObjectiveContainer = QuestObjectivesPath .. "/List";
+            QuestTypeCaption = Wrapped_GetStringTableText(_QuestIndex, "UI_Texts/QuestInteraction");
+            local ObjectList = {};
+
+            for i = 1, Quest.Objectives[1].Data[0] do
+                local ObjectType;
+                if Logic.IsEntityDestroyed(Quest.Objectives[1].Data[i]) then
+                    ObjectType = g_Interaction.SavedQuestEntityTypes[_QuestIndex][i];
+                else
+                    ObjectType = Logic.GetEntityType(GetID(Quest.Objectives[1].Data[i]));
+                end
+                local ObjectEntityName = Logic.GetEntityName(Quest.Objectives[1].Data[i]);
+                local ObjectName = "";
+                if ObjectType ~= nil and ObjectType ~= 0 then
+                    local ObjectTypeName = Logic.GetEntityTypeName(ObjectType)
+                    ObjectName = Wrapped_GetStringTableText(_QuestIndex, "Names/" .. ObjectTypeName);
+                    if ObjectName == "" then
+                        ObjectName = Wrapped_GetStringTableText(_QuestIndex, "UI_ObjectNames/" .. ObjectTypeName);
+                    end
+                    if ObjectName == "" then
+                        ObjectName = IO_UserDefindedNames[ObjectTypeName];
+                    end
+                    if ObjectName == nil then
+                        ObjectName = IO_UserDefindedNames[ObjectEntityName];
+                    end
+                    if ObjectName == nil then
+                        ObjectName = "Debug: ObjectName missing for " .. ObjectTypeName;
+                    end
+                end
+                table.insert(ObjectList, API.Localize(API.ConvertPlaceholders(ObjectName)));
+            end
+            for i = 1, 4 do
+                local String = ObjectList[i];
+                if String == nil then
+                    String = "";
+                end
+                XGUIEng.SetText(QuestObjectiveContainer .. "/Entry" .. i, "{center}" .. String);
+            end
+
+            SetIcon(QuestObjectiveContainer .. "/QuestTypeIcon",{14, 10});
+            XGUIEng.SetText(QuestObjectiveContainer.."/Caption","{center}"..QuestTypeCaption);
+            XGUIEng.ShowWidget(QuestObjectiveContainer, 1);
+        else
+            GUI_Interaction.DisplayQuestObjective_Orig_ModuleObjectInteraction(_QuestIndex, _MessageKey);
+        end
+    end
+end
+
+function ModuleObjectInteraction.Local:IsAvailableForGuiPlayer(_ScriptName)
+    local PlayerID = GUI.GetPlayerID();
+    if IO[_ScriptName] and type(IO[_ScriptName].Player) == "table" then
+        for i= 1, 8 do
+            if IO[_ScriptName].Player[i] and IO[_ScriptName].Player[i] == PlayerID then
+                return true;
+            end
+        end
+        return false;
+    end
+    return true;
+end
+
+-- -------------------------------------------------------------------------- --
+
+Revision:RegisterModule(ModuleObjectInteraction);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Einfachere und erweitere Handhabe von Interaktiven Objekten.
+--
+-- <b>Befehle:</b><br>
+-- <i>Diese Befehle können über die Konsole (SHIFT + ^) eingegeben werden, wenn
+-- der Debug Mode aktiviert ist.</i><br>
+-- <table border="1">
+-- <tr>
+-- <td><b>Befehl</b></td>
+-- <td><b>Parameter</b></td>
+-- <td><b>Beschreibung</b></td>
+-- </tr>
+-- <tr>
+-- <td>enableobject</td>
+-- <td>ScriptName</td>
+-- <td>Aktiviert das interaktive Objekt.</td>
+-- </tr>
+-- <tr>
+-- <td>disableobject</td>
+-- <td>ScriptName</td>
+-- <td>Deaktiviert das interactive Objekt</td>
+-- </tr>
+-- <tr>
+-- <td>initobject</td>
+-- <td>ScriptName</td>
+-- <td>Initialisiert ein interaktives Objekt grundlegend, sodass es benutzt werden kann.</td>
+-- </tr>
+-- </table>
+--
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
+-- <li><a href="QSB_1_GUI.api.html">(1) Benutzerschnittstelle</a></li>
+-- </ul>
+--
+-- @within Beschreibung
+-- @set sort=true
+--
+
+---
+-- Events, auf die reagiert werden kann.
+--
+-- @field ObjectClicked     Der Spieler klickt auf den Button des IO (Parameter: ScriptName, KnightID, PlayerID)
+-- @field ObjectInteraction Es wird mit einem interaktiven Objekt interagiert (Parameter: ScriptName, KnightID, PlayerID)
+-- @field ObjectDelete      Eine Interaktion wird von einem Objekt entfernt (Parameter: ScriptName)
+-- @field ObjectReset       Der Zustand eines interaktiven Objekt wird zurückgesetzt (Parameter: ScriptName)
+--
+-- @within Event
+--
+QSB.ScriptEvents = QSB.ScriptEvents or {};
+
+---
+-- Erzeugt ein einfaches interaktives Objekt.
+--
+-- Dabei können alle Entities als interaktive Objekte behandelt werden, nicht
+-- nur die, die eigentlich dafür vorgesehen sind.
+--
+-- Die Parameter des interaktiven Objektes werden durch seine Beschreibung
+-- festgelegt. Die Beschreibung ist eine Table, die bestimmte Werte für das
+-- Objekt beinhaltet. Dabei müssen nicht immer alle Werte angegeben werden.
+--
+-- <b>Achtung</b>: Wird eine Straße über einem Objekt platziert, während die
+-- Kosten bereits bezahlt und auf dem Weg sind, läuft die Aktivierung ins Leere.
+-- Zwar wird das Objekt zurückgesetzt, doch die bereits geschickten Waren sind
+-- dann futsch.
+--
+-- Mögliche Angaben:
+-- <table border="1">
+-- <tr>
+-- <td><b>Feldname</b></td>
+-- <td><b>Typ</b></td>
+-- <td><b>Beschreibung</b></td>
+-- <td><b>Optional</b></td>
+-- </tr>
+-- <tr>
+-- <td>Name</td>
+-- <td>string</td>
+-- <td>Der Skriptname des Entity, das zum interaktiven Objekt wird.</td>
+-- <td>nein</td>
+-- </tr>
+-- <tr>
+-- <td>Texture</td>
+-- <td>table</td>
+-- <td>Angezeigtes Icon des Buttons. Die Icons können auf die Icons des Spiels
+-- oder auf eigene Icons zugreifen.
+-- <br>- Spiel-Icons: {x, y, Spielversion}
+-- <br>- Benutzerdefinierte Icons: {x, y, Dateinamenpräfix}</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>Title</td>
+-- <td>string</td>
+-- <td>Angezeigter Titel des Objekt</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>Text</td>
+-- <td>string</td>
+-- <td>Angezeigte Beschreibung des Objekt</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>Distance</td>
+-- <td>number</td>
+-- <td>Die minimale Entfernung zum Objekt, die ein Held benötigt um das
+-- objekt zu aktivieren.</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>Player</td>
+-- <td>number|table</td>
+-- <td>Spieler, der/die das Objekt aktivieren kann/können.</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>Waittime</td>
+-- <td>number</td>
+-- <td>Die Zeit, die ein Held benötigt, um das Objekt zu aktivieren.</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>Replacement</td>
+-- <td>number</td>
+-- <td>Entity, mit der das Objekt nach Aktivierung ersetzt wird.</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>Costs</td>
+-- <td></td>
+-- <td>Eine Table mit dem Typ und der Menge der Kosten. (Format: {Typ, Menge, Typ, Menge})</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>Reward</td>
+-- <td>table</td>
+-- <td>Der Warentyp und die Menge der gefundenen Waren im Objekt. (Format: {Typ, Menge})</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>State</td>
+-- <td>number</td>
+-- <td>Bestimmt, wie sich der Button des interaktiven Objektes verhält.</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>Condition</td>
+-- <td>function</td>
+-- <td>Eine zusätzliche Aktivierungsbedinung als Funktion.</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>ConditionInfo</td>
+-- <td>string</td>
+-- <td>Nachricht, die angezeigt wird, wenn die Bedinung nicht erfüllt ist.</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>Action</td>
+-- <td>function</td>
+-- <td>Eine Funktion, die nach der Aktivierung aufgerufen wird.</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>RewardResourceCartType</td>
+-- <td>number</td>
+-- <td>Erlaubt, einen anderern Karren für Rohstoffkosten einstellen.</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>RewardGoldCartType</td>
+-- <td>number</td>
+-- <td>Erlaubt, einen anderern Karren für Goldkosten einstellen.</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>CostResourceCartType</td>
+-- <td>number</td>
+-- <td>Erlaubt, einen anderern Karren für Rohstoffbelohnungen einstellen.</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>CostGoldCartType</td>
+-- <td>number</td>
+-- <td>Erlaubt, einen anderern Karren für Goldbelohnung einstellen.</td>
+-- <td>ja</td>
+-- </tr>
+-- </table>
+--
+-- @param[type=table] _Description Beschreibung
+-- @within Anwenderfunktionen
+-- @see API.ResetObject
+-- @see API.InteractiveObjectActivate
+-- @see API.InteractiveObjectDeactivate
+--
+-- @usage
+-- API.SetupObject {
+--     Name     = "hut",
+--     Distance = 1500,
+--     Reward   = {Goods.G_Gold, 1000},
+-- };
+--
+function API.SetupObject(_Description)
+    if GUI then
+        return;
+    end
+    return ModuleObjectInteraction.Global:CreateObject(_Description);
+end
+API.CreateObject = API.SetupObject;
+
+---
+-- Zerstört die Interation mit dem Objekt.
+--
+-- <b>Hinweis</b>: Das Entity selbst wird nicht zerstört.
+--
+-- @param[type=string] _ScriptName Skriptname des Objektes
+-- @see API.SetupObject
+-- @see API.ResetObject
+-- @usage
+-- API.DisposeObject("MyObject");
+--
+function API.DisposeObject(_ScriptName)
+    if GUI or not IO[_ScriptName] then
+        return;
+    end
+    ModuleObjectInteraction.Global:DestroyObject(_ScriptName);
+end
+
+---
+-- Setzt das interaktive Objekt zurück. Dadurch verhält es sich, wie vor der
+-- Aktivierung durch den Spieler.
+--
+-- <b>Hinweis</b>: Das Objekt muss wieder per Skript aktiviert werden, damit es
+-- im Spiel ausgelöst werden.
+--
+-- @param[type=string] _ScriptName Skriptname des Objektes
+-- @within Anwenderfunktionen
+-- @see API.SetupObject
+-- @see API.InteractiveObjectActivate
+-- @see API.InteractiveObjectDeactivate
+-- @usage
+-- API.ResetObject("MyObject");
+--
+function API.ResetObject(_ScriptName)
+    if GUI or not IO[_ScriptName] then
+        return;
+    end
+    ModuleObjectInteraction.Global:ResetObject(_ScriptName);
+    API.InteractiveObjectDeactivate(_ScriptName);
+end
+
+---
+-- Aktiviert ein Interaktives Objekt, sodass es von den Spielern
+-- aktiviert werden kann.
+--
+-- Optional kann das Objekt nur für einen bestimmten Spieler aktiviert werden.
+--
+-- Der State bestimmt, ob es immer aktiviert werden kann, oder ob der Spieler
+-- einen Helden benutzen muss. Wird der Parameter weggelassen, muss immer ein
+-- Held das Objekt aktivieren.
+--
+-- @param[type=string] _ScriptName Skriptname des Objektes
+-- @param[type=number] _State      State des Objektes
+-- @param[type=number] ...         (Optional) Liste mit PlayerIDs
+-- @within Anwenderfunktionen
+--
+function API.InteractiveObjectActivate(_ScriptName, _State, ...)
+    arg = arg or {1};
+    if GUI then
+        return;
+    end
+    if IO[_ScriptName] then
+        local SlaveName = (IO[_ScriptName].Slave or _ScriptName);
+        if IO[_ScriptName].Slave then
+            IO_SlaveState[SlaveName] = 1;
+            Logic.ExecuteInLuaLocalState(string.format(
+                [[IO_SlaveState["%s"] = 1]],
+                SlaveName
+            ));
+        end
+        ModuleObjectInteraction.Global:SetObjectState(SlaveName, _State, unpack(arg));
+        IO[_ScriptName].IsActive = true;
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[IO["%s"].IsActive = true]],
+            _ScriptName
+        ));
+    else
+        ModuleObjectInteraction.Global:SetObjectState(_ScriptName, _State, unpack(arg));
+    end
+end
+InteractiveObjectActivate = API.InteractiveObjectActivate;
+
+---
+-- Deaktiviert ein interaktives Objekt, sodass es nicht mehr von den Spielern
+-- benutzt werden kann.
+--
+-- Optional kann das Objekt nur für einen bestimmten Spieler deaktiviert werden.
+--
+-- @param[type=string] _ScriptName Scriptname des Objektes
+-- @param[type=number] ...         (Optional) Liste mit PlayerIDs
+-- @within Anwenderfunktionen
+--
+function API.InteractiveObjectDeactivate(_ScriptName, ...)
+    arg = arg or {1};
+    if GUI then
+        return;
+    end
+    if IO[_ScriptName] then
+        local SlaveName = (IO[_ScriptName].Slave or _ScriptName);
+        if IO[_ScriptName].Slave then
+            IO_SlaveState[SlaveName] = 0;
+            Logic.ExecuteInLuaLocalState(string.format(
+                [[IO_SlaveState["%s"] = 0]],
+                SlaveName
+            ));
+        end
+        ModuleObjectInteraction.Global:SetObjectState(SlaveName, 2, unpack(arg));
+        IO[_ScriptName].IsActive = false;
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[IO["%s"].IsActive = false]],
+            _ScriptName
+        ));
+    else
+        ModuleObjectInteraction.Global:SetObjectState(_ScriptName, 2, unpack(arg));
+    end
+end
+InteractiveObjectDeactivate = API.InteractiveObjectDeactivate;
+
+---
+-- Erzeugt eine Beschriftung für Custom Objects.
+--
+-- Im Questfenster werden die Namen von Custom Objects als ungesetzt angezeigt.
+-- Mit dieser Funktion kann ein Name angelegt werden.
+--
+-- @param[type=string] _Key  Typname des Entity
+-- @param              _Text Text der Beschriftung
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- -- Beispiel #1: Einfache Beschriftung
+-- API.InteractiveObjectSetName("D_X_ChestOpenEmpty", "Leere Schatztruhe");
+--
+-- @usage
+-- -- Beispiel #1: Multilinguale Beschriftung
+-- API.InteractiveObjectSetName("D_X_ChestClosed", {de = "Schatztruhe", en = "Treasure"});
+--
+function API.InteractiveObjectSetName(_Key, _Text)
+    if GUI then
+        return;
+    end
+    IO_UserDefindedNames[_Key] = _Text;
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[IO_UserDefindedNames["%s"] = %s]],
+        _Key,
+        table.tostring(IO_UserDefindedNames)
+    ));
+end
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+--
+-- Stellt neue Behavior für Objekte bereit.
+--
+
+---
+-- Der Spieler muss bis zu 4 interaktive Objekte benutzen.
+--
+-- @param[type=string] _Object1 Erstes Objekt
+-- @param[type=string] _Object2 (optional) Zweites Objekt
+-- @param[type=string] _Object3 (optional) Drittes Objekt
+-- @param[type=string] _Object4 (optional) Viertes Objekt
+--
+-- @within Goal
+--
+function Goal_ActivateSeveralObjects(...)
+    return B_Goal_ActivateSeveralObjects:new(...);
+end
+
+B_Goal_ActivateSeveralObjects = {
+    Name = "Goal_ActivateSeveralObjects",
+    Description = {
+        en = "Goal: Activate an interactive object",
+        de = "Ziel: Aktiviere ein interaktives Objekt",
+        fr = "Objectif: activer un objet interactif",
+    },
+    Parameter = {
+        { ParameterType.Default, en = "Object name 1", de = "Skriptname 1", fr = "Nom de l'entité 1" },
+        { ParameterType.Default, en = "Object name 2", de = "Skriptname 2", fr = "Nom de l'entité 2" },
+        { ParameterType.Default, en = "Object name 3", de = "Skriptname 3", fr = "Nom de l'entité 3" },
+        { ParameterType.Default, en = "Object name 4", de = "Skriptname 4", fr = "Nom de l'entité 4" },
+    },
+    ScriptNames = {};
+}
+
+function B_Goal_ActivateSeveralObjects:GetGoalTable()
+    return {Objective.Object, { unpack(self.ScriptNames) } }
+end
+
+function B_Goal_ActivateSeveralObjects:AddParameter(_Index, _Parameter)
+    if _Index == 0 then
+        assert(_Parameter ~= nil and _Parameter ~= "", "Goal_ActivateSeveralObjects: At least one IO needed!");
+    end
+    if _Parameter ~= nil and _Parameter ~= "" then
+        table.insert(self.ScriptNames, _Parameter);
+    end
+end
+
+function B_Goal_ActivateSeveralObjects:GetMsgKey()
+    return "Quest_Object_Activate"
+end
+
+Revision:RegisterBehavior(B_Goal_ActivateSeveralObjects);
+
+-- -------------------------------------------------------------------------- --
+
+-- Überschreibt ObjectInit, sodass auch Custom Objects verwaltet werden können.
+B_Reward_ObjectInit.CustomFunction = function(self, _Quest)
+    local EntityID = GetID(self.ScriptName);
+    if EntityID == 0 then
+        return;
+    end
+    QSB.InitalizedObjekts[EntityID] = _Quest.Identifier;
+
+    local GoodReward;
+    if self.RewardType and self.RewardType ~= "-" then
+        GoodReward = {Goods[self.RewardType], self.RewardAmount};
+    end
+
+    local GoodCosts;
+    if self.FirstCostType and self.FirstCostType ~= "-" then
+        GoodCosts = GoodReward or {};
+        table.insert(GoodCosts, Goods[self.FirstCostType]);
+        table.insert(GoodCosts, Goods[self.FirstCostAmount]);
+    end
+    if self.SecondCostType and self.SecondCostType ~= "-" then
+        GoodCosts = GoodReward or {};
+        table.insert(GoodCosts, Goods[self.SecondCostType]);
+        table.insert(GoodCosts, Goods[self.SecondCostAmount]);
+    end
+
+    API.SetupObject {
+        Name                   = self.ScriptName,
+        Distance               = self.Distance,
+        Waittime               = self.Waittime,
+        Reward                 = GoodReward,
+        Costs                  = GoodCosts,
+    };
+    API.InteractiveObjectActivate(self.ScriptName, self.UsingState);
+end
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+ModuleKnightTitleRequirements = {
+    Properties = {
+        Name = "ModuleKnightTitleRequirements",
+        Version = "4.0.0 (ALPHA 1.0.0)",
+    },
+
+    Global = {};
+    Local  = {};
+
+    Shared = {};
+};
+
+QSB.RequirementTooltipTypes = {};
+QSB.ConsumedGoodsCounter = {};
+
+-- Global Script ------------------------------------------------------------ --
+
+function ModuleKnightTitleRequirements.Global:OnGameStart()
+    QSB.ScriptEvents.KnightTitleChanged = API.RegisterScriptEvent("Event_KnightTitleChanged");
+    QSB.ScriptEvents.GoodsConsumed = API.RegisterScriptEvent("Event_GoodsConsumed");
+
+    self:OverrideKnightTitleChanged();
+    self:OverwriteConsumedGoods();
+end
+
+function ModuleKnightTitleRequirements.Global:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.KnightTitleChanged then
+        local Consume = QSB.ConsumedGoodsCounter[arg[1]];
+        QSB.ConsumedGoodsCounter[arg[1]] = Consume or {};
+        for k,v in pairs(QSB.ConsumedGoodsCounter[arg[1]]) do
+            QSB.ConsumedGoodsCounter[arg[1]][k] = 0;
+        end
+    elseif _ID == QSB.ScriptEvents.GoodsConsumed then
+        local PlayerID = Logic.EntityGetPlayer(arg[1]);
+        self:RegisterConsumedGoods(PlayerID, arg[2]);
+    end
+end
+
+function ModuleKnightTitleRequirements.Global:RegisterConsumedGoods(_PlayerID, _Good)
+    QSB.ConsumedGoodsCounter[_PlayerID]        = QSB.ConsumedGoodsCounter[_PlayerID] or {};
+    QSB.ConsumedGoodsCounter[_PlayerID][_Good] = QSB.ConsumedGoodsCounter[_PlayerID][_Good] or 0;
+    QSB.ConsumedGoodsCounter[_PlayerID][_Good] = QSB.ConsumedGoodsCounter[_PlayerID][_Good] +1;
+end
+
+function ModuleKnightTitleRequirements.Global:OverrideKnightTitleChanged()
+    GameCallback_KnightTitleChanged_Orig_QSB_Requirements = GameCallback_KnightTitleChanged;
+    GameCallback_KnightTitleChanged = function(_PlayerID, _TitleID)
+        GameCallback_KnightTitleChanged_Orig_QSB_Requirements(_PlayerID, _TitleID);
+
+        -- Send event
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[API.SendScriptEvent(QSB.ScriptEvents.KnightTitleChanged, %d, %d)]],
+            _PlayerID, _TitleID
+        ));
+        API.SendScriptEvent(QSB.ScriptEvents.KnightTitleChanged, _PlayerID, _TitleID);
+    end
+end
+
+function ModuleKnightTitleRequirements.Global:OverwriteConsumedGoods()
+    GameCallback_ConsumeGood_Orig_QSB_Requirements = GameCallback_ConsumeGood;
+    GameCallback_ConsumeGood = function(_Consumer, _Good, _Building)
+        GameCallback_ConsumeGood_Orig_QSB_Requirements(_Consumer, _Good, _Building)
+
+        -- Send event
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[API.SendScriptEvent(QSB.ScriptEvents.GoodsConsumed, %d, %d, %d)]],
+            _Consumer, _Good, _Building
+        ));
+        API.SendScriptEvent(QSB.ScriptEvents.GoodsConsumed, _Consumer, _Good, _Building);
+    end
+end
+
+-- Local Script ------------------------------------------------------------- --
+
+function ModuleKnightTitleRequirements.Local:OnGameStart()
+    QSB.ScriptEvents.KnightTitleChanged = API.RegisterScriptEvent("Event_KnightTitleChanged");
+    QSB.ScriptEvents.GoodsConsumed = API.RegisterScriptEvent("Event_GoodsConsumed");
+
+    self:OverwriteTooltips();
+    self:InitTexturePositions();
+    self:OverwriteUpdateRequirements();
+end
+
+function ModuleKnightTitleRequirements.Local:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.KnightTitleChanged then
+        local Consume = QSB.ConsumedGoodsCounter[arg[1]];
+        QSB.ConsumedGoodsCounter[arg[1]] = Consume or {};
+        for k,v in pairs(QSB.ConsumedGoodsCounter[arg[1]]) do
+            QSB.ConsumedGoodsCounter[arg[1]][k] = 0;
+        end
+    elseif _ID == QSB.ScriptEvents.GoodsConsumed then
+        local PlayerID = Logic.EntityGetPlayer(arg[1]);
+        self.Local:RegisterConsumedGoods(PlayerID, arg[2]);
+    end
+end
+
+function ModuleKnightTitleRequirements.Local:RegisterConsumedGoods(_PlayerID, _Good)
+    QSB.ConsumedGoodsCounter[_PlayerID]        = QSB.ConsumedGoodsCounter[_PlayerID] or {};
+    QSB.ConsumedGoodsCounter[_PlayerID][_Good] = QSB.ConsumedGoodsCounter[_PlayerID][_Good] or 0;
+    QSB.ConsumedGoodsCounter[_PlayerID][_Good] = QSB.ConsumedGoodsCounter[_PlayerID][_Good] +1;
+end
+
+function ModuleKnightTitleRequirements.Local:InitTexturePositions()
+    g_TexturePositions.EntityCategories[EntityCategories.GC_Food_Supplier]          = { 1, 1};
+    g_TexturePositions.EntityCategories[EntityCategories.GC_Clothes_Supplier]       = { 1, 2};
+    g_TexturePositions.EntityCategories[EntityCategories.GC_Hygiene_Supplier]       = {16, 1};
+    g_TexturePositions.EntityCategories[EntityCategories.GC_Entertainment_Supplier] = { 1, 4};
+    g_TexturePositions.EntityCategories[EntityCategories.GC_Luxury_Supplier]        = {16, 3};
+    g_TexturePositions.EntityCategories[EntityCategories.GC_Weapon_Supplier]        = { 1, 7};
+    g_TexturePositions.EntityCategories[EntityCategories.GC_Medicine_Supplier]      = { 2,10};
+    g_TexturePositions.EntityCategories[EntityCategories.Outpost]                   = {12, 3};
+    g_TexturePositions.EntityCategories[EntityCategories.Spouse]                    = { 5,15};
+    g_TexturePositions.EntityCategories[EntityCategories.CattlePasture]             = { 3,16};
+    g_TexturePositions.EntityCategories[EntityCategories.SheepPasture]              = { 4, 1};
+    g_TexturePositions.EntityCategories[EntityCategories.Soldier]                   = { 7,12};
+    g_TexturePositions.EntityCategories[EntityCategories.GrainField]                = {14, 2};
+    g_TexturePositions.EntityCategories[EntityCategories.BeeHive]                   = { 2, 1};
+    g_TexturePositions.EntityCategories[EntityCategories.OuterRimBuilding]          = { 3, 4};
+    g_TexturePositions.EntityCategories[EntityCategories.CityBuilding]              = { 8, 1};
+    g_TexturePositions.EntityCategories[EntityCategories.Leader]                    = { 7, 11};
+    g_TexturePositions.EntityCategories[EntityCategories.Range]                     = { 9, 8};
+    g_TexturePositions.EntityCategories[EntityCategories.Melee]                     = { 9, 7};
+    g_TexturePositions.EntityCategories[EntityCategories.SiegeEngine]               = { 2,15};
+
+    g_TexturePositions.Entities[Entities.B_Beehive]                                 = { 2, 1};
+    g_TexturePositions.Entities[Entities.B_Cathedral_Big]                           = { 3,12};
+    g_TexturePositions.Entities[Entities.B_CattlePasture]                           = { 3,16};
+    g_TexturePositions.Entities[Entities.B_GrainField_ME]                           = { 1,13};
+    g_TexturePositions.Entities[Entities.B_GrainField_NA]                           = { 1,13};
+    g_TexturePositions.Entities[Entities.B_GrainField_NE]                           = { 1,13};
+    g_TexturePositions.Entities[Entities.B_GrainField_SE]                           = { 1,13};
+    g_TexturePositions.Entities[Entities.U_MilitaryBallista]                        = {10, 5};
+    g_TexturePositions.Entities[Entities.B_Outpost]                                 = {12, 3};
+    g_TexturePositions.Entities[Entities.B_Outpost_ME]                              = {12, 3};
+    g_TexturePositions.Entities[Entities.B_Outpost_NA]                              = {12, 3};
+    g_TexturePositions.Entities[Entities.B_Outpost_NE]                              = {12, 3};
+    g_TexturePositions.Entities[Entities.B_Outpost_SE]                              = {12, 3};
+    g_TexturePositions.Entities[Entities.B_SheepPasture]                            = { 4, 1};
+    g_TexturePositions.Entities[Entities.U_SiegeEngineCart]                         = { 9, 4};
+    g_TexturePositions.Entities[Entities.U_Trebuchet]                               = { 9, 1};
+    if Framework.GetGameExtraNo() ~= 0 then
+        g_TexturePositions.Entities[Entities.B_GrainField_AS]                       = { 1,13};
+        g_TexturePositions.Entities[Entities.B_Outpost_AS]                          = {12, 3};
+    end
+
+    g_TexturePositions.Needs[Needs.Medicine]                                        = { 2,10};
+
+    g_TexturePositions.Technologies[Technologies.R_Castle_Upgrade_1]                = { 4, 7};
+    g_TexturePositions.Technologies[Technologies.R_Castle_Upgrade_2]                = { 4, 7};
+    g_TexturePositions.Technologies[Technologies.R_Castle_Upgrade_3]                = { 4, 7};
+    g_TexturePositions.Technologies[Technologies.R_Cathedral_Upgrade_1]             = { 4, 5};
+    g_TexturePositions.Technologies[Technologies.R_Cathedral_Upgrade_2]             = { 4, 5};
+    g_TexturePositions.Technologies[Technologies.R_Cathedral_Upgrade_3]             = { 4, 5};
+    g_TexturePositions.Technologies[Technologies.R_Storehouse_Upgrade_1]            = { 4, 6};
+    g_TexturePositions.Technologies[Technologies.R_Storehouse_Upgrade_2]            = { 4, 6};
+    g_TexturePositions.Technologies[Technologies.R_Storehouse_Upgrade_3]            = { 4, 6};
+
+    g_TexturePositions.Buffs = g_TexturePositions.Buffs or {};
+
+    g_TexturePositions.Buffs[Buffs.Buff_ClothesDiversity]                           = { 1, 2};
+    g_TexturePositions.Buffs[Buffs.Buff_EntertainmentDiversity]                     = { 1, 4};
+    g_TexturePositions.Buffs[Buffs.Buff_FoodDiversity]                              = { 1, 1};
+    g_TexturePositions.Buffs[Buffs.Buff_HygieneDiversity]                           = { 1, 3};
+    g_TexturePositions.Buffs[Buffs.Buff_Colour]                                     = { 5,11};
+    g_TexturePositions.Buffs[Buffs.Buff_Entertainers]                               = { 5,12};
+    g_TexturePositions.Buffs[Buffs.Buff_ExtraPayment]                               = { 1, 8};
+    g_TexturePositions.Buffs[Buffs.Buff_Sermon]                                     = { 4,14};
+    g_TexturePositions.Buffs[Buffs.Buff_Spice]                                      = { 5,10};
+    g_TexturePositions.Buffs[Buffs.Buff_NoTaxes]                                    = { 1, 6};
+    if Framework.GetGameExtraNo() ~= 0 then
+        g_TexturePositions.Buffs[Buffs.Buff_Gems]                                   = { 1, 1, 1};
+        g_TexturePositions.Buffs[Buffs.Buff_MusicalInstrument]                      = { 1, 3, 1};
+        g_TexturePositions.Buffs[Buffs.Buff_Olibanum]                               = { 1, 2, 1};
+    end
+
+    g_TexturePositions.GoodCategories = g_TexturePositions.GoodCategories or {};
+
+    g_TexturePositions.GoodCategories[GoodCategories.GC_Ammunition]                 = {10, 6};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_Animal]                     = { 4,16};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_Clothes]                    = { 1, 2};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_Document]                   = { 5, 6};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_Entertainment]              = { 1, 4};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_Food]                       = { 1, 1};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_Gold]                       = { 1, 8};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_Hygiene]                    = {16, 1};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_Luxury]                     = {16, 3};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_Medicine]                   = { 2,10};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_None]                       = {15,16};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_RawFood]                    = { 3, 4};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_RawMedicine]                = { 2, 2};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_Research]                   = { 5, 6};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_Resource]                   = { 3, 4};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_Tools]                      = { 4,12};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_Water]                      = { 1,16};
+    g_TexturePositions.GoodCategories[GoodCategories.GC_Weapon]                     = { 8, 5};
+end
+
+function ModuleKnightTitleRequirements.Local:OverwriteUpdateRequirements()
+    GUI_Knight.UpdateRequirements = function()
+        local WidgetPos = ModuleKnightTitleRequirements.Local.RequirementWidgets;
+        local RequirementsIndex = 1;
+
+        local PlayerID = GUI.GetPlayerID();
+        local CurrentTitle = Logic.GetKnightTitle(PlayerID);
+        local NextTitle = CurrentTitle + 1;
+
+        -- Headline
+        local KnightID = Logic.GetKnightID(PlayerID);
+        local KnightType = Logic.GetEntityType(KnightID);
+        XGUIEng.SetText("/InGame/Root/Normal/AlignBottomRight/KnightTitleMenu/NextKnightTitle", "{center}" .. GUI_Knight.GetTitleNameByTitleID(KnightType, NextTitle));
+        XGUIEng.SetText("/InGame/Root/Normal/AlignBottomRight/KnightTitleMenu/NextKnightTitleWhite", "{center}" .. GUI_Knight.GetTitleNameByTitleID(KnightType, NextTitle));
+
+        -- show Settlers
+        if KnightTitleRequirements[NextTitle].Settlers ~= nil then
+            SetIcon(WidgetPos[RequirementsIndex] .. "/Icon", {5,16})
+            local IsFulfilled, CurrentAmount, NeededAmount = DoesNeededNumberOfSettlersForKnightTitleExist(PlayerID, NextTitle)
+            XGUIEng.SetText(WidgetPos[RequirementsIndex] .. "/Amount", "{center}" .. CurrentAmount .. "/" .. NeededAmount)
+            if IsFulfilled then
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 1)
+            else
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 0)
+            end
+            XGUIEng.ShowWidget(WidgetPos[RequirementsIndex], 1)
+
+            QSB.RequirementTooltipTypes[RequirementsIndex] = "Settlers";
+            RequirementsIndex = RequirementsIndex +1;
+        end
+
+        -- show rich buildings
+        if KnightTitleRequirements[NextTitle].RichBuildings ~= nil then
+            SetIcon(WidgetPos[RequirementsIndex] .. "/Icon", {8,4});
+            local IsFulfilled, CurrentAmount, NeededAmount = DoNeededNumberOfRichBuildingsForKnightTitleExist(PlayerID, NextTitle);
+            if NeededAmount == -1 then
+                NeededAmount = Logic.GetNumberOfPlayerEntitiesInCategory(PlayerID, EntityCategories.CityBuilding);
+            end
+            XGUIEng.SetText(WidgetPos[RequirementsIndex] .. "/Amount", "{center}" .. CurrentAmount .. "/" .. NeededAmount);
+            if IsFulfilled then
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 1);
+            else
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 0);
+            end
+            XGUIEng.ShowWidget(WidgetPos[RequirementsIndex], 1);
+
+            QSB.RequirementTooltipTypes[RequirementsIndex] = "RichBuildings";
+            RequirementsIndex = RequirementsIndex +1;
+        end
+
+        -- Castle
+        if KnightTitleRequirements[NextTitle].Headquarters ~= nil then
+            SetIcon(WidgetPos[RequirementsIndex] .. "/Icon", {4,7});
+            local IsFulfilled, CurrentAmount, NeededAmount = DoNeededSpecialBuildingUpgradeForKnightTitleExist(PlayerID, NextTitle, EntityCategories.Headquarters);
+            XGUIEng.SetText(WidgetPos[RequirementsIndex] .. "/Amount", "{center}" .. CurrentAmount + 1 .. "/" .. NeededAmount + 1);
+            if IsFulfilled then
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 1);
+            else
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 0);
+            end
+            XGUIEng.ShowWidget(WidgetPos[RequirementsIndex], 1);
+
+            QSB.RequirementTooltipTypes[RequirementsIndex] = "Headquarters";
+            RequirementsIndex = RequirementsIndex +1;
+        end
+
+        -- Storehouse
+        if KnightTitleRequirements[NextTitle].Storehouse ~= nil then
+            SetIcon(WidgetPos[RequirementsIndex] .. "/Icon", {4,6});
+            local IsFulfilled, CurrentAmount, NeededAmount = DoNeededSpecialBuildingUpgradeForKnightTitleExist(PlayerID, NextTitle, EntityCategories.Storehouse);
+            XGUIEng.SetText(WidgetPos[RequirementsIndex] .. "/Amount", "{center}" .. CurrentAmount + 1 .. "/" .. NeededAmount + 1);
+            if IsFulfilled then
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 1);
+            else
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 0);
+            end
+            XGUIEng.ShowWidget(WidgetPos[RequirementsIndex], 1);
+
+            QSB.RequirementTooltipTypes[RequirementsIndex] = "Storehouse";
+            RequirementsIndex = RequirementsIndex +1;
+        end
+
+        -- Cathedral
+        if KnightTitleRequirements[NextTitle].Cathedrals ~= nil then
+            SetIcon(WidgetPos[RequirementsIndex] .. "/Icon", {4,5});
+            local IsFulfilled, CurrentAmount, NeededAmount = DoNeededSpecialBuildingUpgradeForKnightTitleExist(PlayerID, NextTitle, EntityCategories.Cathedrals);
+            XGUIEng.SetText(WidgetPos[RequirementsIndex] .. "/Amount", "{center}" .. CurrentAmount + 1 .. "/" .. NeededAmount + 1);
+            if IsFulfilled then
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 1);
+            else
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 0);
+            end
+            XGUIEng.ShowWidget(WidgetPos[RequirementsIndex], 1);
+
+            QSB.RequirementTooltipTypes[RequirementsIndex] = "Cathedrals";
+            RequirementsIndex = RequirementsIndex +1;
+        end
+
+        -- Volldekorierte Gebäude
+        if KnightTitleRequirements[NextTitle].FullDecoratedBuildings ~= nil then
+            local IsFulfilled, CurrentAmount, NeededAmount = DoNeededNumberOfFullDecoratedBuildingsForKnightTitleExist(PlayerID, NextTitle);
+            local EntityCategory = KnightTitleRequirements[NextTitle].FullDecoratedBuildings;
+            SetIcon(WidgetPos[RequirementsIndex].."/Icon"  , g_TexturePositions.Needs[Needs.Wealth]);
+
+            XGUIEng.SetText(WidgetPos[RequirementsIndex] .. "/Amount", "{center}" .. CurrentAmount .. "/" .. NeededAmount);
+            if IsFulfilled then
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 1);
+            else
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 0);
+            end
+            XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] , 1);
+
+            QSB.RequirementTooltipTypes[RequirementsIndex] = "FullDecoratedBuildings";
+            RequirementsIndex = RequirementsIndex +1;
+        end
+
+        -- Stadtruf
+        if KnightTitleRequirements[NextTitle].Reputation ~= nil then
+            SetIcon(WidgetPos[RequirementsIndex] .. "/Icon", {5,14});
+            local IsFulfilled, CurrentAmount, NeededAmount = DoesNeededCityReputationForKnightTitleExist(PlayerID, NextTitle);
+            XGUIEng.SetText(WidgetPos[RequirementsIndex] .. "/Amount", "{center}" .. CurrentAmount .. "/" .. NeededAmount);
+            if IsFulfilled then
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 1);
+            else
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 0);
+            end
+            XGUIEng.ShowWidget(WidgetPos[RequirementsIndex], 1);
+
+            QSB.RequirementTooltipTypes[RequirementsIndex] = "Reputation";
+            RequirementsIndex = RequirementsIndex +1;
+        end
+
+        -- Güter sammeln
+        if KnightTitleRequirements[NextTitle].Goods ~= nil then
+            for i=1, #KnightTitleRequirements[NextTitle].Goods do
+                local GoodType = KnightTitleRequirements[NextTitle].Goods[i][1];
+                SetIcon(WidgetPos[RequirementsIndex] .. "/Icon", g_TexturePositions.Goods[GoodType]);
+                local IsFulfilled, CurrentAmount, NeededAmount = DoesNeededNumberOfGoodTypesForKnightTitleExist(PlayerID, NextTitle, i);
+                XGUIEng.SetText(WidgetPos[RequirementsIndex] .. "/Amount", "{center}" .. CurrentAmount .. "/" .. NeededAmount);
+                if IsFulfilled then
+                    XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 1);
+                else
+                    XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 0);
+                end
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex], 1);
+
+                QSB.RequirementTooltipTypes[RequirementsIndex] = "Goods" .. i;
+                RequirementsIndex = RequirementsIndex +1;
+            end
+        end
+
+        -- Kategorien
+        if KnightTitleRequirements[NextTitle].Category ~= nil then
+            for i=1, #KnightTitleRequirements[NextTitle].Category do
+                local Category = KnightTitleRequirements[NextTitle].Category[i][1];
+                SetIcon(WidgetPos[RequirementsIndex] .. "/Icon", g_TexturePositions.EntityCategories[Category]);
+                local IsFulfilled, CurrentAmount, NeededAmount = DoesNeededNumberOfEntitiesInCategoryForKnightTitleExist(PlayerID, NextTitle, i);
+                XGUIEng.SetText(WidgetPos[RequirementsIndex] .. "/Amount", "{center}" .. CurrentAmount .. "/" .. NeededAmount);
+                if IsFulfilled then
+                    XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 1);
+                else
+                    XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 0);
+                end
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex], 1);
+
+                local EntitiesInCategory = {Logic.GetEntityTypesInCategory(Category)};
+                if Logic.IsEntityTypeInCategory(EntitiesInCategory[1], EntityCategories.GC_Weapon_Supplier) == 1 then
+                    QSB.RequirementTooltipTypes[RequirementsIndex] = "Weapons" .. i;
+                elseif Logic.IsEntityTypeInCategory(EntitiesInCategory[1], EntityCategories.SiegeEngine) == 1 then
+                    QSB.RequirementTooltipTypes[RequirementsIndex] = "HeavyWeapons" .. i;
+                elseif Logic.IsEntityTypeInCategory(EntitiesInCategory[1], EntityCategories.Spouse) == 1 then
+                    QSB.RequirementTooltipTypes[RequirementsIndex] = "Spouse" .. i;
+                elseif Logic.IsEntityTypeInCategory(EntitiesInCategory[1], EntityCategories.Worker) == 1 then
+                    QSB.RequirementTooltipTypes[RequirementsIndex] = "Worker" .. i;
+                elseif Logic.IsEntityTypeInCategory(EntitiesInCategory[1], EntityCategories.Soldier) == 1 then
+                    QSB.RequirementTooltipTypes[RequirementsIndex] = "Soldiers" .. i;
+                elseif Logic.IsEntityTypeInCategory(EntitiesInCategory[1], EntityCategories.Leader) == 1 then
+                    QSB.RequirementTooltipTypes[RequirementsIndex] = "Leader" .. i;
+                elseif Logic.IsEntityTypeInCategory(EntitiesInCategory[1], EntityCategories.Outpost) == 1 then
+                    QSB.RequirementTooltipTypes[RequirementsIndex] = "Outposts" .. i;
+                elseif Logic.IsEntityTypeInCategory(EntitiesInCategory[1], EntityCategories.CattlePasture) == 1 then
+                    QSB.RequirementTooltipTypes[RequirementsIndex] = "Cattle" .. i;
+                elseif Logic.IsEntityTypeInCategory(EntitiesInCategory[1], EntityCategories.SheepPasture) == 1 then
+                    QSB.RequirementTooltipTypes[RequirementsIndex] = "Sheep" .. i;
+                elseif Logic.IsEntityTypeInCategory(EntitiesInCategory[1], EntityCategories.CityBuilding) == 1 then
+                    QSB.RequirementTooltipTypes[RequirementsIndex] = "CityBuilding" .. i;
+                elseif Logic.IsEntityTypeInCategory(EntitiesInCategory[1], EntityCategories.OuterRimBuilding) == 1 then
+                    QSB.RequirementTooltipTypes[RequirementsIndex] = "OuterRimBuilding" .. i;
+                elseif Logic.IsEntityTypeInCategory(EntitiesInCategory[1], EntityCategories.GrainField) == 1 then
+                    QSB.RequirementTooltipTypes[RequirementsIndex] = "FarmerBuilding" .. i;
+                elseif Logic.IsEntityTypeInCategory(EntitiesInCategory[1], EntityCategories.BeeHive) == 1 then
+                    QSB.RequirementTooltipTypes[RequirementsIndex] = "FarmerBuilding" .. i;
+                elseif Logic.IsEntityTypeInCategory(EntitiesInCategory[1], EntityCategories.AttackableBuilding) == 1 then
+                    QSB.RequirementTooltipTypes[RequirementsIndex] = "Buildings" .. i;
+                else
+                    QSB.RequirementTooltipTypes[RequirementsIndex] = "EntityCategoryDefault" .. i;
+                end
+                RequirementsIndex = RequirementsIndex +1;
+            end
+        end
+
+        -- Entities
+        if KnightTitleRequirements[NextTitle].Entities ~= nil then
+            for i=1, #KnightTitleRequirements[NextTitle].Entities do
+                local EntityType = KnightTitleRequirements[NextTitle].Entities[i][1];
+                local EntityTypeName = Logic.GetEntityTypeName(EntityType);
+                SetIcon(WidgetPos[RequirementsIndex] .. "/Icon", g_TexturePositions.Entities[EntityType]);
+                local IsFulfilled, CurrentAmount, NeededAmount = DoesNeededNumberOfEntitiesOfTypeForKnightTitleExist(PlayerID, NextTitle, i);
+                XGUIEng.SetText(WidgetPos[RequirementsIndex] .. "/Amount", "{center}" .. CurrentAmount .. "/" .. NeededAmount);
+                if IsFulfilled then
+                    XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 1);
+                else
+                    XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 0);
+                end
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex], 1);
+
+                local TopltipType = "Entities" .. i;
+                if EntityTypeName == "B_Beehive" or EntityTypeName:find("GrainField") or EntityTypeName:find("Pasture") then
+                    TopltipType = "FarmerBuilding" .. i;
+                end
+                QSB.RequirementTooltipTypes[RequirementsIndex] = TopltipType;
+                RequirementsIndex = RequirementsIndex +1;
+            end
+        end
+
+        -- Güter konsumieren
+        if KnightTitleRequirements[NextTitle].Consume ~= nil then
+            for i=1, #KnightTitleRequirements[NextTitle].Consume do
+                local GoodType = KnightTitleRequirements[NextTitle].Consume[i][1];
+                SetIcon(WidgetPos[RequirementsIndex] .. "/Icon", g_TexturePositions.Goods[GoodType]);
+                local IsFulfilled, CurrentAmount, NeededAmount = DoNeededNumberOfConsumedGoodsForKnightTitleExist(PlayerID, NextTitle, i);
+                XGUIEng.SetText(WidgetPos[RequirementsIndex] .. "/Amount", "{center}" .. CurrentAmount .. "/" .. NeededAmount);
+                if IsFulfilled then
+                    XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 1);
+                else
+                    XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 0);
+                end
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex], 1);
+
+                QSB.RequirementTooltipTypes[RequirementsIndex] = "Consume" .. i;
+                RequirementsIndex = RequirementsIndex +1;
+            end
+        end
+
+        -- Güter aus Gruppe produzieren
+        if KnightTitleRequirements[NextTitle].Products ~= nil then
+            for i=1, #KnightTitleRequirements[NextTitle].Products do
+                local Product = KnightTitleRequirements[NextTitle].Products[i][1];
+                SetIcon(WidgetPos[RequirementsIndex] .. "/Icon", g_TexturePositions.GoodCategories[Product]);
+                local IsFulfilled, CurrentAmount, NeededAmount = DoNumberOfProductsInCategoryExist(PlayerID, NextTitle, i);
+                XGUIEng.SetText(WidgetPos[RequirementsIndex] .. "/Amount", "{center}" .. CurrentAmount .. "/" .. NeededAmount);
+                if IsFulfilled then
+                    XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 1);
+                else
+                    XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 0);
+                end
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex], 1);
+
+                QSB.RequirementTooltipTypes[RequirementsIndex] = "Products" .. i;
+                RequirementsIndex = RequirementsIndex +1;
+            end
+        end
+
+        -- Bonus aktivieren
+        if KnightTitleRequirements[NextTitle].Buff ~= nil then
+            for i=1, #KnightTitleRequirements[NextTitle].Buff do
+                local Buff = KnightTitleRequirements[NextTitle].Buff[i];
+                SetIcon(WidgetPos[RequirementsIndex] .. "/Icon", g_TexturePositions.Buffs[Buff]);
+                local IsFulfilled = DoNeededDiversityBuffForKnightTitleExist(PlayerID, NextTitle, i);
+                XGUIEng.SetText(WidgetPos[RequirementsIndex] .. "/Amount", "");
+                if IsFulfilled then
+                    XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 1);
+                else
+                    XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 0);
+                end
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex], 1);
+
+                QSB.RequirementTooltipTypes[RequirementsIndex] = "Buff" .. i;
+                RequirementsIndex = RequirementsIndex +1;
+            end
+        end
+
+        -- Selbstdefinierte Bedingung
+        if KnightTitleRequirements[NextTitle].Custom ~= nil then
+            for i=1, #KnightTitleRequirements[NextTitle].Custom do
+                local FileBaseName;
+                local Icon = table.copy(KnightTitleRequirements[NextTitle].Custom[i][2]);
+                if type(Icon[3]) == "string" then
+                    FileBaseName = Icon[3];
+                    Icon[3] = 0;
+                end
+                API.SetIcon(WidgetPos[RequirementsIndex] .. "/Icon", Icon, nil, FileBaseName);
+                local IsFulfilled, CurrentAmount, NeededAmount = DoCustomFunctionForKnightTitleSucceed(PlayerID, NextTitle, i);
+                if CurrentAmount and NeededAmount then
+                    XGUIEng.SetText(WidgetPos[RequirementsIndex] .. "/Amount", "{center}" .. CurrentAmount .. "/" .. NeededAmount);
+                else
+                    XGUIEng.SetText(WidgetPos[RequirementsIndex] .. "/Amount", "");
+                end
+                if IsFulfilled then
+                    XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 1);
+                else
+                    XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 0);
+                end
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex], 1);
+
+                QSB.RequirementTooltipTypes[RequirementsIndex] = "Custom" .. i;
+                RequirementsIndex = RequirementsIndex +1;
+            end
+        end
+
+        -- Dekorationselemente
+        if KnightTitleRequirements[NextTitle].DecoratedBuildings ~= nil then
+            for i=1, #KnightTitleRequirements[NextTitle].DecoratedBuildings do
+                local GoodType = KnightTitleRequirements[NextTitle].DecoratedBuildings[i][1];
+                SetIcon(WidgetPos[RequirementsIndex].."/Icon", g_TexturePositions.Goods[GoodType]);
+                local IsFulfilled, CurrentAmount, NeededAmount = DoNeededNumberOfDecoratedBuildingsForKnightTitleExist(PlayerID, NextTitle, i);
+                XGUIEng.SetText(WidgetPos[RequirementsIndex] .. "/Amount", "{center}" .. CurrentAmount .. "/" .. NeededAmount);
+                if IsFulfilled then
+                    XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 1);
+                else
+                    XGUIEng.ShowWidget(WidgetPos[RequirementsIndex] .. "/Done", 0);
+                end
+                XGUIEng.ShowWidget(WidgetPos[RequirementsIndex], 1);
+
+                QSB.RequirementTooltipTypes[RequirementsIndex] = "DecoratedBuildings" ..i;
+                RequirementsIndex = RequirementsIndex +1;
+            end
+        end
+
+        -- Übrige ausblenden
+        for i=RequirementsIndex, 6 do
+            XGUIEng.ShowWidget(WidgetPos[i], 0);
+        end
+    end
+end
+
+function ModuleKnightTitleRequirements.Local:OverwriteTooltips()
+    GUI_Tooltip.SetNameAndDescription_Orig_QSB_Requirements = GUI_Tooltip.SetNameAndDescription;
+    GUI_Tooltip.SetNameAndDescription = function(_TooltipNameWidget, _TooltipDescriptionWidget, _OptionalTextKeyName, _OptionalDisabledTextKeyName, _OptionalMissionTextFileBoolean)
+        local CurrentWidgetID = XGUIEng.GetCurrentWidgetID();
+        local Selected = GUI.GetSelectedEntity();
+        local PlayerID = GUI.GetPlayerID();
+
+        for k,v in pairs(ModuleKnightTitleRequirements.Local.RequirementWidgets) do
+            if v .. "/Icon" == XGUIEng.GetWidgetPathByID(CurrentWidgetID) then
+                local key = QSB.RequirementTooltipTypes[k];
+                local num = tonumber(string.sub(key, string.len(key)));
+                if num ~= nil then
+                    key = string.sub(key, 1, string.len(key)-1);
+                end
+                ModuleKnightTitleRequirements.Local:RequirementTooltipWrapped(key, num);
+                return;
+            end
+        end
+        GUI_Tooltip.SetNameAndDescription_Orig_QSB_Requirements(_TooltipNameWidget, _TooltipDescriptionWidget, _OptionalTextKeyName, _OptionalDisabledTextKeyName, _OptionalMissionTextFileBoolean);
+    end
+
+    GUI_Knight.RequiredGoodTooltip = function()
+        local key = QSB.RequirementTooltipTypes[2];
+        local num = tonumber(string.sub(key, string.len(key)));
+        if num ~= nil then
+            key = string.sub(key, 1, string.len(key)-1);
+        end
+        ModuleKnightTitleRequirements.Local:RequirementTooltipWrapped(key, num);
+    end
+
+    if Framework.GetGameExtraNo() ~= 0 then
+        ModuleKnightTitleRequirements.Local.BuffTypeNames[Buffs.Buff_Gems] = {
+            de = "Edelsteine beschaffen",
+            en = "Obtain gems",
+            fr = "Se procurer des Gemmes",
+        }
+        ModuleKnightTitleRequirements.Local.BuffTypeNames[Buffs.Buff_Olibanum] = {
+            de = "Weihrauch beschaffen",
+            en = "Obtain olibanum",
+            fr = "Se procurer de l'encens",
+        }
+        ModuleKnightTitleRequirements.Local.BuffTypeNames[Buffs.Buff_MusicalInstrument] = {
+            de = "Muskinstrumente beschaffen",
+            en = "Obtain instruments",
+            fr = "Se procurer des instruments de musique",
+        }
+    end
+end
+
+function ModuleKnightTitleRequirements.Local:RequirementTooltipWrapped(_key, _i)
+    local PlayerID = GUI.GetPlayerID();
+    local KnightTitle = Logic.GetKnightTitle(PlayerID);
+    local Title = ""
+    local Text = "";
+
+    if _key == "Consume" or _key == "Goods" or _key == "DecoratedBuildings" then
+        local GoodType     = KnightTitleRequirements[KnightTitle+1][_key][_i][1];
+        local GoodTypeName = Logic.GetGoodTypeName(GoodType);
+        local GoodName     = XGUIEng.GetStringTableText("UI_ObjectNames/" .. GoodTypeName);
+
+        if GoodName == nil then
+            GoodName = "Goods." .. GoodTypeName;
+        end
+        Title = GoodName;
+        Text  = ModuleKnightTitleRequirements.Local.Description[_key].Text;
+
+    elseif _key == "Products" then
+        local GoodCategoryNames = ModuleKnightTitleRequirements.Local.GoodCategoryNames;
+        local Category = KnightTitleRequirements[KnightTitle+1][_key][_i][1];
+        local CategoryName = API.Localize(GoodCategoryNames[Category]);
+
+        if CategoryName == nil then
+            CategoryName = "ERROR: Name missng!";
+        end
+        Title = CategoryName;
+        Text  = ModuleKnightTitleRequirements.Local.Description[_key].Text;
+
+    elseif _key == "Entities" then
+        local EntityType     = KnightTitleRequirements[KnightTitle+1][_key][_i][1];
+        local EntityTypeName = Logic.GetEntityTypeName(EntityType);
+        local EntityName = XGUIEng.GetStringTableText("Names/" .. EntityTypeName);
+
+        if EntityName == nil then
+            EntityName = "Entities." .. EntityTypeName;
+        end
+
+        Title = EntityName;
+        Text  = ModuleKnightTitleRequirements.Local.Description[_key].Text;
+
+    elseif _key == "Custom" then
+        local Custom = KnightTitleRequirements[KnightTitle+1].Custom[_i];
+        Title = Custom[3];
+        Text  = Custom[4];
+
+    elseif _key == "Buff" then
+        local BuffTypeNames = ModuleKnightTitleRequirements.Local.BuffTypeNames;
+        local BuffType = KnightTitleRequirements[KnightTitle+1][_key][_i];
+        local BuffTitle = API.Localize(BuffTypeNames[BuffType]);
+
+        if BuffTitle == nil then
+            BuffTitle = "ERROR: Name missng!";
+        end
+        Title = BuffTitle;
+        Text  = ModuleKnightTitleRequirements.Local.Description[_key].Text;
+
+    else
+        Title = ModuleKnightTitleRequirements.Local.Description[_key].Title;
+        Text  = ModuleKnightTitleRequirements.Local.Description[_key].Text;
+    end
+    API.SetTooltipNormal(API.Localize(Title), API.Localize(Text), nil);
+end
+
+-- -------------------------------------------------------------------------- --
+
+ModuleKnightTitleRequirements.Local.RequirementWidgets = {
+    [1] = "/InGame/Root/Normal/AlignBottomRight/KnightTitleMenu/Requirements/Settlers",
+    [2] = "/InGame/Root/Normal/AlignBottomRight/KnightTitleMenu/Requirements/Goods",
+    [3] = "/InGame/Root/Normal/AlignBottomRight/KnightTitleMenu/Requirements/RichBuildings",
+    [4] = "/InGame/Root/Normal/AlignBottomRight/KnightTitleMenu/Requirements/Castle",
+    [5] = "/InGame/Root/Normal/AlignBottomRight/KnightTitleMenu/Requirements/Storehouse",
+    [6] = "/InGame/Root/Normal/AlignBottomRight/KnightTitleMenu/Requirements/Cathedral",
+};
+
+ModuleKnightTitleRequirements.Local.GoodCategoryNames = {
+    [GoodCategories.GC_Ammunition]      = {de = "Munition",         en = "Ammunition",      fr = "Munition"},
+    [GoodCategories.GC_Animal]          = {de = "Nutztiere",        en = "Livestock",       fr = "Animaux d'élevage"},
+    [GoodCategories.GC_Clothes]         = {de = "Kleidung",         en = "Clothes",         fr = "Vêtements"},
+    [GoodCategories.GC_Document]        = {de = "Dokumente",        en = "Documents",       fr = "Documents"},
+    [GoodCategories.GC_Entertainment]   = {de = "Unterhaltung",     en = "Entertainment",   fr = "Divertissement"},
+    [GoodCategories.GC_Food]            = {de = "Nahrungsmittel",   en = "Food",            fr = "Nourriture"},
+    [GoodCategories.GC_Gold]            = {de = "Gold",             en = "Gold",            fr = "Or"},
+    [GoodCategories.GC_Hygiene]         = {de = "Hygieneartikel",   en = "Hygiene",         fr = "Hygiène"},
+    [GoodCategories.GC_Luxury]          = {de = "Dekoration",       en = "Decoration",      fr = "Décoration"},
+    [GoodCategories.GC_Medicine]        = {de = "Medizin",          en = "Medicine",        fr = "Médecine"},
+    [GoodCategories.GC_None]            = {de = "Nichts",           en = "None",            fr = "Rien"},
+    [GoodCategories.GC_RawFood]         = {de = "Nahrungsmittel",   en = "Food",            fr = "Nourriture"},
+    [GoodCategories.GC_RawMedicine]     = {de = "Medizin",          en = "Medicine",        fr = "Médecine"},
+    [GoodCategories.GC_Research]        = {de = "Forschung",        en = "Research",        fr = "Recherche"},
+    [GoodCategories.GC_Resource]        = {de = "Rohstoffe",        en = "Resource",        fr = "Ressources"},
+    [GoodCategories.GC_Tools]           = {de = "Werkzeug",         en = "Tools",           fr = "Outils"},
+    [GoodCategories.GC_Water]           = {de = "Wasser",           en = "Water",           fr = "Eau"},
+    [GoodCategories.GC_Weapon]          = {de = "Waffen",           en = "Weapon",          fr = "Armes"},
+};
+
+ModuleKnightTitleRequirements.Local.BuffTypeNames = {
+    [Buffs.Buff_ClothesDiversity]        = {de = "Vielfältige Kleidung",        en = "Clothes variety",         fr = "Diversité vestimentaire"},
+    [Buffs.Buff_Colour]                  = {de = "Farben beschaffen",           en = "Obtain color",            fr = "Se procurer des couleurs"},
+    [Buffs.Buff_Entertainers]            = {de = "Gaukler anheuern",            en = "Hire entertainer",        fr = "Engager des saltimbanques"},
+    [Buffs.Buff_EntertainmentDiversity]  = {de = "Vielfältige Unterhaltung",    en = "Entertainment variety",   fr = "Diversité des divertissements"},
+    [Buffs.Buff_ExtraPayment]            = {de = "Sonderzahlung",               en = "Extra payment",           fr = "Paiement supplémentaire"},
+    [Buffs.Buff_Festival]                = {de = "Fest veranstalten",           en = "Hold Festival",           fr = "Organiser une fête"},
+    [Buffs.Buff_FoodDiversity]           = {de = "Vielfältige Nahrung",         en = "Food variety",            fr = "Diversité alimentaire"},
+    [Buffs.Buff_HygieneDiversity]        = {de = "Vielfältige Hygiene",         en = "Hygiene variety",         fr = "Diversité hygiénique"},
+    [Buffs.Buff_NoTaxes]                 = {de = "Steuerbefreiung",             en = "No taxes",                fr = "Exonération fiscale"},
+    [Buffs.Buff_Sermon]                  = {de = "Pregigt abhalten",            en = "Hold sermon",             fr = "Tenir des prêches"},
+    [Buffs.Buff_Spice]                   = {de = "Salz beschaffen",             en = "Obtain salt",             fr = "Se procurer du sel"},
+};
+
+ModuleKnightTitleRequirements.Local.Description = {
+    Settlers = {
+        Title = {
+            de = "Benötigte Siedler",
+            en = "Needed settlers",
+            fr = "Settlers nécessaires",
+        },
+        Text = {
+            de = "- Benötigte Menge an Siedlern",
+            en = "- Needed number of settlers",
+            fr = "- Quantité de settlers nécessaire",
+        },
+    },
+
+    RichBuildings = {
+        Title = {
+            de = "Reiche Häuser",
+            en = "Rich city buildings",
+            fr = "Bâtiments riches",
+        },
+        Text = {
+            de = "- Menge an reichen Stadtgebäuden",
+            en = "- Needed amount of rich city buildings",
+            fr = "- Quantité de bâtiments de la ville riches",
+        },
+    },
+
+    Goods = {
+        Title = {
+            de = "Waren lagern",
+            en = "Store Goods",
+            fr = "Entreposer des marchandises",
+        },
+        Text = {
+            de = "- Benötigte Menge",
+            en = "- Needed amount",
+            fr = "- Quantité nécessaire",
+        },
+    },
+
+    FullDecoratedBuildings = {
+        Title = {
+            de = "Dekorierte Häuser",
+            en = "Decorated City buildings",
+            fr = "Bâtiments décorés",
+        },
+        Text = {
+            de = "- Menge an voll dekorierten Gebäuden",
+            en = "- Amount of full decoraded city buildings",
+            fr = "- Quantité de bâtiments entièrement décorés",
+        },
+    },
+
+    DecoratedBuildings = {
+        Title = {
+            de = "Dekoration",
+            en = "Decoration",
+            fr = "Décoration",
+        },
+        Text = {
+            de = "- Menge an Dekorationsgütern in der Siedlung",
+            en = "- Amount of decoration goods in settlement",
+            fr = "- Quantité de biens de décoration dans la ville",
+        },
+    },
+
+    Headquarters = {
+        Title = {
+            de = "Burgstufe",
+            en = "Castle level",
+            fr = "Niveau du château",
+        },
+        Text = {
+            de = "- Benötigte Ausbauten der Burg",
+            en = "- Needed castle upgrades",
+            fr = "- Améliorations nécessaires du château",
+        },
+    },
+
+    Storehouse = {
+        Title = {
+            de = "Lagerhausstufe",
+            en = "Storehouse level",
+            fr = "Niveau de l'entrepôt",
+        },
+        Text = {
+            de = "- Benötigte Ausbauten des Lagerhauses",
+            en = "- Needed storehouse upgrades",
+            fr = "- Améliorations nécessaires de l'entrepôt",
+        },
+    },
+
+    Cathedrals = {
+        Title = {
+            de = "Kirchenstufe",
+            en = "Cathedral level",
+            fr = "Niveau de la cathédrale",
+        },
+        Text = {
+            de = "- Benötigte Ausbauten der Kirche",
+            en = "- Needed cathedral upgrades",
+            fr = "- Améliorations nécessaires de la cathédrale",
+        },
+    },
+
+    Reputation = {
+        Title = {
+            de = "Ruf der Stadt",
+            en = "City reputation",
+            fr = "Réputation de la ville",
+        },
+        Text = {
+            de = "- Benötigter Ruf der Stadt",
+            en = "- Needed city reputation",
+            fr = "- Réputation de la ville nécessaire",
+        },
+    },
+
+    EntityCategoryDefault = {
+        Title = {
+            de = "",
+            en = "",
+            fr = "",
+        },
+        Text = {
+            de = "- Benötigte Anzahl",
+            en = "- Needed amount",
+            fr = "- Nombre requis",
+        },
+    },
+
+    Cattle = {
+        Title = {
+            de = "Kühe",
+            en = "Cattle",
+            fr = "Vaches",
+        },
+        Text = {
+            de = "- Benötigte Menge an Kühen",
+            en = "- Needed amount of cattle",
+            fr = "- Quantité de vaches nécessaire",
+        },
+    },
+
+    Sheep = {
+        Title = {
+            de = "Schafe",
+            en = "Sheeps",
+            fr = "Moutons",
+        },
+        Text = {
+            de = "- Benötigte Menge an Schafen",
+            en = "- Needed amount of sheeps",
+            fr = "- Quantité de moutons nécessaire",
+        },
+    },
+
+    Outposts = {
+        Title = {
+            de = "Territorien",
+            en = "Territories",
+            fr = "Territoires",
+        },
+        Text = {
+            de = "- Zu erobernde Territorien",
+            en = "- Territories to claim",
+            fr = "- Territoires à conquérir",
+        },
+    },
+
+    CityBuilding = {
+        Title = {
+            de = "Stadtgebäude",
+            en = "City buildings",
+            fr = "Bâtiment de la ville",
+        },
+        Text = {
+            de = "- Menge benötigter Stadtgebäude",
+            en = "- Needed amount of city buildings",
+            fr = "- Quantité de bâtiments urbains nécessaires",
+        },
+    },
+
+    OuterRimBuilding = {
+        Title = {
+            de = "Rohstoffgebäude",
+            en = "Gatherer",
+            fr = "Cueilleur",
+        },
+        Text = {
+            de = "- Menge benötigter Rohstoffgebäude",
+            en = "- Needed amount of gatherer",
+            fr = "- Quantité de bâtiments de matières premières nécessaires",
+        },
+    },
+
+    FarmerBuilding = {
+        Title = {
+            de = "Farmeinrichtungen",
+            en = "Farming structure",
+            fr = "Installations de la ferme",
+        },
+        Text = {
+            de = "- Menge benötigter Nutzfläche",
+            en = "- Needed amount of farming structure",
+            fr = "- Quantité de surface utile nécessaire",
+        },
+    },
+
+    Consume = {
+        Title = {
+            de = "",
+            en = "",
+            fr = "",
+        },
+        Text = {
+            de = "- Durch Siedler zu konsumierende Menge",
+            en = "- Amount to be consumed by the settlers",
+            fr = "- Quantité à consommer par les settlers",
+        },
+    },
+
+    Products = {
+        Title = {
+            de = "",
+            en = "",
+            fr = "",
+        },
+        Text = {
+            de = "- Benötigte Menge",
+            en = "- Needed amount",
+            fr = "- Quantité nécessaire",
+        },
+    },
+
+    Buff = {
+        Title = {
+            de = "Bonus aktivieren",
+            en = "Activate Buff",
+            fr = "Activer bonus",
+        },
+        Text = {
+            de = "- Aktiviere diesen Bonus auf den Ruf der Stadt",
+            en = "- Raise the city reputatition with this buff",
+            fr = "- Active ce bonus sur la réputation de la ville",
+        },
+    },
+
+    Leader = {
+        Title = {
+            de = "Batalione",
+            en = "Battalions",
+            fr = "Battalions",
+        },
+        Text = {
+            de = "- Menge an Batalionen unterhalten",
+            en = "- Battalions you need under your command",
+            fr = "- Maintenir une quantité de bataillons",
+        },
+    },
+
+    Soldiers = {
+        Title = {
+            de = "Soldaten",
+            en = "Soldiers",
+            fr = "Soldats",
+        },
+        Text = {
+            de = "- Menge an Streitkräften unterhalten",
+            en = "- Soldiers you need under your command",
+            fr = "- Maintenir une quantité de forces armées",
+        },
+    },
+
+    Worker = {
+        Title = {
+            de = "Arbeiter",
+            en = "Workers",
+            fr = "Travailleurs",
+        },
+        Text = {
+            de = "- Menge an arbeitender Bevölkerung",
+            en = "- Workers you need under your reign",
+            fr = "- Quantité de population au travail",
+        },
+    },
+
+    Entities = {
+        Title = {
+            de = "",
+            en = "",
+            fr = "",
+        },
+        Text = {
+            de = "- Benötigte Menge",
+            en = "- Needed Amount",
+            fr = "- Quantité nécessaire",
+        },
+    },
+
+    Buildings = {
+        Title = {
+            de = "Gebäude",
+            en = "Buildings",
+            fr = "Bâtiments",
+        },
+        Text = {
+            de = "- Gesamtmenge an Gebäuden",
+            en = "- Amount of buildings",
+            fr = "- Total des bâtiments",
+        },
+    },
+
+    Weapons = {
+        Title = {
+            de = "Waffen",
+            en = "Weapons",
+            fr = "Armes",
+        },
+        Text = {
+            de = "- Benötigte Menge an Waffen",
+            en = "- Needed amount of weapons",
+            fr = "- Quantité d'armes nécessaire",
+        },
+    },
+
+    HeavyWeapons = {
+        Title = {
+            de = "Belagerungsgeräte",
+            en = "Siege Engines",
+            fr = "Matériel de siège",
+        },
+        Text = {
+            de = "- Benötigte Menge an Belagerungsgeräten",
+            en = "- Needed amount of siege engine",
+            fr = "- Quantité de matériel de siège nécessaire",
+        },
+    },
+
+    Spouse = {
+        Title = {
+            de = "Ehefrauen",
+            en = "Spouses",
+            fr = "Épouses",
+        },
+        Text = {
+            de = "- Benötigte Anzahl Ehefrauen in der Stadt",
+            en = "- Needed amount of spouses in your city",
+            fr = "- Nombre d'épouses nécessaires dans la ville",
+        },
+    },
+};
+
+-- -------------------------------------------------------------------------- --
+
+Revision:RegisterModule(ModuleKnightTitleRequirements);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Ermöglicht das Anpassen der Aufstiegsbedingungen.
+--
+-- Die Aufstiegsbedingungen werden in der Funktion InitKnightTitleTables
+-- angegeben und bearbeitet.
+--
+-- <b>Achtung</b>: es können maximal 6 Bedingungen angezeigt werden!
+--
+-- <p>Mögliche Aufstiegsbedingungen:
+-- <ul>
+-- <li><b>Entitytyp besitzen</b><br/>
+-- Der Spieler muss eine bestimmte Anzahl von Entities eines Typs besitzen.
+-- <pre><code>
+-- KnightTitleRequirements[KnightTitles.Mayor].Entities = {
+--     {Entities.B_Bakery, 2},
+--     ...
+-- }
+-- </code></pre>
+-- </li>
+--
+-- <li><b>Entitykategorie besitzen</b><br/>
+-- Der Spieler muss eine bestimmte Anzahl von Entities einer Kategorie besitzen.
+-- <pre><code>
+-- KnightTitleRequirements[KnightTitles.Mayor].Category = {
+--     {EntitiyCategories.CattlePasture, 10},
+--     ...
+-- }
+-- </code></pre>
+-- </li>
+--
+-- <li><b>Gütertyp besitzen</b><br/>
+-- Der Spieler muss Rohstoffe oder Güter eines Typs besitzen.
+-- <pre><code>
+-- KnightTitleRequirements[KnightTitles.Mayor].Goods = {
+--     {Goods.G_RawFish, 35},
+--     ...
+-- }
+-- </code></pre>
+-- </li>
+--
+-- <li><b>Produkte erzeugen</b><br/>
+-- Der Spieler muss Gebrauchsgegenstände für ein Bedürfnis bereitstellen. Hier
+-- werden nicht die Warentypen sonderen deren Kategorie angegeben.
+-- <pre><code>
+-- KnightTitleRequirements[KnightTitles.Mayor].Products = {
+--     {GoodCategories.GC_Clothes, 6},
+--     ...
+-- }
+-- </code></pre>
+-- </li>
+--
+-- <li><b>Güter konsumieren</b><br/>
+-- Die Siedler müssen eine Menge einer bestimmten Waren konsumieren.
+-- <pre><code>
+-- KnightTitleRequirements[KnightTitles.Mayor].Consume = {
+--     {Goods.G_Bread, 30},
+--     ...
+-- }
+-- </code></pre>
+-- </li>
+--
+-- <li><b>Buffs aktivieren</b><br/>
+-- Der Spieler muss einen Buff aktivieren.
+-- <pre><code>
+-- KnightTitleRequirements[KnightTitles.Mayor].Buff = {
+--     Buffs.Buff_FoodDiversity,
+--     ...
+-- }
+-- </code></pre>
+-- </li>
+--
+-- <li><b>Stadtruf erreichen</b><br/>
+-- Der Ruf der Stadt muss einen bestimmten Wert erreichen oder überschreiten.
+-- <pre><code>
+-- KnightTitleRequirements[KnightTitles.Mayor].Reputation = 20
+-- </code></pre>
+--
+-- <li><b>Anzahl an Dekorationen</b><br/>
+-- Der Spieler muss mindestens die Anzahl der angegebenen Dekoration besitzen.
+-- <code><pre>
+-- KnightTitleRequirements[KnightTitles.Mayor].DecoratedBuildings = {
+--     {Goods.G_Banner, 9 },
+--     ...
+-- }
+-- </code></pre>
+-- </li>
+--
+-- <li><b>Anzahl voll dekorierter Gebäude</b><br/>
+-- Anzahl an Gebäuden, an die alle vier Dekorationen angebracht sein müssen.
+-- <pre><code>
+-- KnightTitleRequirements[KnightTitles.Mayor].FullDecoratedBuildings = 12
+-- </code></pre>
+-- </li>
+--
+-- <li><b>Spezialgebäude ausbauen</b><br/>
+-- Ein Spezielgebäude muss ausgebaut werden.
+-- <pre><code>
+-- KnightTitleRequirements[KnightTitles.Mayor].Headquarters = 1
+-- KnightTitleRequirements[KnightTitles.Mayor].Storehouse = 1
+-- KnightTitleRequirements[KnightTitles.Mayor].Cathedrals = 1
+-- </code></pre>
+-- </li>
+--
+-- <li><b>Anzahl Siedler</b><br/>
+-- Der Spieler benötigt eine Gesamtzahl an Siedlern.
+-- <pre><code>
+-- KnightTitleRequirements[KnightTitles.Mayor].Settlers = 40
+-- </code></pre>
+-- </li>
+--
+-- <li><b>Anzahl reiche Stadtgebäude</b><br/>
+-- Eine Anzahl an Gebäuden muss durch Einnahmen Reichtum erlangen.
+-- <pre><code>
+-- KnightTitleRequirements[KnightTitles.Mayor].RichBuildings = 30
+-- </code></pre>
+-- </li>
+--
+-- <li><b>Benutzerdefiniert</b><br/>
+-- Eine benutzerdefinierte Funktion, die entweder als Schalter oder als Zähler
+-- fungieren kann und true oder false zurückgeben muss. Soll ein Zähler
+-- angezeigt werden, muss nach dem Wahrheitswert der aktuelle und der maximale
+-- Wert des Zählers folgen.
+-- <pre><code>
+-- KnightTitleRequirements[KnightTitles.Mayor].Custom = {
+--     {SomeFunction, {1, 1}, "Überschrift", "Beschreibung"}
+--     ...
+-- }
+--
+-- -- Funktion prüft Schalter
+-- function SomeFunction(_PlayerID, _NextTitle, _Index)
+--     return gvMission.MySwitch == true;
+-- end
+-- -- Funktion prüft Zähler
+-- function SomeFunction(_PlayerID, _NextTitle, _Index)
+--     return gvMission.MyCounter == 6, gvMission.MyCounter, 6;
+-- end
+-- </code></pre>
+-- </li>
+-- </ul></p>
+--
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
+-- <li><a href="QSB_1_GUI.api.html">(1) Benutzerschnittstelle</a></li>
+-- </ul>
+-- 
+-- @within Beschreibung
+-- @set sort=true
+--
+
+---
+-- Events, auf die reagiert werden kann.
+--
+-- @field KnightTitleChanged Der Spieler hat einen neuen Titel erlangt (Parameter: PlayerID, TitleID)
+-- @field GoodsConsumed      Güter werden von Siedlern konsumiert (Parameter: ConsumerID, GoodType, BuildingID)
+--
+QSB.ScriptEvents = QSB.ScriptEvents or {};
+
+-- Internal ----------------------------------------------------------------- --
+
+---
+-- Prüft, ob genug Entities in einer bestimmten Kategorie existieren.
+--
+-- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _KnightTitle Nächster Titel
+-- @param[type=number] _i Button Index
+-- @within Originalfunktionen
+-- @local
+--
+DoesNeededNumberOfEntitiesInCategoryForKnightTitleExist = function(_PlayerID, _KnightTitle, _i)
+    if KnightTitleRequirements[_KnightTitle].Category == nil then
+        return;
+    end
+    if _i then
+        local EntityCategory = KnightTitleRequirements[_KnightTitle].Category[_i][1];
+        local NeededAmount = KnightTitleRequirements[_KnightTitle].Category[_i][2];
+
+        local ReachedAmount = 0;
+        if EntityCategory == EntityCategories.Spouse then
+            ReachedAmount = Logic.GetNumberOfSpouses(_PlayerID);
+        else
+            local Buildings = {Logic.GetPlayerEntitiesInCategory(_PlayerID, EntityCategory)};
+            for i=1, #Buildings do
+                if Logic.IsBuilding(Buildings[i]) == 1 then
+                    if Logic.IsConstructionComplete(Buildings[i]) == 1 then
+                        ReachedAmount = ReachedAmount +1;
+                    end
+                else
+                    ReachedAmount = ReachedAmount +1;
+                end
+            end
+        end
+
+        if ReachedAmount >= NeededAmount then
+            return true, ReachedAmount, NeededAmount;
+        end
+        return false, ReachedAmount, NeededAmount;
+    else
+        local bool, reach, need;
+        for i=1,#KnightTitleRequirements[_KnightTitle].Category do
+            bool, reach, need = DoesNeededNumberOfEntitiesInCategoryForKnightTitleExist(_PlayerID, _KnightTitle, i);
+            if bool == false then
+                return bool, reach, need
+            end
+        end
+        return bool;
+    end
+end
+
+---
+-- Prüft, ob genug Entities eines bestimmten Typs existieren.
+--
+-- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _KnightTitle Nächster Titel
+-- @param[type=number] _i Button Index
+-- @within Originalfunktionen
+-- @local
+--
+DoesNeededNumberOfEntitiesOfTypeForKnightTitleExist = function(_PlayerID, _KnightTitle, _i)
+    if KnightTitleRequirements[_KnightTitle].Entities == nil then
+        return;
+    end
+    if _i then
+        local EntityType = KnightTitleRequirements[_KnightTitle].Entities[_i][1];
+        local NeededAmount = KnightTitleRequirements[_KnightTitle].Entities[_i][2];
+        local Buildings = GetPlayerEntities(_PlayerID, EntityType);
+
+        local ReachedAmount = 0;
+        for i=1, #Buildings do
+            if Logic.IsBuilding(Buildings[i]) == 1 then
+                if Logic.IsConstructionComplete(Buildings[i]) == 1 then
+                    ReachedAmount = ReachedAmount +1;
+                end
+            else
+                ReachedAmount = ReachedAmount +1;
+            end
+        end
+
+        if ReachedAmount >= NeededAmount then
+            return true, ReachedAmount, NeededAmount;
+        end
+        return false, ReachedAmount, NeededAmount;
+    else
+        local bool, reach, need;
+        for i=1,#KnightTitleRequirements[_KnightTitle].Entities do
+            bool, reach, need = DoesNeededNumberOfEntitiesOfTypeForKnightTitleExist(_PlayerID, _KnightTitle, i);
+            if bool == false then
+                return bool, reach, need
+            end
+        end
+        return bool;
+    end
+end
+
+---
+-- Prüft, ob es genug Einheiten eines Warentyps gibt.
+--
+-- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _KnightTitle Nächster Titel
+-- @param[type=number] _i Button Index
+-- @within Originalfunktionen
+-- @local
+--
+DoesNeededNumberOfGoodTypesForKnightTitleExist = function(_PlayerID, _KnightTitle, _i)
+    if KnightTitleRequirements[_KnightTitle].Goods == nil then
+        return;
+    end
+    if _i then
+        local GoodType = KnightTitleRequirements[_KnightTitle].Goods[_i][1];
+        local NeededAmount = KnightTitleRequirements[_KnightTitle].Goods[_i][2];
+        local ReachedAmount = GetPlayerGoodsInSettlement(GoodType, _PlayerID, true);
+
+        if ReachedAmount >= NeededAmount then
+            return true, ReachedAmount, NeededAmount;
+        end
+        return false, ReachedAmount, NeededAmount;
+    else
+        local bool, reach, need;
+        for i=1,#KnightTitleRequirements[_KnightTitle].Goods do
+            bool, reach, need = DoesNeededNumberOfGoodTypesForKnightTitleExist(_PlayerID, _KnightTitle, i);
+            if bool == false then
+                return bool, reach, need
+            end
+        end
+        return bool;
+    end
+end
+
+---
+-- Prüft, ob die Siedler genug Einheiten einer Ware konsumiert haben.
+--
+-- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _KnightTitle Nächster Titel
+-- @param[type=number] _i Button Index
+-- @within Originalfunktionen
+-- @local
+--
+DoNeededNumberOfConsumedGoodsForKnightTitleExist = function( _PlayerID, _KnightTitle, _i)
+    if KnightTitleRequirements[_KnightTitle].Consume == nil then
+        return;
+    end
+    if _i then
+        QSB.ConsumedGoodsCounter[_PlayerID] = QSB.ConsumedGoodsCounter[_PlayerID] or {};
+
+        local GoodType = KnightTitleRequirements[_KnightTitle].Consume[_i][1];
+        local GoodAmount = QSB.ConsumedGoodsCounter[_PlayerID][GoodType] or 0;
+        local NeededGoodAmount = KnightTitleRequirements[_KnightTitle].Consume[_i][2];
+        if GoodAmount >= NeededGoodAmount then
+            return true, GoodAmount, NeededGoodAmount;
+        else
+            return false, GoodAmount, NeededGoodAmount;
+        end
+    else
+        local bool, reach, need;
+        for i=1,#KnightTitleRequirements[_KnightTitle].Consume do
+            bool, reach, need = DoNeededNumberOfConsumedGoodsForKnightTitleExist(_PlayerID, _KnightTitle, i);
+            if bool == false then
+                return false, reach, need
+            end
+        end
+        return true, reach, need;
+    end
+end
+
+---
+-- Prüft, ob genug Waren der Kategorie hergestellt wurde.
+--
+-- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _KnightTitle Nächster Titel
+-- @param[type=number] _i Button Index
+-- @within Originalfunktionen
+-- @local
+--
+DoNumberOfProductsInCategoryExist = function(_PlayerID, _KnightTitle, _i)
+    if KnightTitleRequirements[_KnightTitle].Products == nil then
+        return;
+    end
+    if _i then
+        local GoodAmount = 0;
+        local NeedAmount = KnightTitleRequirements[_KnightTitle].Products[_i][2];
+        local GoodCategory = KnightTitleRequirements[_KnightTitle].Products[_i][1];
+        local GoodsInCategory = {Logic.GetGoodTypesInGoodCategory(GoodCategory)};
+
+        for i=1, #GoodsInCategory do
+            GoodAmount = GoodAmount + GetPlayerGoodsInSettlement(GoodsInCategory[i], _PlayerID, true);
+        end
+        return (GoodAmount >= NeedAmount), GoodAmount, NeedAmount;
+    else
+        local bool, reach, need;
+        for i=1,#KnightTitleRequirements[_KnightTitle].Products do
+            bool, reach, need = DoNumberOfProductsInCategoryExist(_PlayerID, _KnightTitle, i);
+            if bool == false then
+                return bool, reach, need
+            end
+        end
+        return bool;
+    end
+end
+
+---
+-- Prüft, ob ein bestimmter Buff für den Spieler aktiv ist.
+--
+-- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _KnightTitle Nächster Titel
+-- @param[type=number] _i Button Index
+-- @within Originalfunktionen
+-- @local
+--
+DoNeededDiversityBuffForKnightTitleExist = function(_PlayerID, _KnightTitle, _i)
+    if KnightTitleRequirements[_KnightTitle].Buff == nil then
+        return;
+    end
+    if _i then
+        local buff = KnightTitleRequirements[_KnightTitle].Buff[_i];
+        if Logic.GetBuff(_PlayerID,buff) and Logic.GetBuff(_PlayerID,buff) ~= 0 then
+            return true;
+        end
+        return false;
+    else
+        local bool, reach, need;
+        for i=1,#KnightTitleRequirements[_KnightTitle].Buff do
+            bool, reach, need = DoNeededDiversityBuffForKnightTitleExist(_PlayerID, _KnightTitle, i);
+            if bool == false then
+                return bool, reach, need
+            end
+        end
+        return bool;
+    end
+end
+
+---
+-- Prüft, ob die Custom Function true vermeldet.
+--
+-- <b>Hinweis</b>: Die Funktion wird innerhalb eines GUI Update aufgerufen.
+-- Schreibe daher effizienten Lua Code!
+--
+-- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _KnightTitle Nächster Titel
+-- @param[type=number] _i Button Index
+-- @within Originalfunktionen
+-- @local
+--
+DoCustomFunctionForKnightTitleSucceed = function(_PlayerID, _KnightTitle, _i)
+    if KnightTitleRequirements[_KnightTitle].Custom == nil then
+        return;
+    end
+    if _i then
+        return KnightTitleRequirements[_KnightTitle].Custom[_i][1](_PlayerID, _KnightTitle, _i);
+    else
+        local bool, reach, need;
+        for i=1,#KnightTitleRequirements[_KnightTitle].Custom do
+            bool, reach, need = DoCustomFunctionForKnightTitleSucceed(_PlayerID, _KnightTitle, i);
+            if bool == false then
+                return bool, reach, need
+            end
+        end
+        return bool;
+    end
+end
+
+---
+-- Prüft, ob genug Dekoration eines Typs angebracht wurde.
+--
+-- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _KnightTitle Nächster Titel
+-- @param[type=number] _i Button Index
+-- @within Originalfunktionen
+-- @local
+--
+DoNeededNumberOfDecoratedBuildingsForKnightTitleExist = function( _PlayerID, _KnightTitle, _i)
+    if KnightTitleRequirements[_KnightTitle].DecoratedBuildings == nil then
+        return
+    end
+
+    if _i then
+        local CityBuildings = {Logic.GetPlayerEntitiesInCategory(_PlayerID, EntityCategories.CityBuilding)}
+        local DecorationGoodType = KnightTitleRequirements[_KnightTitle].DecoratedBuildings[_i][1]
+        local NeededBuildingsWithDecoration = KnightTitleRequirements[_KnightTitle].DecoratedBuildings[_i][2]
+        local BuildingsWithDecoration = 0
+
+        for i=1, #CityBuildings do
+            local BuildingID = CityBuildings[i]
+            local GoodState = Logic.GetBuildingWealthGoodState(BuildingID, DecorationGoodType)
+            if GoodState > 0 then
+                BuildingsWithDecoration = BuildingsWithDecoration + 1
+            end
+        end
+
+        if BuildingsWithDecoration >= NeededBuildingsWithDecoration then
+            return true, BuildingsWithDecoration, NeededBuildingsWithDecoration
+        else
+            return false, BuildingsWithDecoration, NeededBuildingsWithDecoration
+        end
+    else
+        local bool, reach, need;
+        for i=1,#KnightTitleRequirements[_KnightTitle].DecoratedBuildings do
+            bool, reach, need = DoNeededNumberOfDecoratedBuildingsForKnightTitleExist(_PlayerID, _KnightTitle, i);
+            if bool == false then
+                return bool, reach, need
+            end
+        end
+        return bool;
+    end
+end
+
+---
+-- Prüft, ob die Spezialgebäude weit genug ausgebaut sind.
+--
+-- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _KnightTitle Nächster Titel
+-- @param[type=number] _EntityCategory Entity Category
+-- @within Originalfunktionen
+-- @local
+--
+DoNeededSpecialBuildingUpgradeForKnightTitleExist = function( _PlayerID, _KnightTitle, _EntityCategory)
+    local SpecialBuilding
+    local SpecialBuildingName
+    if _EntityCategory == EntityCategories.Headquarters then
+        SpecialBuilding = Logic.GetHeadquarters(_PlayerID)
+        SpecialBuildingName = "Headquarters"
+    elseif _EntityCategory == EntityCategories.Storehouse then
+        SpecialBuilding = Logic.GetStoreHouse(_PlayerID)
+        SpecialBuildingName = "Storehouse"
+    elseif _EntityCategory == EntityCategories.Cathedrals then
+        SpecialBuilding = Logic.GetCathedral(_PlayerID)
+        SpecialBuildingName = "Cathedrals"
+    else
+        return
+    end
+    if KnightTitleRequirements[_KnightTitle][SpecialBuildingName] == nil then
+        return
+    end
+    local NeededUpgradeLevel = KnightTitleRequirements[_KnightTitle][SpecialBuildingName]
+    if SpecialBuilding ~= nil then
+        local SpecialBuildingUpgradeLevel = Logic.GetUpgradeLevel(SpecialBuilding)
+        if SpecialBuildingUpgradeLevel >= NeededUpgradeLevel then
+            return true, SpecialBuildingUpgradeLevel, NeededUpgradeLevel
+        else
+            return false, SpecialBuildingUpgradeLevel, NeededUpgradeLevel
+        end
+    else
+        return false, 0, NeededUpgradeLevel
+    end
+end
+
+---
+-- Prüft, ob der Ruf der Stadt hoch genug ist.
+--
+-- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _KnightTitle Nächster Titel
+-- @within Originalfunktionen
+-- @local
+--
+DoesNeededCityReputationForKnightTitleExist = function(_PlayerID, _KnightTitle)
+    if KnightTitleRequirements[_KnightTitle].Reputation == nil then
+        return;
+    end
+    local NeededAmount = KnightTitleRequirements[_KnightTitle].Reputation;
+    if not NeededAmount then
+        return;
+    end
+    local ReachedAmount = math.floor((Logic.GetCityReputation(_PlayerID) * 100) + 0.5);
+    if ReachedAmount >= NeededAmount then
+        return true, ReachedAmount, NeededAmount;
+    end
+    return false, ReachedAmount, NeededAmount;
+end
+
+---
+-- Prüft, ob genug Gebäude vollständig dekoriert sind.
+--
+-- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _KnightTitle Nächster Titel
+-- @within Originalfunktionen
+-- @local
+--
+DoNeededNumberOfFullDecoratedBuildingsForKnightTitleExist = function( _PlayerID, _KnightTitle)
+    if KnightTitleRequirements[_KnightTitle].FullDecoratedBuildings == nil then
+        return
+    end
+    local CityBuildings = {Logic.GetPlayerEntitiesInCategory(_PlayerID, EntityCategories.CityBuilding)}
+    local NeededBuildingsWithDecoration = KnightTitleRequirements[_KnightTitle].FullDecoratedBuildings
+    local BuildingsWithDecoration = 0
+
+    for i=1, #CityBuildings do
+        local BuildingID = CityBuildings[i]
+        local AmountOfWealthGoodsAtBuilding = 0
+
+        if Logic.GetBuildingWealthGoodState(BuildingID, Goods.G_Banner ) > 0 then
+            AmountOfWealthGoodsAtBuilding = AmountOfWealthGoodsAtBuilding  + 1
+        end
+        if Logic.GetBuildingWealthGoodState(BuildingID, Goods.G_Sign  ) > 0 then
+            AmountOfWealthGoodsAtBuilding = AmountOfWealthGoodsAtBuilding  + 1
+        end
+        if Logic.GetBuildingWealthGoodState(BuildingID, Goods.G_Candle) > 0 then
+            AmountOfWealthGoodsAtBuilding = AmountOfWealthGoodsAtBuilding  + 1
+        end
+        if Logic.GetBuildingWealthGoodState(BuildingID, Goods.G_Ornament  ) > 0 then
+            AmountOfWealthGoodsAtBuilding = AmountOfWealthGoodsAtBuilding  + 1
+        end
+        if AmountOfWealthGoodsAtBuilding >= 4 then
+            BuildingsWithDecoration = BuildingsWithDecoration + 1
+        end
+    end
+
+    if BuildingsWithDecoration >= NeededBuildingsWithDecoration then
+        return true, BuildingsWithDecoration, NeededBuildingsWithDecoration
+    else
+        return false, BuildingsWithDecoration, NeededBuildingsWithDecoration
+    end
+end
+
+---
+-- Prüft, ob der Spieler befördert werden kann.
+--
+-- @param[type=number] _PlayerID ID des Spielers
+-- @param[type=number] _KnightTitle Nächster Titel
+-- @within Originalfunktionen
+-- @local
+--
+CanKnightBePromoted = function(_PlayerID, _KnightTitle)
+    if _KnightTitle == nil then
+        _KnightTitle = Logic.GetKnightTitle(_PlayerID) + 1;
+    end
+
+    if Logic.CanStartFestival(_PlayerID, 1) == true then
+        if  KnightTitleRequirements[_KnightTitle] ~= nil
+        and DoesNeededNumberOfSettlersForKnightTitleExist(_PlayerID, _KnightTitle) ~= false
+        and DoNeededNumberOfGoodsForKnightTitleExist( _PlayerID, _KnightTitle)  ~= false
+        and DoNeededSpecialBuildingUpgradeForKnightTitleExist( _PlayerID, _KnightTitle, EntityCategories.Headquarters) ~= false
+        and DoNeededSpecialBuildingUpgradeForKnightTitleExist( _PlayerID, _KnightTitle, EntityCategories.Storehouse) ~= false
+        and DoNeededSpecialBuildingUpgradeForKnightTitleExist( _PlayerID, _KnightTitle, EntityCategories.Cathedrals)  ~= false
+        and DoNeededNumberOfRichBuildingsForKnightTitleExist( _PlayerID, _KnightTitle)  ~= false
+        and DoNeededNumberOfFullDecoratedBuildingsForKnightTitleExist( _PlayerID, _KnightTitle) ~= false
+        and DoNeededNumberOfDecoratedBuildingsForKnightTitleExist( _PlayerID, _KnightTitle) ~= false
+        and DoesNeededCityReputationForKnightTitleExist( _PlayerID, _KnightTitle) ~= false
+        and DoesNeededNumberOfEntitiesInCategoryForKnightTitleExist( _PlayerID, _KnightTitle) ~= false
+        and DoesNeededNumberOfEntitiesOfTypeForKnightTitleExist( _PlayerID, _KnightTitle) ~= false
+        and DoesNeededNumberOfGoodTypesForKnightTitleExist( _PlayerID, _KnightTitle) ~= false
+        and DoNeededDiversityBuffForKnightTitleExist( _PlayerID, _KnightTitle) ~= false
+        and DoCustomFunctionForKnightTitleSucceed( _PlayerID, _KnightTitle) ~= false
+        and DoNeededNumberOfConsumedGoodsForKnightTitleExist( _PlayerID, _KnightTitle) ~= false
+        and DoNumberOfProductsInCategoryExist( _PlayerID, _KnightTitle) ~= false then
+            return true;
+        end
+    end
+    return false;
+end
+
+---
+-- Der Spieler gewinnt das Spiel
+-- @within Originalfunktionen
+-- @local
+--
+VictroryBecauseOfTitle = function()
+    QuestTemplate:TerminateEventsAndStuff();
+    Victory(g_VictoryAndDefeatType.VictoryMissionComplete);
+end
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+--
+-- Definiert den Standard der Aufstiegsbedingungen für den Spieler.
+--
+
+---
+-- Diese Funktion muss entweder in der QSB modifiziert oder sowohl im globalen
+-- als auch im lokalen Skript überschrieben werden. Ideal ist laden des
+-- angepassten Skriptes als separate Datei. Bei Modifikationen muss das Schema
+-- für Aufstiegsbedingungen und Rechtevergabe immer beibehalten werden.
+--
+-- <b>Hinweis</b>: Diese Funktion wird <b>automatisch</b> vom Code ausgeführt.
+-- Du rufst sie <b>niemals</b> selbst auf!
+--
+-- @within Originalfunktionen
+--
+-- @usage
+-- -- Dies ist ein Beispiel zum herauskopieren. Hier sind die üblichen
+-- -- Bedingungen gesetzt. Wenn du diese Funktion in dein Skript kopierst, muss
+-- -- sie im globalen und lokalen Skript stehen oder dort geladen werden!
+-- InitKnightTitleTables = function()
+--     KnightTitles = {}
+--     KnightTitles.Knight     = 0
+--     KnightTitles.Mayor      = 1
+--     KnightTitles.Baron      = 2
+--     KnightTitles.Earl       = 3
+--     KnightTitles.Marquees   = 4
+--     KnightTitles.Duke       = 5
+--     KnightTitles.Archduke   = 6
+--
+--     -- ---------------------------------------------------------------------- --
+--     -- Rechte und Pflichten                                                   --
+--     -- ---------------------------------------------------------------------- --
+--
+--     NeedsAndRightsByKnightTitle = {}
+--
+--     -- Ritter ------------------------------------------------------------------
+--
+--     NeedsAndRightsByKnightTitle[KnightTitles.Knight] = {
+--         ActivateNeedForPlayer,
+--         {
+--             Needs.Nutrition,                                    -- Bedürfnis: Nahrung
+--             Needs.Medicine,                                     -- Bedürfnis: Medizin
+--         },
+--         ActivateRightForPlayer,
+--         {
+--             Technologies.R_Gathering,                           -- Recht: Rohstoffsammler
+--             Technologies.R_Woodcutter,                          -- Recht: Holzfäller
+--             Technologies.R_StoneQuarry,                         -- Recht: Steinbruch
+--             Technologies.R_HuntersHut,                          -- Recht: Jägerhütte
+--             Technologies.R_FishingHut,                          -- Recht: Fischerhütte
+--             Technologies.R_CattleFarm,                          -- Recht: Kuhfarm
+--             Technologies.R_GrainFarm,                           -- Recht: Getreidefarm
+--             Technologies.R_SheepFarm,                           -- Recht: Schaffarm
+--             Technologies.R_IronMine,                            -- Recht: Eisenmine
+--             Technologies.R_Beekeeper,                           -- Recht: Imkerei
+--             Technologies.R_HerbGatherer,                        -- Recht: Kräutersammler
+--             Technologies.R_Nutrition,                           -- Recht: Nahrung
+--             Technologies.R_Bakery,                              -- Recht: Bäckerei
+--             Technologies.R_Dairy,                               -- Recht: Käserei
+--             Technologies.R_Butcher,                             -- Recht: Metzger
+--             Technologies.R_SmokeHouse,                          -- Recht: Räucherhaus
+--             Technologies.R_Clothes,                             -- Recht: Kleidung
+--             Technologies.R_Tanner,                              -- Recht: Ledergerber
+--             Technologies.R_Weaver,                              -- Recht: Weber
+--             Technologies.R_Construction,                        -- Recht: Konstruktion
+--             Technologies.R_Wall,                                -- Recht: Mauer
+--             Technologies.R_Pallisade,                           -- Recht: Palisade
+--             Technologies.R_Trail,                               -- Recht: Pfad
+--             Technologies.R_KnockDown,                           -- Recht: Abriss
+--             Technologies.R_Sermon,                              -- Recht: Predigt
+--             Technologies.R_SpecialEdition,                      -- Recht: Special Edition
+--             Technologies.R_SpecialEdition_Pavilion,             -- Recht: Pavilion AeK SE
+--         }
+--     }
+--
+--     -- Landvogt ----------------------------------------------------------------
+--
+--     NeedsAndRightsByKnightTitle[KnightTitles.Mayor] = {
+--         ActivateNeedForPlayer,
+--         {
+--             Needs.Clothes,                                      -- Bedürfnis: KLeidung
+--         },
+--         ActivateRightForPlayer, {
+--             Technologies.R_Hygiene,                             -- Recht: Hygiene
+--             Technologies.R_Soapmaker,                           -- Recht: Seifenmacher
+--             Technologies.R_BroomMaker,                          -- Recht: Besenmacher
+--             Technologies.R_Military,                            -- Recht: Militär
+--             Technologies.R_SwordSmith,                          -- Recht: Schwertschmied
+--             Technologies.R_Barracks,                            -- Recht: Schwertkämpferkaserne
+--             Technologies.R_Thieves,                             -- Recht: Diebe
+--             Technologies.R_SpecialEdition_StatueFamily,         -- Recht: Familienstatue Aek SE
+--         },
+--         StartKnightsPromotionCelebration                        -- Beförderungsfest aktivieren
+--     }
+--
+--     -- Baron -------------------------------------------------------------------
+--
+--     NeedsAndRightsByKnightTitle[KnightTitles.Baron] = {
+--         ActivateNeedForPlayer,
+--         {
+--             Needs.Hygiene,                                      -- Bedürfnis: Hygiene
+--         },
+--         ActivateRightForPlayer, {
+--             Technologies.R_SiegeEngineWorkshop,                 -- Recht: Belagerungswaffenschmied
+--             Technologies.R_BatteringRam,                        -- Recht: Ramme
+--             Technologies.R_Medicine,                            -- Recht: Medizin
+--             Technologies.R_Entertainment,                       -- Recht: Unterhaltung
+--             Technologies.R_Tavern,                              -- Recht: Taverne
+--             Technologies.R_Festival,                            -- Recht: Fest
+--             Technologies.R_Street,                              -- Recht: Straße
+--             Technologies.R_SpecialEdition_Column,               -- Recht: Säule AeK SE
+--         },
+--         StartKnightsPromotionCelebration                        -- Beförderungsfest aktivieren
+--     }
+--
+--     -- Graf --------------------------------------------------------------------
+--
+--     NeedsAndRightsByKnightTitle[KnightTitles.Earl] = {
+--         ActivateNeedForPlayer,
+--         {
+--             Needs.Entertainment,                                -- Bedürfnis: Unterhaltung
+--             Needs.Prosperity,                                   -- Bedürfnis: Reichtum
+--         },
+--         ActivateRightForPlayer, {
+--             Technologies.R_BowMaker,                            -- Recht: Bogenmacher
+--             Technologies.R_BarracksArchers,                     -- Recht: Bogenschützenkaserne
+--             Technologies.R_Baths,                               -- Recht: Badehaus
+--             Technologies.R_AmmunitionCart,                      -- Recht: Munitionswagen
+--             Technologies.R_Prosperity,                          -- Recht: Reichtum
+--             Technologies.R_Taxes,                               -- Recht: Steuern einstellen
+--             Technologies.R_Ballista,                            -- Recht: Mauerkatapult
+--             Technologies.R_SpecialEdition_StatueSettler,        -- Recht: Siedlerstatue AeK SE
+--         },
+--         StartKnightsPromotionCelebration                        -- Beförderungsfest aktivieren
+--     }
+--
+--     -- Marquees ----------------------------------------------------------------
+--
+--     NeedsAndRightsByKnightTitle[KnightTitles.Marquees] = {
+--         ActivateNeedForPlayer,
+--         {
+--             Needs.Wealth,                                       -- Bedürfnis: Verschönerung
+--         },
+--         ActivateRightForPlayer, {
+--             Technologies.R_Theater,                             -- Recht: Theater
+--             Technologies.R_Wealth,                              -- Recht: Schmuckgebäude
+--             Technologies.R_BannerMaker,                         -- Recht: Bannermacher
+--             Technologies.R_SiegeTower,                          -- Recht: Belagerungsturm
+--             Technologies.R_SpecialEdition_StatueProduction,     -- Recht: Produktionsstatue AeK SE
+--         },
+--         StartKnightsPromotionCelebration                        -- Beförderungsfest aktivieren
+--     }
+--
+--     -- Herzog ------------------------------------------------------------------
+--
+--     NeedsAndRightsByKnightTitle[KnightTitles.Duke] = {
+--         ActivateNeedForPlayer, nil,
+--         ActivateRightForPlayer, {
+--             Technologies.R_Catapult,                            -- Recht: Katapult
+--             Technologies.R_Carpenter,                           -- Recht: Tischler
+--             Technologies.R_CandleMaker,                         -- Recht: Kerzenmacher
+--             Technologies.R_Blacksmith,                          -- Recht: Schmied
+--             Technologies.R_SpecialEdition_StatueDario,          -- Recht: Dariostatue AeK SE
+--         },
+--         StartKnightsPromotionCelebration                        -- Beförderungsfest aktivieren
+--     }
+--
+--     -- Erzherzog ---------------------------------------------------------------
+--
+--     NeedsAndRightsByKnightTitle[KnightTitles.Archduke] = {
+--         ActivateNeedForPlayer,nil,
+--         ActivateRightForPlayer, {
+--             Technologies.R_Victory                              -- Sieg
+--         },
+--         -- VictroryBecauseOfTitle,                              -- Sieg wegen Titel
+--         StartKnightsPromotionCelebration                        -- Beförderungsfest aktivieren
+--     }
+--
+--
+--
+--     -- Reich des Ostens --------------------------------------------------------
+--
+--     if g_GameExtraNo >= 1 then
+--         local TechnologiesTableIndex = 4;
+--         table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Mayor][TechnologiesTableIndex],Technologies.R_Cistern);
+--         table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Mayor][TechnologiesTableIndex],Technologies.R_Beautification_Brazier);
+--         table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Mayor][TechnologiesTableIndex],Technologies.R_Beautification_Shrine);
+--         table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Baron][TechnologiesTableIndex],Technologies.R_Beautification_Pillar);
+--         table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Earl][TechnologiesTableIndex],Technologies.R_Beautification_StoneBench);
+--         table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Earl][TechnologiesTableIndex],Technologies.R_Beautification_Vase);
+--         table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Marquees][TechnologiesTableIndex],Technologies.R_Beautification_Sundial);
+--         table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Archduke][TechnologiesTableIndex],Technologies.R_Beautification_TriumphalArch);
+--         table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Duke][TechnologiesTableIndex],Technologies.R_Beautification_VictoryColumn);
+--     end
+--
+--
+--
+--     -- ---------------------------------------------------------------------- --
+--     -- Bedingungen                                                            --
+--     -- ---------------------------------------------------------------------- --
+--
+--     KnightTitleRequirements = {}
+--
+--     -- Ritter ------------------------------------------------------------------
+--
+--     KnightTitleRequirements[KnightTitles.Mayor] = {}
+--     KnightTitleRequirements[KnightTitles.Mayor].Headquarters = 1
+--     KnightTitleRequirements[KnightTitles.Mayor].Settlers = 10
+--     KnightTitleRequirements[KnightTitles.Mayor].Products = {
+--         {GoodCategories.GC_Clothes, 6},
+--     }
+--
+--     -- Baron -------------------------------------------------------------------
+--
+--     KnightTitleRequirements[KnightTitles.Baron] = {}
+--     KnightTitleRequirements[KnightTitles.Baron].Settlers = 30
+--     KnightTitleRequirements[KnightTitles.Baron].Headquarters = 1
+--     KnightTitleRequirements[KnightTitles.Baron].Storehouse = 1
+--     KnightTitleRequirements[KnightTitles.Baron].Cathedrals = 1
+--     KnightTitleRequirements[KnightTitles.Baron].Products = {
+--         {GoodCategories.GC_Hygiene, 12},
+--     }
+--
+--     -- Graf --------------------------------------------------------------------
+--
+--     KnightTitleRequirements[KnightTitles.Earl] = {}
+--     KnightTitleRequirements[KnightTitles.Earl].Settlers = 50
+--     KnightTitleRequirements[KnightTitles.Earl].Headquarters = 2
+--     KnightTitleRequirements[KnightTitles.Earl].Goods = {
+--         {Goods.G_Beer, 18},
+--     }
+--
+--     -- Marquess ----------------------------------------------------------------
+--
+--     KnightTitleRequirements[KnightTitles.Marquees] = {}
+--     KnightTitleRequirements[KnightTitles.Marquees].Settlers = 70
+--     KnightTitleRequirements[KnightTitles.Marquees].Headquarters = 2
+--     KnightTitleRequirements[KnightTitles.Marquees].Storehouse = 2
+--     KnightTitleRequirements[KnightTitles.Marquees].Cathedrals = 2
+--     KnightTitleRequirements[KnightTitles.Marquees].RichBuildings = 20
+--
+--     -- Herzog ------------------------------------------------------------------
+--
+--     KnightTitleRequirements[KnightTitles.Duke] = {}
+--     KnightTitleRequirements[KnightTitles.Duke].Settlers = 90
+--     KnightTitleRequirements[KnightTitles.Duke].Storehouse = 2
+--     KnightTitleRequirements[KnightTitles.Duke].Cathedrals = 2
+--     KnightTitleRequirements[KnightTitles.Duke].Headquarters = 3
+--     KnightTitleRequirements[KnightTitles.Duke].DecoratedBuildings = {
+--         {Goods.G_Banner, 9 },
+--     }
+--
+--     -- Erzherzog ---------------------------------------------------------------
+--
+--     KnightTitleRequirements[KnightTitles.Archduke] = {}
+--     KnightTitleRequirements[KnightTitles.Archduke].Settlers = 150
+--     KnightTitleRequirements[KnightTitles.Archduke].Storehouse = 3
+--     KnightTitleRequirements[KnightTitles.Archduke].Cathedrals = 3
+--     KnightTitleRequirements[KnightTitles.Archduke].Headquarters = 3
+--     KnightTitleRequirements[KnightTitles.Archduke].RichBuildings = 30
+--     KnightTitleRequirements[KnightTitles.Archduke].FullDecoratedBuildings = 30
+--
+--     -- Einstellungen Aktivieren
+--     CreateTechnologyKnightTitleTable()
+-- end
+--
+InitKnightTitleTables = function()
+    KnightTitles = {}
+    KnightTitles.Knight     = 0
+    KnightTitles.Mayor      = 1
+    KnightTitles.Baron      = 2
+    KnightTitles.Earl       = 3
+    KnightTitles.Marquees   = 4
+    KnightTitles.Duke       = 5
+    KnightTitles.Archduke   = 6
+
+    -- ---------------------------------------------------------------------- --
+    -- Rechte und Pflichten                                                   --
+    -- ---------------------------------------------------------------------- --
+
+    NeedsAndRightsByKnightTitle = {}
+
+    -- Ritter ------------------------------------------------------------------
+
+    NeedsAndRightsByKnightTitle[KnightTitles.Knight] = {
+        ActivateNeedForPlayer,
+        {
+            Needs.Nutrition,                                    -- Bedürfnis: Nahrung
+            Needs.Medicine,                                     -- Bedürfnis: Medizin
+        },
+        ActivateRightForPlayer,
+        {
+            Technologies.R_Gathering,                           -- Recht: Rohstoffsammler
+            Technologies.R_Woodcutter,                          -- Recht: Holzfäller
+            Technologies.R_StoneQuarry,                         -- Recht: Steinbruch
+            Technologies.R_HuntersHut,                          -- Recht: Jägerhütte
+            Technologies.R_FishingHut,                          -- Recht: Fischerhütte
+            Technologies.R_CattleFarm,                          -- Recht: Kuhfarm
+            Technologies.R_GrainFarm,                           -- Recht: Getreidefarm
+            Technologies.R_SheepFarm,                           -- Recht: Schaffarm
+            Technologies.R_IronMine,                            -- Recht: Eisenmine
+            Technologies.R_Beekeeper,                           -- Recht: Imkerei
+            Technologies.R_HerbGatherer,                        -- Recht: Kräutersammler
+            Technologies.R_Nutrition,                           -- Recht: Nahrung
+            Technologies.R_Bakery,                              -- Recht: Bäckerei
+            Technologies.R_Dairy,                               -- Recht: Käserei
+            Technologies.R_Butcher,                             -- Recht: Metzger
+            Technologies.R_SmokeHouse,                          -- Recht: Räucherhaus
+            Technologies.R_Clothes,                             -- Recht: Kleidung
+            Technologies.R_Tanner,                              -- Recht: Ledergerber
+            Technologies.R_Weaver,                              -- Recht: Weber
+            Technologies.R_Construction,                        -- Recht: Konstruktion
+            Technologies.R_Wall,                                -- Recht: Mauer
+            Technologies.R_Pallisade,                           -- Recht: Palisade
+            Technologies.R_Trail,                               -- Recht: Pfad
+            Technologies.R_KnockDown,                           -- Recht: Abriss
+            Technologies.R_Sermon,                              -- Recht: Predigt
+            Technologies.R_SpecialEdition,                      -- Recht: Special Edition
+            Technologies.R_SpecialEdition_Pavilion,             -- Recht: Pavilion AeK SE
+        }
+    }
+
+    -- Landvogt ----------------------------------------------------------------
+
+    NeedsAndRightsByKnightTitle[KnightTitles.Mayor] = {
+        ActivateNeedForPlayer,
+        {
+            Needs.Clothes,                                      -- Bedürfnis: KLeidung
+        },
+        ActivateRightForPlayer, {
+            Technologies.R_Hygiene,                             -- Recht: Hygiene
+            Technologies.R_Soapmaker,                           -- Recht: Seifenmacher
+            Technologies.R_BroomMaker,                          -- Recht: Besenmacher
+            Technologies.R_Military,                            -- Recht: Militär
+            Technologies.R_SwordSmith,                          -- Recht: Schwertschmied
+            Technologies.R_Barracks,                            -- Recht: Schwertkämpferkaserne
+            Technologies.R_Thieves,                             -- Recht: Diebe
+            Technologies.R_SpecialEdition_StatueFamily,         -- Recht: Familienstatue Aek SE
+        },
+        StartKnightsPromotionCelebration                        -- Beförderungsfest aktivieren
+    }
+
+    -- Baron -------------------------------------------------------------------
+
+    NeedsAndRightsByKnightTitle[KnightTitles.Baron] = {
+        ActivateNeedForPlayer,
+        {
+            Needs.Hygiene,                                      -- Bedürfnis: Hygiene
+        },
+        ActivateRightForPlayer, {
+            Technologies.R_SiegeEngineWorkshop,                 -- Recht: Belagerungswaffenschmied
+            Technologies.R_BatteringRam,                        -- Recht: Ramme
+            Technologies.R_Medicine,                            -- Recht: Medizin
+            Technologies.R_Entertainment,                       -- Recht: Unterhaltung
+            Technologies.R_Tavern,                              -- Recht: Taverne
+            Technologies.R_Festival,                            -- Recht: Fest
+            Technologies.R_Street,                              -- Recht: Straße
+            Technologies.R_SpecialEdition_Column,               -- Recht: Säule AeK SE
+        },
+        StartKnightsPromotionCelebration                        -- Beförderungsfest aktivieren
+    }
+
+    -- Graf --------------------------------------------------------------------
+
+    NeedsAndRightsByKnightTitle[KnightTitles.Earl] = {
+        ActivateNeedForPlayer,
+        {
+            Needs.Entertainment,                                -- Bedürfnis: Unterhaltung
+            Needs.Prosperity,                                   -- Bedürfnis: Reichtum
+        },
+        ActivateRightForPlayer, {
+            Technologies.R_BowMaker,                            -- Recht: Bogenmacher
+            Technologies.R_BarracksArchers,                     -- Recht: Bogenschützenkaserne
+            Technologies.R_Baths,                               -- Recht: Badehaus
+            Technologies.R_AmmunitionCart,                      -- Recht: Munitionswagen
+            Technologies.R_Prosperity,                          -- Recht: Reichtum
+            Technologies.R_Taxes,                               -- Recht: Steuern einstellen
+            Technologies.R_Ballista,                            -- Recht: Mauerkatapult
+            Technologies.R_SpecialEdition_StatueSettler,        -- Recht: Siedlerstatue AeK SE
+        },
+        StartKnightsPromotionCelebration                        -- Beförderungsfest aktivieren
+    }
+
+    -- Marquees ----------------------------------------------------------------
+
+    NeedsAndRightsByKnightTitle[KnightTitles.Marquees] = {
+        ActivateNeedForPlayer,
+        {
+            Needs.Wealth,                                       -- Bedürfnis: Verschönerung
+        },
+        ActivateRightForPlayer, {
+            Technologies.R_Theater,                             -- Recht: Theater
+            Technologies.R_Wealth,                              -- Recht: Schmuckgebäude
+            Technologies.R_BannerMaker,                         -- Recht: Bannermacher
+            Technologies.R_SiegeTower,                          -- Recht: Belagerungsturm
+            Technologies.R_SpecialEdition_StatueProduction,     -- Recht: Produktionsstatue AeK SE
+        },
+        StartKnightsPromotionCelebration                        -- Beförderungsfest aktivieren
+    }
+
+    -- Herzog ------------------------------------------------------------------
+
+    NeedsAndRightsByKnightTitle[KnightTitles.Duke] = {
+        ActivateNeedForPlayer, nil,
+        ActivateRightForPlayer, {
+            Technologies.R_Catapult,                            -- Recht: Katapult
+            Technologies.R_Carpenter,                           -- Recht: Tischler
+            Technologies.R_CandleMaker,                         -- Recht: Kerzenmacher
+            Technologies.R_Blacksmith,                          -- Recht: Schmied
+            Technologies.R_SpecialEdition_StatueDario,          -- Recht: Dariostatue AeK SE
+        },
+        StartKnightsPromotionCelebration                        -- Beförderungsfest aktivieren
+    }
+
+    -- Erzherzog ---------------------------------------------------------------
+
+    NeedsAndRightsByKnightTitle[KnightTitles.Archduke] = {
+        ActivateNeedForPlayer,nil,
+        ActivateRightForPlayer, {
+            Technologies.R_Victory                              -- Sieg
+        },
+        -- VictroryBecauseOfTitle,                              -- Sieg wegen Titel
+        StartKnightsPromotionCelebration                        -- Beförderungsfest aktivieren
+    }
+
+
+
+    -- Reich des Ostens --------------------------------------------------------
+
+    if g_GameExtraNo >= 1 then
+        local TechnologiesTableIndex = 4;
+        table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Mayor][TechnologiesTableIndex],Technologies.R_Cistern);
+        table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Mayor][TechnologiesTableIndex],Technologies.R_Beautification_Brazier);
+        table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Mayor][TechnologiesTableIndex],Technologies.R_Beautification_Shrine);
+        table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Baron][TechnologiesTableIndex],Technologies.R_Beautification_Pillar);
+        table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Earl][TechnologiesTableIndex],Technologies.R_Beautification_StoneBench);
+        table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Earl][TechnologiesTableIndex],Technologies.R_Beautification_Vase);
+        table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Marquees][TechnologiesTableIndex],Technologies.R_Beautification_Sundial);
+        table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Archduke][TechnologiesTableIndex],Technologies.R_Beautification_TriumphalArch);
+        table.insert(NeedsAndRightsByKnightTitle[KnightTitles.Duke][TechnologiesTableIndex],Technologies.R_Beautification_VictoryColumn);
+    end
+
+
+
+    -- ---------------------------------------------------------------------- --
+    -- Bedingungen                                                            --
+    -- ---------------------------------------------------------------------- --
+
+    KnightTitleRequirements = {}
+
+    -- Ritter ------------------------------------------------------------------
+
+    KnightTitleRequirements[KnightTitles.Mayor] = {}
+    KnightTitleRequirements[KnightTitles.Mayor].Headquarters = 1
+    KnightTitleRequirements[KnightTitles.Mayor].Settlers = 10
+    KnightTitleRequirements[KnightTitles.Mayor].Products = {
+        {GoodCategories.GC_Clothes, 6},
+    }
+
+    -- Baron -------------------------------------------------------------------
+
+    KnightTitleRequirements[KnightTitles.Baron] = {}
+    KnightTitleRequirements[KnightTitles.Baron].Settlers = 30
+    KnightTitleRequirements[KnightTitles.Baron].Headquarters = 1
+    KnightTitleRequirements[KnightTitles.Baron].Storehouse = 1
+    KnightTitleRequirements[KnightTitles.Baron].Cathedrals = 1
+    KnightTitleRequirements[KnightTitles.Baron].Products = {
+        {GoodCategories.GC_Hygiene, 12},
+    }
+
+    -- Graf --------------------------------------------------------------------
+
+    KnightTitleRequirements[KnightTitles.Earl] = {}
+    KnightTitleRequirements[KnightTitles.Earl].Settlers = 50
+    KnightTitleRequirements[KnightTitles.Earl].Headquarters = 2
+    KnightTitleRequirements[KnightTitles.Earl].Goods = {
+        {Goods.G_Beer, 18},
+    }
+
+    -- Marquess ----------------------------------------------------------------
+
+    KnightTitleRequirements[KnightTitles.Marquees] = {}
+    KnightTitleRequirements[KnightTitles.Marquees].Settlers = 70
+    KnightTitleRequirements[KnightTitles.Marquees].Headquarters = 2
+    KnightTitleRequirements[KnightTitles.Marquees].Storehouse = 2
+    KnightTitleRequirements[KnightTitles.Marquees].Cathedrals = 2
+    KnightTitleRequirements[KnightTitles.Marquees].RichBuildings = 20
+
+    -- Herzog ------------------------------------------------------------------
+
+    KnightTitleRequirements[KnightTitles.Duke] = {}
+    KnightTitleRequirements[KnightTitles.Duke].Settlers = 90
+    KnightTitleRequirements[KnightTitles.Duke].Storehouse = 2
+    KnightTitleRequirements[KnightTitles.Duke].Cathedrals = 2
+    KnightTitleRequirements[KnightTitles.Duke].Headquarters = 3
+    KnightTitleRequirements[KnightTitles.Duke].DecoratedBuildings = {
+        {Goods.G_Banner, 9 },
+    }
+
+    -- Erzherzog ---------------------------------------------------------------
+
+    KnightTitleRequirements[KnightTitles.Archduke] = {}
+    KnightTitleRequirements[KnightTitles.Archduke].Settlers = 150
+    KnightTitleRequirements[KnightTitles.Archduke].Storehouse = 3
+    KnightTitleRequirements[KnightTitles.Archduke].Cathedrals = 3
+    KnightTitleRequirements[KnightTitles.Archduke].Headquarters = 3
+    KnightTitleRequirements[KnightTitles.Archduke].RichBuildings = 30
+    KnightTitleRequirements[KnightTitles.Archduke].FullDecoratedBuildings = 30
+
+    -- Einstellungen Aktivieren
+    CreateTechnologyKnightTitleTable()
 end
 
 --[[
@@ -19149,6 +23237,8 @@ You may use and modify this file unter the terms of the MIT licence.
 (See https://en.wikipedia.org/wiki/MIT_License)
 ]]
 
+-- -------------------------------------------------------------------------- --
+
 ---
 -- Aufträge können über das Skript erstellt werden.
 --
@@ -19157,6 +23247,9 @@ You may use and modify this file unter the terms of the MIT licence.
 -- im Skript erzeugt werden, verschwinden alle diese Nachteile. Aufträge
 -- können im Skript kopiert und angepasst werden. Es ist ebenfalls machbar,
 -- die Aufträge in Sequenzen zu erzeugen.
+--
+-- Außerdem können Aufträge ineinander verschachtelt werden. Diese sogenannten
+-- Nested Quests vereinfachen die Schreibweise und die Verlinkung der Aufträge.
 --
 -- <b>Befehle:</b><br>
 -- <i>Diese Befehle können über die Konsole (SHIFT + ^) eingegeben werden, wenn
@@ -19206,6 +23299,7 @@ You may use and modify this file unter the terms of the MIT licence.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
 -- <li><a href="QSB_1_GUI.api.html">(1) Interface</a></li>
 -- <li><a href="QSB_1_Requester.api.html">(1) Requester</a></li>
 -- </ul>
@@ -19295,8 +23389,8 @@ end
 -- Ergebnis als erwartet hatte (Fehlschlag).
 --
 -- Werden Status oder Resultat eines Quest über Funktionen verändert (zb.
--- API.StopQuest oder "stop" Konsolenbefehl), dann werden automatisch die
--- Segmente ebenfalls ausgelöst bzw. beendet.
+-- API.StopQuest oder "stop" Konsolenbefehl), dann werden die Segmente
+-- ebenfalls beeinflusst.
 --
 -- Es ist nicht zwingend notwendig, einen Trigger für die Segmente zu setzen.
 -- Alle Segmente starten automatisch sobald der Nested Quest startet. Du kannst
@@ -19304,7 +23398,8 @@ end
 -- Bedürfnissen abzuändern (z.B. auf ein vorangegangenes Segment triggern).
 --
 -- Nested Quests können auch ineinander verschachtelt werden. Man kann also
--- innerhalb eines Hauptauftrag eine untergeordneten Hauptauftrag anlegen.
+-- innerhalb eines verschachtelten Auftrags eine weitere Ebene Verschachtelung
+-- aufmachen.
 --
 -- @param[type=table] _Data Daten des Quest
 -- @return[type=string] Name des Nested Quest oder nil bei Fehler
@@ -19314,7 +23409,7 @@ end
 --
 -- @usage
 -- API.CreateNestedQuest {
---     Name        = "UnimaginativeQuestname",
+--     Name        = "MainQuest",
 --     Segments    = {
 --         {
 --             Suggestion  = "Wir benötigen einen höheren Titel!",
@@ -19332,9 +23427,9 @@ end
 --
 --             Goal_Produce("G_Gold", 5000),
 --
---             Trigger_OnQuestSuccess("UnimaginativeQuestname@Segment1", 1),
+--             Trigger_OnQuestSuccess("MainQuest@Segment1", 1),
 --             -- Segmented Quest wird gewonnen.
---             Reward_QuestSuccess("UnimaginativeQuestname"),
+--             Reward_QuestSuccess("MainQuest"),
 --         },
 --         {
 --             Suggestion  = "Dann versuchen wir es mit Eisen...",
@@ -19342,7 +23437,7 @@ end
 --             Failure     = "Versagt!",
 --             Time        = 3 * 60,
 --
---             Trigger_OnQuestFailure("UnimaginativeQuestname@Segment2"),
+--             Trigger_OnQuestFailure("MainQuest@Segment2"),
 --             Goal_Produce("G_Iron", 50),
 --         }
 --     },
@@ -19368,8 +23463,6 @@ end
 -- Fügt eine Prüfung hinzu, ob Quests getriggert werden. Soll ein Quest nicht
 -- getriggert werden, muss false zurückgegeben werden, sonst true.
 --
--- FIXME: Ist das für den Durchschnittsbenutzer überhaupt von Belang?
---
 -- @param[type=function] _Function Prüffunktion
 -- @within Anwenderfunktionen
 -- @local
@@ -19383,9 +23476,7 @@ end
 
 ---
 -- Fügt eine Prüfung hinzu, ob für laufende Quests Zeit vergeht. Soll keine Zeit
--- vergehen für einen Quest muss false zurückgegeben werden, sonst true.
---
--- FIXME: Ist das für den Durchschnittsbenutzer überhaupt von Belang?
+-- vergehen für einen Quest, muss false zurückgegeben werden, sonst true.
 --
 -- @param[type=function] _Function Prüffunktion
 -- @within Anwenderfunktionen
@@ -19400,9 +23491,7 @@ end
 
 ---
 -- Fügt eine Prüfung hinzu, ob für laufende Quests Ziele geprüft werden. Sollen
--- keine Ziele geprüft werden muss false zurückgegeben werden, sonst true.
---
--- FIXME: Ist das für den Durchschnittsbenutzer überhaupt von Belang?
+-- keine Ziele geprüft werden, muss false zurückgegeben werden, sonst true.
 --
 -- @param[type=function] _Function Prüffunktion
 -- @within Anwenderfunktionen
@@ -19414,6 +23503,397 @@ function API.AddDisableDecisionCondition(_Function)
     end
     table.insert(ModuleQuest.Global.ExternalDecisionConditions, _Function);
 end
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+ModuleTypewriter = {
+    Properties = {
+        Name = "ModuleTypewriter",
+        Version = "4.0.0 (ALPHA 1.0.0)",
+    },
+
+    Global = {
+        TypewriterEventData = {},
+        TypewriterEventCounter = 0,
+    },
+    Local = {},
+
+    Shared = {};
+}
+
+QSB.CinematicElementTypes.Typewriter = 1;
+
+-- Global Script ---------------------------------------------------------------
+
+function ModuleTypewriter.Global:OnGameStart()
+    QSB.ScriptEvents.TypewriterStarted = API.RegisterScriptEvent("Event_TypewriterStarted");
+    QSB.ScriptEvents.TypewriterEnded = API.RegisterScriptEvent("Event_TypewriterEnded");
+
+    API.StartHiResJob(function()
+        ModuleTypewriter.Global:ControlTypewriter();
+    end);
+end
+
+function ModuleQuest.Global:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    end
+end
+
+function ModuleTypewriter.Global:StartTypewriter(_Data)
+    self.TypewriterEventCounter = self.TypewriterEventCounter +1;
+    local EventName = "CinematicElement_Typewriter" ..self.TypewriterEventCounter;
+    _Data.Name = EventName;
+    if not self.LoadscreenClosed or API.IsCinematicElementActive(_Data.PlayerID) then
+        ModuleGUI.Global:PushCinematicElementToQueue(
+            _Data.PlayerID,
+            QSB.CinematicElementTypes.Typewriter,
+            EventName,
+            _Data
+        );
+        return _Data.Name;
+    end
+    return self:PlayTypewriter(_Data);
+end
+
+function ModuleTypewriter.Global:PlayTypewriter(_Data)
+    local ID = API.StartCinematicElement(_Data.Name, _Data.PlayerID);
+    _Data.ID = ID;
+    _Data.TextTokens = self:TokenizeText(_Data);
+    self.TypewriterEventData[_Data.PlayerID] = _Data;
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[
+        if GUI.GetPlayerID() == %d then
+            API.ActivateImageScreen(GUI.GetPlayerID(), "%s", %d, %d, %d, %d)
+            API.DeactivateNormalInterface(GUI.GetPlayerID())
+            API.DeactivateBorderScroll(GUI.GetPlayerID(), %d)
+            Input.CutsceneMode()
+            GUI.ClearNotes()
+        end
+        ]],
+        _Data.PlayerID,
+        _Data.Image,
+        _Data.Color.R or 0,
+        _Data.Color.G or 0,
+        _Data.Color.B or 0,
+        _Data.Color.A or 255,
+        _Data.TargetEntity
+    ));
+
+    API.SendScriptEvent(QSB.ScriptEvents.TypewriterStarted, _Data.PlayerID, _Data);
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[API.SendScriptEvent(%d, %d, %s)]],
+        QSB.ScriptEvents.TypewriterStarted,
+        _Data.PlayerID,
+        table.tostring(_Data)
+    ));
+    return _Data.Name;
+end
+
+function ModuleTypewriter.Global:FinishTypewriter(_PlayerID)
+    if self.TypewriterEventData[_PlayerID] then
+        local EventData = table.copy(self.TypewriterEventData[_PlayerID]);
+        local EventPlayer = self.TypewriterEventData[_PlayerID].PlayerID;
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[
+            if GUI.GetPlayerID() == %d then
+                ModuleGUI.Local:ResetFarClipPlane()
+                API.DeactivateImageScreen(GUI.GetPlayerID())
+                API.ActivateNormalInterface(GUI.GetPlayerID())
+                API.ActivateBorderScroll(GUI.GetPlayerID())
+                Input.GameMode()
+                GUI.ClearNotes()
+            end
+            ]],
+            _PlayerID
+        ));
+        API.SendScriptEvent(QSB.ScriptEvents.TypewriterEnded, EventPlayer, EventData);
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[API.SendScriptEvent(%d, %d, %s)]],
+            QSB.ScriptEvents.TypewriterEnded,
+            EventPlayer,
+            table.tostring(EventData)
+        ));
+        self.TypewriterEventData[_PlayerID]:Callback();
+        API.FinishCinematicElement(EventData.Name, EventPlayer);
+        self.TypewriterEventData[_PlayerID] = nil;
+    end
+end
+
+function ModuleTypewriter.Global:TokenizeText(_Data)
+    local TextTokens = {};
+    local TempTokens = {};
+    local Text = API.ConvertPlaceholders(_Data.Text);
+    Text = Text:gsub("%s+", " ");
+    while (true) do
+        local s1, e1 = Text:find("{");
+        local s2, e2 = Text:find("}");
+        if not s1 or not s2 then
+            table.insert(TempTokens, Text);
+            break;
+        end
+        if s1 > 1 then
+            table.insert(TempTokens, Text:sub(1, s1 -1));
+        end
+        table.insert(TempTokens, Text:sub(s1, e2));
+        Text = Text:sub(e2 +1);
+    end
+
+    local LastWasPlaceholder = false;
+    for i= 1, #TempTokens, 1 do
+        if TempTokens[i]:find("{") then
+            local Index = #TextTokens;
+            if LastWasPlaceholder then
+                TextTokens[Index] = TextTokens[Index] .. TempTokens[i];
+            else
+                table.insert(TextTokens, Index+1, TempTokens[i]);
+            end
+            LastWasPlaceholder = true;
+        else
+            local Index = 1;
+            while (Index <= #TempTokens[i]) do
+                if string.byte(TempTokens[i]:sub(Index, Index)) == 195 then
+                    table.insert(TextTokens, TempTokens[i]:sub(Index, Index+1));
+                    Index = Index +1;
+                else
+                    table.insert(TextTokens, TempTokens[i]:sub(Index, Index));
+                end
+                Index = Index +1;
+            end
+            LastWasPlaceholder = false;
+        end
+    end
+    return TextTokens;
+end
+
+function ModuleTypewriter.Global:ControlTypewriter()
+    -- Check queue for next event
+    for i= 1, 8 do
+        if self.LoadscreenClosed and not API.IsCinematicElementActive(i) then
+            local Next = ModuleGUI.Global:LookUpCinematicInQueue(i);
+            if Next and Next[1] == QSB.CinematicElementTypes.Typewriter then
+                local Data = ModuleGUI.Global:PopCinematicElementFromQueue(i);
+                self:PlayTypewriter(Data[3]);
+            end
+        end
+    end
+
+    -- Perform active events
+    for k, v in pairs(self.TypewriterEventData) do
+        if self.TypewriterEventData[k].Delay > 0 then
+            self.TypewriterEventData[k].Delay = self.TypewriterEventData[k].Delay -1;
+            -- Just my paranoia...
+            Logic.ExecuteInLuaLocalState(string.format(
+                [[if GUI.GetPlayerID() == %d then GUI.ClearNotes() end]],
+                self.TypewriterEventData[k].PlayerID
+            ));
+        end
+        if self.TypewriterEventData[k].Delay == 0 then
+            self.TypewriterEventData[k].Index = v.Index + v.CharSpeed;
+            if v.Index > #self.TypewriterEventData[k].TextTokens then
+                self.TypewriterEventData[k].Index = #self.TypewriterEventData[k].TextTokens;
+            end
+            local Index = math.floor(v.Index + 0.5);
+            local Text = "";
+            for i= 1, Index, 1 do
+                Text = Text .. self.TypewriterEventData[k].TextTokens[i];
+            end
+            Logic.ExecuteInLuaLocalState(string.format(
+                [[
+                if GUI.GetPlayerID() == %d then
+                    GUI.ClearNotes()
+                    GUI.AddNote("]] ..Text.. [[");
+                end
+                ]],
+                self.TypewriterEventData[k].PlayerID
+            ));
+            if Index == #self.TypewriterEventData[k].TextTokens then
+                self.TypewriterEventData[k].Waittime = v.Waittime -1;
+                if v.Waittime <= 0 then
+                    self:FinishTypewriter(k);
+                end
+            end
+        end
+    end
+end
+
+-- Local Script ----------------------------------------------------------------
+
+function ModuleTypewriter.Local:OnGameStart()
+    QSB.ScriptEvents.TypewriterStarted = API.RegisterScriptEvent("Event_TypewriterStarted");
+    QSB.ScriptEvents.TypewriterEnded = API.RegisterScriptEvent("Event_TypewriterEnded");
+end
+
+function ModuleQuest.Local:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+
+Revision:RegisterModule(ModuleTypewriter);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Ermöglicht die Anzeige eines fortlaufend getippten Text auf dem Bildschirm.
+--
+-- Der Text kann mit oder ohne schwarzem Hintergrund angezeigt werden.
+--
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
+-- <li><a href="QSB_1_GUI.api.html">(1) Interface</a></li>
+-- </ul>
+--
+-- @within Beschreibung
+-- @set sort=true
+--
+
+---
+-- Events, auf die reagiert werden kann.
+--
+-- @field TypewriterStarted Ein Schreibmaschineneffekt beginnt (Parameter: PlayerID, DataTable)
+-- @field TypewriterEnded   Ein Schreibmaschineneffekt endet (Parameter: PlayerID, DataTable)
+--
+-- @within Event
+--
+QSB.ScriptEvents = QSB.ScriptEvents or {};
+
+---
+-- Blendet einen Text Zeichen für Zeichen ein.
+--
+-- Der Effekt startet erst, nachdem die Map geladen ist. Wenn ein anderes
+-- Cinematic Event läuft, wird gewartet, bis es beendet ist. Wärhend der Effekt
+-- läuft, können wiederrum keine Cinematic Events starten.
+--
+-- Mögliche Werte:
+-- <table border="1">
+-- <tr>
+-- <td><b>Feldname</b></td>
+-- <td><b>Typ</b></td>
+-- <td><b>Beschreibung</b></td>
+-- </tr>
+-- <tr>
+-- <td>Text</td>
+-- <td>string|table</td>
+-- <td>Der anzuzeigene Text</td>
+-- </tr>
+-- <tr>
+-- <td>PlayerID</td>
+-- <td>number</td>
+-- <td>(Optional) Spieler, dem der Effekt angezeigt wird (Default: Menschlicher Spieler)</td>
+-- </tr>
+-- <tr>
+-- <td>Callback</td>
+-- <td>function</td>
+-- <td>(Optional) Funktion nach Abschluss der Textanzeige (Default: nil)</td>
+-- </tr>
+-- <tr>
+-- <td>TargetEntity</td>
+-- <td>string|number</td>
+-- <td>(Optional) TargetEntity der Kamera (Default: nil)</td>
+-- </tr>
+-- <tr>
+-- <td>CharSpeed</td>
+-- <td>number</td>
+-- <td>(Optional) Die Schreibgeschwindigkeit (Default: 1.0)</td>
+-- </tr>
+-- <tr>
+-- <td>Waittime</td>
+-- <td>number</td>
+-- <td>(Optional) Initiale Wartezeigt bevor der Effekt startet</td>
+-- </tr>
+-- <tr>
+-- <td>Opacity</td>
+-- <td>number</td>
+-- <td>(Optional) Durchsichtigkeit des Hintergrund (Default: 1)</td>
+-- </tr>
+-- <tr>
+-- <td>Color</td>
+-- <td>table</td>
+-- <td>(Optional) Farbe des Hintergrund (Default: {R= 0, G= 0, B= 0}}</td>
+-- </tr>
+-- <tr>
+-- <td>Image</td>
+-- <td>string</td>
+-- <td>(Optional) Pfad zur anzuzeigenden Grafik</td>
+-- </tr>
+-- </table>
+--
+-- <b>Hinweis</b>: Steuerzeichen wie {cr} oder {@color} werden als ein Token
+-- gewertet und immer sofort eingeblendet. Steht z.B. {cr}{cr} im Text, werden
+-- die Zeichen atomar behandelt, als seien sie ein einzelnes Zeichen.
+-- Gibt es mehr als 1 Leerzeichen hintereinander, werden alle zusammenhängenden
+-- Leerzeichen (vom Spiel) auf ein Leerzeichen reduziert!
+--
+-- @param[type=table] _Data Konfiguration
+-- @return[type=string] Name des zugeordneten Event
+--
+-- @usage
+-- local EventName = API.StartTypewriter {
+--     PlayerID = 1,
+--     Text     = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, "..
+--                "sed diam nonumy eirmod tempor invidunt ut labore et dolore"..
+--                "magna aliquyam erat, sed diam voluptua. At vero eos et"..
+--                " accusam et justo duo dolores et ea rebum. Stet clita kasd"..
+--                " gubergren, no sea takimata sanctus est Lorem ipsum dolor"..
+--                " sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing"..
+--                " elitr, sed diam nonumy eirmod tempor invidunt ut labore et"..
+--                " dolore magna aliquyam erat, sed diam voluptua. At vero eos"..
+--                " et accusam et justo duo dolores et ea rebum. Stet clita"..
+--                " kasd gubergren, no sea takimata sanctus est Lorem ipsum"..
+--                " dolor sit amet.",
+--     Callback = function(_Data)
+--         -- Hier kann was passieren
+--     end
+-- };
+-- @within Anwenderfunktionen
+--
+function API.StartTypewriter(_Data)
+    if Framework.IsNetworkGame() ~= true then
+        _Data.PlayerID = _Data.PlayerID or QSB.HumanPlayerID;
+    end
+    if _Data.PlayerID == nil or (_Data.PlayerID < 1 or _Data.PlayerID > 8) then
+        return;
+    end
+    _Data.Text = API.Localize(_Data.Text or "");
+    _Data.Callback = _Data.Callback or function() end;
+    _Data.CharSpeed = _Data.CharSpeed or 1;
+    _Data.Waittime = (_Data.Waittime or 8) * 10;
+    _Data.TargetEntity = GetID(_Data.TargetEntity or 0);
+    _Data.Image = _Data.Image or "";
+    _Data.Color = _Data.Color or {
+        R = (_Data.Image and _Data.Image ~= "" and 255) or 0,
+        G = (_Data.Image and _Data.Image ~= "" and 255) or 0,
+        B = (_Data.Image and _Data.Image ~= "" and 255) or 0,
+        A = 255
+    };
+    if _Data.Opacity and _Data.Opacity >= 0 and _Data.Opacity then
+        _Data.Color.A = math.floor((255 * _Data.Opacity) + 0.5);
+    end
+    _Data.Delay = 15;
+    _Data.Index = 0;
+    return ModuleTypewriter.Global:StartTypewriter(_Data);
+end
+API.SimpleTypewriter = API.StartTypewriter;
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
@@ -20010,6 +24490,8 @@ You may use and modify this file unter the terms of the MIT licence.
 (See https://en.wikipedia.org/wiki/MIT_License)
 ]]
 
+-- -------------------------------------------------------------------------- --
+
 ---
 -- Zusätzliche Buttons im Gebäudemenü platzieren.
 --
@@ -20028,8 +24510,6 @@ You may use and modify this file unter the terms of the MIT licence.
 --
 -- @field UpgradeStarted  Ein Ausbau wurde gestartet. (Parameter: EntityID, PlayerID)
 -- @field UpgradeCanceled Ein Ausbau wurde abgebrochen. (Parameter: EntityID, PlayerID)
---
--- @within Event
 --
 QSB.ScriptEvents = QSB.ScriptEvents or {};
 
@@ -20245,5 +24725,352 @@ end
 --
 function API.DropBuildingButtonFromEntity(_ScriptName, _ID)
     return ModuleBuildingButtons.Local:RemoveButtonBinding(_ScriptName, _ID);
+end
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+ModuleWeatherManipulation = {
+    Properties = {
+        Name = "ModuleWeatherManipulation",
+    },
+
+    Global = {
+        EventQueue = {},
+        ActiveEvent = nil,
+    },
+    Local = {
+        ActiveEvent = nil,
+    },
+}
+
+-- Global ------------------------------------------------------------------- --
+
+function ModuleWeatherManipulation.Global:OnGameStart()
+    API.StartHiResJob(function()
+        ModuleWeatherManipulation.Global:EventController();
+    end);
+end
+
+function ModuleWeatherManipulation.Global:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.SaveGameLoaded then
+        if self:IsEventActive() then
+            Logic.ExecuteInLuaLocalState([[
+                Display.StopAllEnvironmentSettingsSequences()
+                ModuleWeatherManipulation.Local:DisplayEvent(]] ..self:GetEventRemainingTime().. [[)
+            ]]);
+        end
+    end
+end
+
+function ModuleWeatherManipulation.Global:AddEvent(_Event, _Duration)
+    local Event = table.copy(_Event);
+    Event.Duration = _Duration;
+    table.insert(self.EventQueue, Event);
+end
+
+function ModuleWeatherManipulation.Global:PurgeAllEvents()
+    if #self.EventQueue > 0 then
+        for i= #self.EventQueue, 1 -1 do
+            self.EventQueue:remove(i);
+        end
+    end
+end
+
+function ModuleWeatherManipulation.Global:NextEvent()
+    if not self:IsEventActive() then
+        if #self.EventQueue > 0 then
+            self:ActivateEvent();
+        end
+    end
+end
+
+function ModuleWeatherManipulation.Global:ActivateEvent()
+    if #self.EventQueue == 0 then
+        return;
+    end
+
+    local Event = table.remove(self.EventQueue, 1);
+    self.ActiveEvent = Event;
+    Logic.ExecuteInLuaLocalState([[
+        ModuleWeatherManipulation.Local.ActiveEvent = ]] ..table.tostring(Event).. [[
+        ModuleWeatherManipulation.Local:DisplayEvent()
+    ]]);
+
+    Logic.WeatherEventClearGoodTypesNotGrowing();
+    for i= 1, #Event.NotGrowing, 1 do
+        Logic.WeatherEventAddGoodTypeNotGrowing(Event.NotGrowing[i]);
+    end
+    if Event.Rain then
+        Logic.WeatherEventSetPrecipitationFalling(true);
+        Logic.WeatherEventSetPrecipitationHeaviness(1);
+        Logic.WeatherEventSetWaterRegenerationFactor(1);
+        if Event.Snow then
+            Logic.WeatherEventSetPrecipitationIsSnow(true);
+        end
+    end
+    if Event.Ice then
+        Logic.WeatherEventSetWaterFreezes(true);
+    end
+    if Event.Monsoon then
+        Logic.WeatherEventSetShallowWaterFloods(true);
+    end
+    Logic.WeatherEventSetTemperature(Event.Temperature);
+    Logic.ActivateWeatherEvent();
+end
+
+function ModuleWeatherManipulation.Global:StopEvent()
+    Logic.ExecuteInLuaLocalState("ModuleWeatherManipulation.Local.ActiveEvent = nil");
+    self.ActiveEvent = nil;
+    Logic.DeactivateWeatherEvent();
+end
+
+function ModuleWeatherManipulation.Global:GetEventRemainingTime()
+    if not self:IsEventActive() then
+        return 0;
+    end
+    return self.ActiveEvent.Duration;
+end
+
+function ModuleWeatherManipulation.Global:IsEventActive()
+    return self.ActiveEvent ~= nil;
+end
+
+function ModuleWeatherManipulation.Global:EventController()
+    if self:IsEventActive() then
+        self.ActiveEvent.Duration = self.ActiveEvent.Duration -1;
+        if self.ActiveEvent.Loop then
+            self.ActiveEvent:Loop();
+        end
+
+        if self.ActiveEvent.Duration == 0 then
+            self:StopEvent();
+            self:NextEvent();
+        end
+    end
+end
+
+-- Local -------------------------------------------------------------------- --
+
+function ModuleWeatherManipulation.Local:OnGameStart()
+end
+
+function ModuleWeatherManipulation.Local:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    end
+end
+
+function ModuleWeatherManipulation.Local:DisplayEvent(_Duration)
+    if self:IsEventActive() then
+        local SequenceID = Display.AddEnvironmentSettingsSequence(self.ActiveEvent.GFX);
+        Display.PlayEnvironmentSettingsSequence(SequenceID, _Duration or self.ActiveEvent.Duration);
+    end
+end
+
+function ModuleWeatherManipulation.Local:IsEventActive()
+    return self.ActiveEvent ~= nil;
+end
+
+-- -------------------------------------------------------------------------- --
+
+WeatherEvent = {
+    GFX = "ne_winter_sequence.xml",
+    NotGrowing = {},
+    Rain = false,
+    Snow = false,
+    Ice = false,
+    Monsoon = false,
+    Temperature = 10,
+}
+
+function WeatherEvent:New()
+    return table.copy(self);
+end
+
+-- -------------------------------------------------------------------------- --
+
+Revision:RegisterModule(ModuleWeatherManipulation);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Dieses Modul ermöglicht das Ändern des Wetters.
+--
+-- Es können nun relativ einfach Wetterevents und Wetteranimationen kombiniert
+-- gestartet werden.
+--
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
+-- </ul>
+--
+-- @within Beschreibung
+-- @set sort=true
+--
+
+---
+-- Erzeugt ein neues Wetterevent und gibt es zurück.
+--
+-- Ein Event alleine ändert noch nicht das Wetter! Hier wird ein Event
+-- definiert, welches an anderer Stelle benutzt werden kann. Das definierte
+-- Event kann jedoch in einer Variable gespeichert und immer wieder neu
+-- verwendet werden.
+--
+-- <b>Hinweis</b>: Es handelt sich um eine dynamische Wettersequenz. Dies muss
+-- beachtet werden! Eine statische Sequenz wird nicht funktionieren!
+--
+-- @param[type=string]  _GFX        Verwendetes Display Set
+-- @param[type=boolean] _Rain       Niederschlag aktivieren
+-- @param[type=boolean] _Snow       Niederschlag ist Schnee
+-- @param[type=boolean] _Ice        Wasser gefriert
+-- @param[type=boolean] _Monsoon    Blockendes Monsunwasser aktivieren
+-- @param[type=number]  _Temp       Temperatur während des Events
+-- @param[type=table]   _NotGrowing Liste der nicht nachwachsenden Güter
+-- @return[type=table]              Neues Wetterevent
+-- @within WeatherEvent
+--
+-- @see API.WeatherEventRegister
+-- @see API.WeatherEventRegisterLoop
+--
+-- @usage
+-- -- Erzeugt ein Winterevent
+-- MyEvent = API.WeatherEventCreate(
+--     "ne_winter_sequence.xml", false, true, true, false, -15,
+--     {Goods.G_Grain, Goods.G_RawFish, Goods.G_Honeycomb}
+-- )
+--
+function API.WeatherEventCreate(_GFX, _Rain, _Snow, _Ice, _Monsoon, _Temp, _NotGrowing)
+    if GUI then
+        return;
+    end
+
+    local Event = WeatherEvent:New();
+    Event.GFX = _GFX or Event.GFX;
+    Event.Rain = _Rain or Event.Rain;
+    Event.Snow = _Snow or Event.Snow;
+    Event.Ice = _Ice or Event.Ice;
+    Event.Monsoon = _Monsoon or Event.Monsoon;
+    Event.Temperature = _Temp or Event.Temperature;
+    Event.NotGrowing = _NotGrowing or Event.NotGrowing;
+    return Event;
+end
+
+---
+-- Registiert ein Event für eine bestimmte Dauer. Das Event wird auf der
+-- "Wartebank" eingereiht.
+--
+-- <b>Hinweis</b>: Ein wartendes Event wird gestartet, sobald kein anderes
+-- Event mehr aktiv ist.
+-- 
+-- @param[type=table]  _Event     Event-Instanz
+-- @param[type=number] _Duration  Name des Events
+-- @within WeatherEvent
+-- @see API.WeatherEventNext
+-- @see API.WeatherEventAbort
+-- @see API.WeatherEventRegisterLoop
+--
+-- @usage
+-- API.WeatherEventRegister(MyEvent, 300);
+--
+function API.WeatherEventRegister(_Event, _Duration)
+    if GUI then
+        return;
+    end
+    if type(_Event) ~= "table" or not _Event.GFX then
+        error("API.WeatherEventStart: Invalid weather event!");
+        return;
+    end
+    ModuleWeatherManipulation.Global:AddEvent(_Event, _Duration);
+end
+
+---
+-- Registiert ein Event als Endlosschleife. Das Event wird immer wieder neu
+-- starten, kurz bevor es eigentlich endet. Es darf keine anderen Events auf
+-- der "Wartebank" geben.
+-- @param[type=table]  _Event Event-Instanz
+-- @within WeatherEvent
+-- @see API.WeatherEventNext
+-- @see API.WeatherEventAbort
+-- @see API.WeatherEventRegister
+--
+-- @usage
+-- API.WeatherEventRegister(MyEvent);
+--
+function API.WeatherEventRegisterLoop(_Event)
+    if GUI then
+        return;
+    end
+    if type(_Event) ~= "table" or not _Event.GFX then
+        error("API.WeatherEventStartLoop: Invalid weather event!");
+        return;
+    end
+    
+    _Event.Loop = function(_Data)
+        if _Data.Duration <= 36 then
+            ModuleWeatherManipulation.Global:AddEvent(_Event, 120);
+            ModuleWeatherManipulation.Global:StopEvent();
+            ModuleWeatherManipulation.Global:ActivateEvent();
+        end
+    end
+    ModuleWeatherManipulation.Global:AddEvent(_Event, 120);
+end
+
+---
+-- Startet das nächste Wetterevent auf der "Wartebank". Wenn bereits ein Event
+-- aktiv ist, wird dieses gestoppt. Es erfolgt ein Übergang zum nächsten Event,
+-- sofern möglich.
+--
+-- @within WeatherEvent
+--
+function API.WeatherEventNext()
+    ModuleWeatherManipulation.Global:StopEvent();
+    ModuleWeatherManipulation.Global:ActivateEvent();
+end
+
+---
+-- Bricht das aktuelle Event inklusive der Animation sofort ab.
+-- @within WeatherEvent
+--
+function API.WeatherEventAbort()
+    if GUI then
+        return;
+    end
+    Logic.ExecuteInLuaLocalState("Display.StopAllEnvironmentSettingsSequences()");
+    ModuleWeatherManipulation.Global:StopEvent();
+end
+
+---
+-- Bricht das aktuelle Event ab und löscht alle eingereihten Events.
+--
+-- Mit dieser Funktion wird die komplette Warteschlange für Wettervents geleert.
+-- Dies betrifft sowohl einzelne Events als auch sich wiederholende Events.
+--
+-- @within WeatherEvent
+--
+function API.WeatherEventPurge()
+    if GUI then
+        return;
+    end
+    ModuleWeatherManipulation.Global:PurgeAllEvents();
+    Logic.ExecuteInLuaLocalState("Display.StopAllEnvironmentSettingsSequences()");
+    ModuleWeatherManipulation.Global:StopEvent();
 end
 

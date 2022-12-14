@@ -593,6 +593,8 @@ You may use and modify this file unter the terms of the MIT licence.
 (See https://en.wikipedia.org/wiki/MIT_License)
 ]]
 
+-- -------------------------------------------------------------------------- --
+
 ---
 -- Zusätzliche Buttons im Gebäudemenü platzieren.
 --
@@ -611,8 +613,6 @@ You may use and modify this file unter the terms of the MIT licence.
 --
 -- @field UpgradeStarted  Ein Ausbau wurde gestartet. (Parameter: EntityID, PlayerID)
 -- @field UpgradeCanceled Ein Ausbau wurde abgebrochen. (Parameter: EntityID, PlayerID)
---
--- @within Event
 --
 QSB.ScriptEvents = QSB.ScriptEvents or {};
 

@@ -591,6 +591,8 @@ You may use and modify this file unter the terms of the MIT licence.
 (See https://en.wikipedia.org/wiki/MIT_License)
 ]]
 
+-- -------------------------------------------------------------------------- --
+
 ---
 -- Aufträge können über das Skript erstellt werden.
 --
@@ -599,6 +601,9 @@ You may use and modify this file unter the terms of the MIT licence.
 -- im Skript erzeugt werden, verschwinden alle diese Nachteile. Aufträge
 -- können im Skript kopiert und angepasst werden. Es ist ebenfalls machbar,
 -- die Aufträge in Sequenzen zu erzeugen.
+--
+-- Außerdem können Aufträge ineinander verschachtelt werden. Diese sogenannten
+-- Nested Quests vereinfachen die Schreibweise und die Verlinkung der Aufträge.
 --
 -- <b>Befehle:</b><br>
 -- <i>Diese Befehle können über die Konsole (SHIFT + ^) eingegeben werden, wenn
@@ -648,6 +653,7 @@ You may use and modify this file unter the terms of the MIT licence.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
 -- <li><a href="QSB_1_GUI.api.html">(1) Interface</a></li>
 -- <li><a href="QSB_1_Requester.api.html">(1) Requester</a></li>
 -- </ul>
@@ -737,8 +743,8 @@ end
 -- Ergebnis als erwartet hatte (Fehlschlag).
 --
 -- Werden Status oder Resultat eines Quest über Funktionen verändert (zb.
--- API.StopQuest oder "stop" Konsolenbefehl), dann werden automatisch die
--- Segmente ebenfalls ausgelöst bzw. beendet.
+-- API.StopQuest oder "stop" Konsolenbefehl), dann werden die Segmente
+-- ebenfalls beeinflusst.
 --
 -- Es ist nicht zwingend notwendig, einen Trigger für die Segmente zu setzen.
 -- Alle Segmente starten automatisch sobald der Nested Quest startet. Du kannst
@@ -746,7 +752,8 @@ end
 -- Bedürfnissen abzuändern (z.B. auf ein vorangegangenes Segment triggern).
 --
 -- Nested Quests können auch ineinander verschachtelt werden. Man kann also
--- innerhalb eines Hauptauftrag eine untergeordneten Hauptauftrag anlegen.
+-- innerhalb eines verschachtelten Auftrags eine weitere Ebene Verschachtelung
+-- aufmachen.
 --
 -- @param[type=table] _Data Daten des Quest
 -- @return[type=string] Name des Nested Quest oder nil bei Fehler
@@ -756,7 +763,7 @@ end
 --
 -- @usage
 -- API.CreateNestedQuest {
---     Name        = "UnimaginativeQuestname",
+--     Name        = "MainQuest",
 --     Segments    = {
 --         {
 --             Suggestion  = "Wir benötigen einen höheren Titel!",
@@ -774,9 +781,9 @@ end
 --
 --             Goal_Produce("G_Gold", 5000),
 --
---             Trigger_OnQuestSuccess("UnimaginativeQuestname@Segment1", 1),
+--             Trigger_OnQuestSuccess("MainQuest@Segment1", 1),
 --             -- Segmented Quest wird gewonnen.
---             Reward_QuestSuccess("UnimaginativeQuestname"),
+--             Reward_QuestSuccess("MainQuest"),
 --         },
 --         {
 --             Suggestion  = "Dann versuchen wir es mit Eisen...",
@@ -784,7 +791,7 @@ end
 --             Failure     = "Versagt!",
 --             Time        = 3 * 60,
 --
---             Trigger_OnQuestFailure("UnimaginativeQuestname@Segment2"),
+--             Trigger_OnQuestFailure("MainQuest@Segment2"),
 --             Goal_Produce("G_Iron", 50),
 --         }
 --     },
@@ -810,8 +817,6 @@ end
 -- Fügt eine Prüfung hinzu, ob Quests getriggert werden. Soll ein Quest nicht
 -- getriggert werden, muss false zurückgegeben werden, sonst true.
 --
--- FIXME: Ist das für den Durchschnittsbenutzer überhaupt von Belang?
---
 -- @param[type=function] _Function Prüffunktion
 -- @within Anwenderfunktionen
 -- @local
@@ -825,9 +830,7 @@ end
 
 ---
 -- Fügt eine Prüfung hinzu, ob für laufende Quests Zeit vergeht. Soll keine Zeit
--- vergehen für einen Quest muss false zurückgegeben werden, sonst true.
---
--- FIXME: Ist das für den Durchschnittsbenutzer überhaupt von Belang?
+-- vergehen für einen Quest, muss false zurückgegeben werden, sonst true.
 --
 -- @param[type=function] _Function Prüffunktion
 -- @within Anwenderfunktionen
@@ -842,9 +845,7 @@ end
 
 ---
 -- Fügt eine Prüfung hinzu, ob für laufende Quests Ziele geprüft werden. Sollen
--- keine Ziele geprüft werden muss false zurückgegeben werden, sonst true.
---
--- FIXME: Ist das für den Durchschnittsbenutzer überhaupt von Belang?
+-- keine Ziele geprüft werden, muss false zurückgegeben werden, sonst true.
 --
 -- @param[type=function] _Function Prüffunktion
 -- @within Anwenderfunktionen
