@@ -441,14 +441,15 @@ end
 --
 -- <u>Script Events, die von der QSB direkt bereitgestellt werden:</u>
 --
--- @field ChatOpened      Das Chatfenster wird angezeigt (Parameter: PlayerID)
--- @field ChatClosed      Die Chateingabe wird bestätigt (Parameter: Text, PlayerID)
--- @field LanguageSet     Die Sprache wurde geändert (Parameter: OldLanguage, NewLanguage)
--- @field QuestFailure    Ein Quest schlug fehl (Parameter: QuestID)
--- @field QuestInterrupt  Ein Quest wurde unterbrochen (Parameter: QuestID)
--- @field QuestReset      Ein Quest wurde zurückgesetzt (Parameter: QuestID)
--- @field QuestSuccess    Ein Quest wurde erfolgreich abgeschlossen (Parameter: QuestID)
--- @field QuestTrigger    Ein Quest wurde aktiviert (Parameter: QuestID)
+-- @field ChatOpened       Das Chatfenster wird angezeigt (Parameter: PlayerID)
+-- @field ChatClosed       Die Chateingabe wird bestätigt (Parameter: Text, PlayerID)
+-- @field LanguageSet      Die Sprache wurde geändert (Parameter: OldLanguage, NewLanguage)
+-- @field QuestFailure     Ein Quest schlug fehl (Parameter: QuestID)
+-- @field QuestInterrupt   Ein Quest wurde unterbrochen (Parameter: QuestID)
+-- @field QuestReset       Ein Quest wurde zurückgesetzt (Parameter: QuestID)
+-- @field QuestSuccess     Ein Quest wurde erfolgreich abgeschlossen (Parameter: QuestID)
+-- @field QuestTrigger     Ein Quest wurde aktiviert (Parameter: QuestID)
+-- @field LoadscreenClosed Der Ladebildschirm wurde beendet.
 --
 QSB.ScriptEvents = QSB.ScriptEvents or {};
 
@@ -746,7 +747,7 @@ function Revision:OnPlayerPressedEscape()
     Revision.Event:DispatchScriptCommand(
         QSB.ScriptCommands.SendScriptEvent,
         0,
-        QSB.ScriptEvents.EscapePressed,
+        "EscapePressed",
         GUI.GetPlayerID()
     );
     -- Local
@@ -757,6 +758,7 @@ end
 -- Loadscreen
 
 function Revision:SetupLoadscreenHandler()
+    QSB.ScriptEvents.LoadscreenClosed = self.Event:CreateScriptEvent("Event_LoadscreenClosed");
     if self.Environment == QSB.Environment.GLOBAL then
         self.Event:CreateScriptCommand(
             "Cmd_RegisterLoadscreenHidden",
@@ -769,7 +771,6 @@ function Revision:SetupLoadscreenHandler()
         );
         return;
     end
-    QSB.ScriptEvents.LoadscreenClosed = self.Event:CreateScriptEvent("Event_LoadscreenClosed");
 
     self.Job:CreateEventJob(
         Events.LOGIC_EVENT_EVERY_TURN,
@@ -2400,19 +2401,16 @@ function Revision.Chat:ShowInputBox(_PlayerID, _Debug)
     Revision.Job:CreateEventJob(
         Events.LOGIC_EVENT_EVERY_TURN,
         function()
+            -- Open chat
             Input.ChatMode();
-            if not Framework.IsNetworkGame() then
-                Game.GameTimeSetFactor(GUI.GetPlayerID(), 0.0000001);
-            end
             XGUIEng.SetText("/InGame/Root/Normal/ChatInput/ChatInput", "");
             XGUIEng.ShowWidget("/InGame/Root/Normal/ChatInput", 1);
             XGUIEng.SetFocus("/InGame/Root/Normal/ChatInput/ChatInput");
-
             -- Send event to global script
             Revision.Event:DispatchScriptCommand(
                 QSB.ScriptCommands.SendScriptEvent,
                 GUI.GetPlayerID(),
-                QSB.ScriptEvents.ChatOpened,
+                "ChatOpened",
                 _PlayerID
             );
             -- Send event to local script
@@ -2420,6 +2418,12 @@ function Revision.Chat:ShowInputBox(_PlayerID, _Debug)
                 QSB.ScriptEvents.ChatOpened,
                 _PlayerID
             );
+            -- Slow down game time. We can not set the game time to 0 because
+            -- then Logic.ExecuteInLuaLocalState and GUI.SendScriptCommand do
+            -- not work anymore.
+            if not Framework.IsNetworkGame() then
+                Game.GameTimeSetFactor(GUI.GetPlayerID(), 0.0000001);
+            end
             return true;
         end
     )
@@ -2469,7 +2473,7 @@ function Revision.Chat:SendInputToGlobalScript(_Text, _Debug)
     Revision.Event:DispatchScriptCommand(
         QSB.ScriptCommands.SendScriptEvent,
         0,
-        QSB.ScriptEvents.ChatClosed,
+        "ChatClosed",
         (_Text or "<<<ES>>>"),
         GUI.GetPlayerID(),
         _Debug == true
@@ -3864,73 +3868,6 @@ function API.SetResourceAmount(_Entity, _StartAmount, _RefillAmount)
 end
 
 ---
--- Ermittelt alle Entities in der Kategorie auf dem Territorium und gibt
--- sie als Liste zurück.
---
--- @param[type=number] _PlayerID  PlayerID [0-8] oder -1 für alle
--- @param[type=number] _Category  Kategorie, der die Entities angehören
--- @param[type=number] _Territory Zielterritorium
--- @within Werkzeugkasten
--- @local
--- @usage
--- local Found = API.GetEntitiesOfCategoryInTerritory(1, EntityCategories.Hero, 5)
---
-function API.GetEntitiesOfCategoryInTerritory(_PlayerID, _Category, _Territory)
-    local PlayerEntities = {};
-    local Units = {};
-    if (_PlayerID == -1) then
-        for i=0,8 do
-            local NumLast = 0;
-            repeat
-                Units = { Logic.GetEntitiesOfCategoryInTerritory(_Territory, i, _Category, NumLast) };
-                PlayerEntities = Array_Append(PlayerEntities, Units);
-                NumLast = NumLast + #Units;
-            until #Units == 0;
-        end
-    else
-        local NumLast = 0;
-        repeat
-            Units = { Logic.GetEntitiesOfCategoryInTerritory(_Territory, _PlayerID, _Category, NumLast) };
-            PlayerEntities = Array_Append(PlayerEntities, Units);
-            NumLast = NumLast + #Units;
-        until #Units == 0;
-    end
-    return PlayerEntities;
-end
-
----
--- Sucht auf den angegebenen Territorium nach Entities mit bestimmten
--- Kategorien. Dabei kann für eine Partei oder für mehrere Parteien gesucht
--- werden.
---
--- @param _PlayerID    PlayerID [0-8] oder Table mit PlayerIDs (Einzelne Spielernummer oder Table)
--- @param _Category    Kategorien oder Table mit Kategorien (Einzelne Kategorie oder Table)
--- @param _Territory   Zielterritorium oder Table mit Territorien (Einzelnes Territorium oder Table)
--- @return[type=table] Liste mit Resultaten
--- @within Werkzeugkasten
---
--- @usage
--- local Result = API.GetEntitiesOfCategoriesInTerritories({1, 2, 3}, EntityCategories.Hero, {5, 12, 23, 24});
---
-function API.GetEntitiesOfCategoriesInTerritories(_PlayerID, _Category, _Territory)
-    -- Tables erzwingen
-    local p = (type(_PlayerID) == "table" and _PlayerID) or {_PlayerID};
-    local c = (type(_Category) == "table" and _Category) or {_Category};
-    local t = (type(_Territory) == "table" and _Territory) or {_Territory};
-
-    local PlayerEntities = {};
-    for i=1, #p, 1 do
-        for j=1, #c, 1 do
-            for k=1, #t, 1 do  
-                local Units = API.GetEntitiesOfCategoryInTerritory(p[i], c[j], t[k]);
-                PlayerEntities = Array_Append(PlayerEntities, Units);
-            end
-        end
-    end
-    return PlayerEntities;
-end
-
----
 -- Gibt dem Entity einen eindeutigen Skriptnamen und gibt ihn zurück.
 -- Hat das Entity einen Namen, bleibt dieser unverändert und wird
 -- zurückgegeben.
@@ -4024,6 +3961,36 @@ function API.GetRandomFemaleSettlerType()
     local Type = math.random(1, #QSB.PossibleSettlerTypes.Female);
     return QSB.PossibleSettlerTypes.Female[Type];
 end
+
+---
+-- Bestimmt die Distanz zwischen zwei Punkten. Es können Entity-IDs,
+-- Skriptnamen oder Positionstables angegeben werden.
+--
+-- Wenn die Distanz nicht bestimmt werden kann, wird -1 zurückgegeben.
+--
+-- @param _pos1 Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
+-- @param _pos2 Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
+-- @return[type=number] Entfernung zwischen den Punkten
+-- @within Position
+-- @usage
+-- local Distance = API.GetDistance("HQ1", Logic.GetKnightID(1))
+--
+function API.GetDistance( _pos1, _pos2 )
+    if (type(_pos1) == "string") or (type(_pos1) == "number") then
+        _pos1 = GetPosition(_pos1);
+    end
+    if (type(_pos2) == "string") or (type(_pos2) == "number") then
+        _pos2 = GetPosition(_pos2);
+    end
+    if type(_pos1) ~= "table" or type(_pos2) ~= "table" then
+        warn("API.GetDistance: Distance could not be calculated!");
+        return -1;
+    end
+    local xDistance = (_pos1.X - _pos2.X);
+    local yDistance = (_pos1.Y - _pos2.Y);
+    return math.sqrt((xDistance^2) + (yDistance^2));
+end
+GetDistance = API.GetDistance;
 
 -- -------------------------------------------------------------------------- --
 -- Group
@@ -6122,12 +6089,41 @@ function B_Goal_UnitsOnTerritory:AddParameter(_Index, _Parameter)
 end
 
 function B_Goal_UnitsOnTerritory:CustomFunction(_Quest)
-    local Units = API.GetEntitiesOfCategoryInTerritory(self.PlayerID, EntityCategories[self.Category], self.TerritoryID);
-    if self.bRelSmallerThan == false and #Units >= self.NumberOfUnits then
+    local PlayerEntities;
+    if API.SearchEntitiesOfCategoryInTerritory then
+        local PlayerID = (self.PlayerID == -1 and nil) or self.PlayerID;
+        PlayerEntities = API.SearchEntitiesOfCategoryInTerritory(self.TerritoryID, EntityCategories[self.Category], PlayerID);
+    else
+        PlayerEntities = self:GetEntities(self.TerritoryID, self.PlayerID, EntityCategories[self.Category]);
+    end
+    if self.bRelSmallerThan == false and #PlayerEntities >= self.NumberOfUnits then
         return true;
-    elseif self.bRelSmallerThan == true and #Units < self.NumberOfUnits then
+    elseif self.bRelSmallerThan == true and #PlayerEntities < self.NumberOfUnits then
         return true;
     end
+end
+
+function B_Goal_UnitsOnTerritory:GetEntities(_TerritoryID, _PlayerID, _Category)
+    local PlayerEntities = {};
+    local Units = {};
+    if (_PlayerID == -1) then
+        for i=0,8 do
+            local NumLast = 0;
+            repeat
+                Units = {Logic.GetEntitiesOfCategoryInTerritory(_TerritoryID, i, _PlayerID, NumLast)};
+                PlayerEntities = Array_Append(PlayerEntities, Units);
+                NumLast = NumLast + #Units;
+            until #Units == 0;
+        end
+    else
+        local NumLast = 0;
+        repeat
+            Units = { Logic.GetEntitiesOfCategoryInTerritory(_TerritoryID, _PlayerID, _Category, NumLast)};
+            PlayerEntities = Array_Append(PlayerEntities, Units);
+            NumLast = NumLast + #Units;
+        until #Units == 0;
+    end
+    return PlayerEntities;
 end
 
 function B_Goal_UnitsOnTerritory:GetCustomData( _Index )
@@ -13877,14 +13873,14 @@ if not MapEditor and not GUI then
 
     gvMission = gvMission or {};
     gvMission.ContentPath      = "maps/" ..MapTypeFolder.. "/" ..Framework.GetCurrentMapName() .. "/";
-    gvMission.MusicRootPath    = "music/";
+    gvMission.MusicRootPath    = gvMission.ContentPath.. "music/";
     gvMission.PlaylistRootPath = "config/sound/";
 
     Logic.ExecuteInLuaLocalState([[
         gvMission = gvMission or {};
         gvMission.GlobalVariables = Logic.CreateReferenceToTableInGlobaLuaState("gvMission");
         gvMission.ContentPath      = "maps/]] ..MapTypeFolder.. [[/" ..Framework.GetCurrentMapName() .. "/";
-        gvMission.MusicRootPath    = "music/";
+        gvMission.MusicRootPath    = gvMission.ContentPath.. "music/";
         gvMission.PlaylistRootPath = "config/sound/";
 
         Script.Load(gvMission.ContentPath.. "questsystembehavior.lua");

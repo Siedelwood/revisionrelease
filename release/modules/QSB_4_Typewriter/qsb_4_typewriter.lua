@@ -36,7 +36,7 @@ function ModuleTypewriter.Global:OnGameStart()
     end);
 end
 
-function ModuleQuest.Global:OnEvent(_ID, ...)
+function ModuleTypewriter.Global:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     end
@@ -84,8 +84,7 @@ function ModuleTypewriter.Global:PlayTypewriter(_Data)
 
     API.SendScriptEvent(QSB.ScriptEvents.TypewriterStarted, _Data.PlayerID, _Data);
     Logic.ExecuteInLuaLocalState(string.format(
-        [[API.SendScriptEvent(%d, %d, %s)]],
-        QSB.ScriptEvents.TypewriterStarted,
+        [[API.SendScriptEvent(QSB.ScriptEvents.TypewriterStarted, %d, %s)]],
         _Data.PlayerID,
         table.tostring(_Data)
     ));
@@ -111,8 +110,7 @@ function ModuleTypewriter.Global:FinishTypewriter(_PlayerID)
         ));
         API.SendScriptEvent(QSB.ScriptEvents.TypewriterEnded, EventPlayer, EventData);
         Logic.ExecuteInLuaLocalState(string.format(
-            [[API.SendScriptEvent(%d, %d, %s)]],
-            QSB.ScriptEvents.TypewriterEnded,
+            [[API.SendScriptEvent(QSB.ScriptEvents.TypewriterEnded, %d, %s)]],
             EventPlayer,
             table.tostring(EventData)
         ));
@@ -226,7 +224,7 @@ function ModuleTypewriter.Local:OnGameStart()
     QSB.ScriptEvents.TypewriterEnded = API.RegisterScriptEvent("Event_TypewriterEnded");
 end
 
-function ModuleQuest.Local:OnEvent(_ID, ...)
+function ModuleTypewriter.Local:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     end

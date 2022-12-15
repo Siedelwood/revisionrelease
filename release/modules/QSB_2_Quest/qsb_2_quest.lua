@@ -46,8 +46,6 @@ end
 function ModuleQuest.Global:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
-    elseif _ID == QSB.ScriptEvents.ChatClosed then
-        self:ProcessChatInput(arg[1], arg[2], arg[3]);
     end
 end
 
@@ -534,9 +532,6 @@ function ModuleQuest.Global:FindQuestNames(_Pattern, _ExactName)
 end
 
 function ModuleQuest.Global:ProcessChatInput(_Text, _PlayerID, _IsDebug)
-    if not _IsDebug or GUI.GetPlayerID() ~= _PlayerID then
-        return;
-    end
     local Commands = Revision.Text:CommandTokenizer(_Text);
     for i= 1, #Commands, 1 do
         if Commands[1] == "fail" or Commands[1] == "restart"
@@ -576,7 +571,20 @@ end
 function ModuleQuest.Local:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.ChatClosed then
+        self:ProcessChatInput(arg[1], arg[2], arg[3]);
     end
+end
+
+function ModuleQuest.Local:ProcessChatInput(_Text, _PlayerID, _IsDebug)
+    if not _IsDebug or GUI.GetPlayerID() ~= _PlayerID then
+        return;
+    end
+    -- FIXME: This will not work in Multiplayer (Does it need to?)
+    GUI.SendScriptCommand(string.format(
+        [[ModuleQuest.Global:ProcessChatInput("%s", %d, %s)]],
+        _Text, _PlayerID, tostring(_IsDebug == true)
+    ));
 end
 
 -- -------------------------------------------------------------------------- --

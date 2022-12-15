@@ -42,6 +42,7 @@ QSB.PlayerNames = {};
 -- Global ------------------------------------------------------------------- --
 
 function ModuleGUI.Global:OnGameStart()
+    QSB.ScriptEvents.BuildingPlaced = API.RegisterScriptEvent("Event_BuildingPlaced");
     QSB.ScriptEvents.CinematicActivated = API.RegisterScriptEvent("Event_CinematicElementActivated");
     QSB.ScriptEvents.CinematicConcluded = API.RegisterScriptEvent("Event_CinematicElementConcluded");
     QSB.ScriptEvents.BorderScrollLocked = API.RegisterScriptEvent("Event_BorderScrollLocked");
@@ -177,6 +178,7 @@ end
 -- Local -------------------------------------------------------------------- --
 
 function ModuleGUI.Local:OnGameStart()
+    QSB.ScriptEvents.BuildingPlaced = API.RegisterScriptEvent("Event_BuildingPlaced");
     QSB.ScriptEvents.CinematicActivated = API.RegisterScriptEvent("Event_CinematicElementActivated");
     QSB.ScriptEvents.CinematicConcluded = API.RegisterScriptEvent("Event_CinematicElementConcluded");
     QSB.ScriptEvents.BorderScrollLocked = API.RegisterScriptEvent("Event_BorderScrollLocked");
@@ -189,21 +191,22 @@ function ModuleGUI.Local:OnGameStart()
     for i= 1, 8 do
         self.CinematicElementStatus[i] = {};
     end
+    self:PostTexturePositionsToGlobal();
+    self:OverrideAfterBuildingPlacement();
     self:OverrideInterfaceUpdateForCinematicMode();
     self:OverrideInterfaceThroneroomForCinematicMode();
-    self:ResetFarClipPlane();
     self:OverrideMissionGoodCounter();
     self:OverrideUpdateClaimTerritory();
     self:SetupHackRegisterHotkey();
-    self:PostTexturePositionsToGlobal();
+    self:ResetFarClipPlane();
 end
 
 function ModuleGUI.Local:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
         if not Framework.IsNetworkGame() then
-            API.DeactivateImageScreen(GUI.GetPlayerID());
-            API.ActivateNormalInterface(GUI.GetPlayerID());
+            self:InterfaceDeactivateImageBackground(GUI.GetPlayerID());
+            self:InterfaceActivateNormalInterface(GUI.GetPlayerID());
         end
     elseif _ID == QSB.ScriptEvents.CinematicActivated then
         self.CinematicElementStatus[arg[2]][arg[1]] = 1;
@@ -216,9 +219,30 @@ function ModuleGUI.Local:OnEvent(_ID, ...)
     elseif _ID == QSB.ScriptEvents.SaveGameLoaded then
         self:ResetFarClipPlane();
         self:UpdateHiddenWidgets();
-    elseif _ID == QSB.ScriptEvents.LoadscreenClosed then
-        self:InterfaceDeactivateImageBackground(GUI.GetPlayerID());
-        self:InterfaceActivateNormalInterface(GUI.GetPlayerID());
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+
+function ModuleGUI.Local:OverrideAfterBuildingPlacement()
+    GameCallback_GUI_AfterBuildingPlacement_Orig_EntityEventCore = GameCallback_GUI_AfterBuildingPlacement;
+    GameCallback_GUI_AfterBuildingPlacement = function ()
+        GameCallback_GUI_AfterBuildingPlacement_Orig_EntityEventCore();
+
+        local x,y = GUI.Debug_GetMapPositionUnderMouse();
+        API.StartHiResDelay(0, function()
+            local Results = {Logic.GetPlayerEntitiesInArea(GUI.GetPlayerID(), 0, x, y, 50, 16)};
+            for i= 2, Results[1] +1 do
+                if  Results[i]
+                and Results[i] ~= 0
+                and Logic.IsBuilding(Results[i]) == 1
+                and Logic.IsConstructionComplete(Results[i]) == 0
+                then
+                    API.BroadcastScriptEventToGlobal("BuildingPlaced", Results[i], Logic.EntityGetPlayer(Results[i]));
+                    API.SendScriptEvent(QSB.ScriptEvents.BuildingPlaced, Results[i], Logic.EntityGetPlayer(Results[i]));
+                end
+            end
+        end, x, y);
     end
 end
 
@@ -229,7 +253,7 @@ function ModuleGUI.Local:PostTexturePositionsToGlobal()
         if Logic.GetTime() > 1 then
             for k, v in pairs(g_TexturePositions) do
                 for kk, vv in pairs(v) do
-                    Revision.Event:DispatchScriptCommand(
+                    API.SendScriptCommand(
                         QSB.ScriptCommands.UpdateTexturePosition,
                         GUI.GetPlayerID(),
                         k,
@@ -856,6 +880,7 @@ CinematicElement = {
 ---
 -- Events, auf die reagiert werden kann.
 --
+-- @field BuildingPlaced      Ein Gebäude wurde in Auftrag gegeben. (Parameter: EntityID, PlayerID)
 -- @field CinematicActivated  Ein Kinoevent wurde aktiviert (Parameter: KinoEventID, PlayerID)
 -- @field CinematicConcluded  Ein Kinoevent wurde deaktiviert (Parameter: KinoEventID, PlayerID)
 -- @field BorderScrollLocked  Scrollen am Bildschirmrand wurde gesperrt (Parameter: PlayerID)
@@ -1053,15 +1078,15 @@ function API.GetCinematicElement(_Identifier, _PlayerID)
     QSB.CinematicElement[_PlayerID] = QSB.CinematicElement[_PlayerID] or {};
     if type(_Identifier) == "number" then
         if GUI then
-            return ModuleGUI.Local:GetCinematicElement(_Identifier);
+            return ModuleGUI.Local:GetCinematicElementStatus(_Identifier);
         end
-        return ModuleGUI.Global:GetCinematicElement(_Identifier);
+        return ModuleGUI.Global:GetCinematicElementStatus(_Identifier);
     end
     if QSB.CinematicElement[_PlayerID][_Identifier] then
         if GUI then
-            return ModuleGUI.Local:GetCinematicElement(QSB.CinematicElement[_PlayerID][_Identifier]);
+            return ModuleGUI.Local:GetCinematicElementStatus(QSB.CinematicElement[_PlayerID][_Identifier]);
         end
-        return ModuleGUI.Global:GetCinematicElement(QSB.CinematicElement[_PlayerID][_Identifier]);
+        return ModuleGUI.Global:GetCinematicElementStatus(QSB.CinematicElement[_PlayerID][_Identifier]);
     end
     return CinematicElement.NotTriggered;
 end

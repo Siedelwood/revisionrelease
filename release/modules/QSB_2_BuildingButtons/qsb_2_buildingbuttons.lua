@@ -77,15 +77,38 @@ ModuleBuildingButtons = {
 function ModuleBuildingButtons.Global:OnGameStart()
     QSB.ScriptEvents.UpgradeCanceled = API.RegisterScriptEvent("Event_UpgradeCanceled");
     QSB.ScriptEvents.UpgradeStarted = API.RegisterScriptEvent("Event_UpgradeStarted");
+    QSB.ScriptEvents.FestivalStarted = API.RegisterScriptEvent("Event_FestivalStarted");
+    QSB.ScriptEvents.SermonStarted = API.RegisterScriptEvent("Event_SermonStarted");
+    QSB.ScriptEvents.TheatrePlayStarted = API.RegisterScriptEvent("Event_TheatrePlayStarted");
 
+    -- Building upgrade started event
     API.RegisterScriptCommand("Cmd_StartBuildingUpgrade", function(_BuildingID, _PlayerID)
         if Logic.IsBuildingBeingUpgraded(_BuildingID) then
             ModuleBuildingButtons.Global:SendStartBuildingUpgradeEvent(_BuildingID, _PlayerID);
         end
     end);
+    -- Building upgrade canceled event
     API.RegisterScriptCommand("Cmd_CancelBuildingUpgrade", function(_BuildingID, _PlayerID)
         if not Logic.IsBuildingBeingUpgraded(_BuildingID) then
             ModuleBuildingButtons.Global:SendCancelBuildingUpgradeEvent(_BuildingID, _PlayerID);
+        end
+    end);
+    -- Theatre play started event
+    API.RegisterScriptCommand("Cmd_StartTheatrePlay", function(_BuildingID, _PlayerID)
+        if Logic.GetTheatrePlayProgress(_BuildingID) ~= 0 then
+            ModuleBuildingButtons.Global:SendTheatrePlayEvent(_BuildingID, _PlayerID);
+        end
+    end);
+    -- Festival started event
+    API.RegisterScriptCommand("Cmd_StartRegularFestival", function(_PlayerID)
+        if Logic.IsFestivalActive(_PlayerID) == true then
+            ModuleBuildingButtons.Global:SendStartRegularFestivalEvent(_PlayerID);
+        end
+    end);
+    -- Sermon started event
+    API.RegisterScriptCommand("Cmd_StartSermon", function(_PlayerID)
+        if Logic.IsSermonActive(_PlayerID) == true then
+            ModuleBuildingButtons.Global:SendStartSermonEvent(_PlayerID);
         end
     end);
 end
@@ -99,8 +122,7 @@ end
 function ModuleBuildingButtons.Global:SendStartBuildingUpgradeEvent(_BuildingID, _PlayerID)
     API.SendScriptEvent(QSB.ScriptEvents.UpgradeStarted, _BuildingID, _PlayerID);
     Logic.ExecuteInLuaLocalState(string.format(
-        [[API.SendScriptEvent(%d, %d, %d)]],
-        QSB.ScriptEvents.UpgradeStarted,
+        [[API.SendScriptEvent(QSB.ScriptEvents.UpgradeStarted, %d, %d)]],
         _BuildingID,
         _PlayerID
     ));
@@ -109,9 +131,33 @@ end
 function ModuleBuildingButtons.Global:SendCancelBuildingUpgradeEvent(_BuildingID, _PlayerID)
     API.SendScriptEvent(QSB.ScriptEvents.UpgradeCanceled, _BuildingID, _PlayerID);
     Logic.ExecuteInLuaLocalState(string.format(
-        [[API.SendScriptEvent(%d, %d, %d)]],
-        QSB.ScriptEvents.UpgradeCanceled,
+        [[API.SendScriptEvent(QSB.ScriptEvents.UpgradeCanceled, %d, %d)]],
         _BuildingID,
+        _PlayerID
+    ));
+end
+
+function ModuleBuildingButtons.Global:SendTheatrePlayEvent(_BuildingID, _PlayerID)
+    API.SendScriptEvent(QSB.ScriptEvents.TheatrePlayStarted, _BuildingID, _PlayerID);
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[API.SendScriptEvent(QSB.ScriptEvents.TheatrePlayStarted, %d, %d)]],
+        _BuildingID,
+        _PlayerID
+    ));
+end
+
+function ModuleBuildingButtons.Global:SendStartRegularFestivalEvent(_PlayerID)
+    API.SendScriptEvent(QSB.ScriptEvents.FestivalStarted, _PlayerID);
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[API.SendScriptEvent(QSB.ScriptEvents.FestivalStarted, %d)]],
+        _PlayerID
+    ));
+end
+
+function ModuleBuildingButtons.Global:SendStartSermonEvent(_PlayerID)
+    API.SendScriptEvent(QSB.ScriptEvents.SermonStarted, _PlayerID);
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[API.SendScriptEvent(QSB.ScriptEvents.SermonStarted, %d)]],
         _PlayerID
     ));
 end
@@ -121,6 +167,9 @@ end
 function ModuleBuildingButtons.Local:OnGameStart()
     QSB.ScriptEvents.UpgradeCanceled = API.RegisterScriptEvent("Event_UpgradeCanceled");
     QSB.ScriptEvents.UpgradeStarted = API.RegisterScriptEvent("Event_UpgradeStarted");
+    QSB.ScriptEvents.FestivalStarted = API.RegisterScriptEvent("Event_FestivalStarted");
+    QSB.ScriptEvents.SermonStarted = API.RegisterScriptEvent("Event_SermonStarted");
+    QSB.ScriptEvents.TheatrePlayStarted = API.RegisterScriptEvent("Event_TheatrePlayStarted");
 
     self:InitBackupPositions();
     self:OverrideOnSelectionChanged();
@@ -132,6 +181,7 @@ function ModuleBuildingButtons.Local:OnGameStart()
     self:OverrideStartTheatrePlay();
     self:OverrideUpgradeTurret();
     self:OverrideUpgradeBuilding();
+    self:OverrideStartSermon();
 end
 
 function ModuleBuildingButtons.Local:OnEvent(_ID, ...)
@@ -264,14 +314,29 @@ function ModuleBuildingButtons.Local:OverridePlaceField()
 end
 
 function ModuleBuildingButtons.Local:OverrideStartFestival()
-    GUI_BuildingButtons.StartFestivalClicked_Orig_Interface = GUI_BuildingButtons.StartFestivalClicked;
-    GUI_BuildingButtons.StartFestivalClicked = function()
+    GUI_BuildingButtons.StartFestivalClicked = function(_FestivalIndex)
         local WidgetID = XGUIEng.GetCurrentWidgetID();
         local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
         local EntityID = GUI.GetSelectedEntity();
         local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
         if not Button then
-            return GUI_BuildingButtons.StartFestivalClicked_Orig_Interface();
+            local PlayerID = GUI.GetPlayerID();
+            local Costs = {Logic.GetFestivalCost(PlayerID, _FestivalIndex)};
+            local CanBuyBoolean, CanNotBuyString = AreCostsAffordable(Costs);
+            if EntityID ~= Logic.GetMarketplace(PlayerID) then
+                return;
+            end
+            if CanBuyBoolean == true then
+                Sound.FXPlay2DSound("ui\\menu_click");
+                GUI.StartFestival(PlayerID, _FestivalIndex);
+                StartEventMusic(MusicSystem.EventFestivalMusic, PlayerID);
+                StartKnightVoiceForPermanentSpecialAbility(Entities.U_KnightSong);
+                GUI.AddBuff(Buffs.Buff_Festival);
+                API.BroadcastScriptCommand(QSB.ScriptCommands.StartRegularFestival, PlayerID);
+            else
+                Message(CanNotBuyString);
+            end
+            return;
         end
         Button.Action(WidgetID, EntityID);
     end
@@ -305,14 +370,25 @@ function ModuleBuildingButtons.Local:OverrideStartFestival()
 end
 
 function ModuleBuildingButtons.Local:OverrideStartTheatrePlay()
-    GUI_BuildingButtons.StartTheatrePlayClicked_Orig_Interface = GUI_BuildingButtons.StartTheatrePlayClicked;
     GUI_BuildingButtons.StartTheatrePlayClicked = function()
         local WidgetID = XGUIEng.GetCurrentWidgetID();
         local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
         local EntityID = GUI.GetSelectedEntity();
         local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
         if not Button then
-            return GUI_BuildingButtons.StartTheatrePlayClicked_Orig_Interface();
+            local PlayerID = GUI.GetPlayerID();
+            local GoodType = Logic.GetGoodTypeOnOutStockByIndex(EntityID, 0);
+            local Amount = Logic.GetMaxAmountOnStock(EntityID);
+            local Costs = {GoodType, Amount};
+            local CanBuyBoolean, CanNotBuyString = AreCostsAffordable(Costs);
+            if Logic.CanStartTheatrePlay(EntityID) == true then
+                Sound.FXPlay2DSound("ui\\menu_click");
+                GUI.StartTheatrePlay(EntityID);
+                API.BroadcastScriptCommand(QSB.ScriptCommands.StartTheatrePlay, PlayerID);
+            elseif CanBuyBoolean == false then
+                Message(CanNotBuyString);
+            end
+            return;
         end
         Button.Action(WidgetID, EntityID);
     end
@@ -472,7 +548,25 @@ function ModuleBuildingButtons.Local:OverrideUpgradeBuilding()
             Message(CanNotBuyString);
         end
     end
-end-- -------------------------------------------------------------------------- --
+end
+
+function ModuleBuildingButtons.Local:OverrideStartSermon()
+    function GUI_BuildingButtons.StartSermonClicked()
+        local PlayerID = GUI.GetPlayerID();
+        if Logic.CanSermonBeActivated(PlayerID) then
+            GUI.ActivateSermon(PlayerID);
+            StartKnightVoiceForPermanentSpecialAbility(Entities.U_KnightHealing);
+            GUI.AddBuff(Buffs.Buff_Sermon);
+            local CathedralID = Logic.GetCathedral(PlayerID);
+            local x, y = Logic.GetEntityPosition(CathedralID);
+            local z = 0;
+            Sound.FXPlay3DSound("buildings\\building_start_sermon", x, y, z);
+            API.BroadcastScriptCommand(QSB.ScriptCommands.StartSermon, GUI.GetPlayerID());
+        end
+    end
+end
+
+-- -------------------------------------------------------------------------- --
 
 function ModuleBuildingButtons.Local:InitBackupPositions()
     for k, v in pairs(self.BuildingButtons.Configuration) do
@@ -611,8 +705,11 @@ You may use and modify this file unter the terms of the MIT licence.
 ---
 -- Events, auf die reagiert werden kann.
 --
--- @field UpgradeStarted  Ein Ausbau wurde gestartet. (Parameter: EntityID, PlayerID)
--- @field UpgradeCanceled Ein Ausbau wurde abgebrochen. (Parameter: EntityID, PlayerID)
+-- @field UpgradeStarted     Ein Ausbau wurde gestartet. (Parameter: EntityID, PlayerID)
+-- @field UpgradeCanceled    Ein Ausbau wurde abgebrochen. (Parameter: EntityID, PlayerID)
+-- @field FestivalStarted    Ein Fest wurde gestartet. (Parameter: PlayerID)
+-- @field SermonStarted      Eine Predigt wurde gestartet. (Parameter: PlayerID)
+-- @field TheatrePlayStarted Ein Schauspiel wurde abgebrochen. (Parameter: EntityID, PlayerID)
 --
 QSB.ScriptEvents = QSB.ScriptEvents or {};
 

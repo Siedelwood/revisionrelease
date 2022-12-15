@@ -441,14 +441,15 @@ end
 --
 -- <u>Script Events, die von der QSB direkt bereitgestellt werden:</u>
 --
--- @field ChatOpened      Das Chatfenster wird angezeigt (Parameter: PlayerID)
--- @field ChatClosed      Die Chateingabe wird bestätigt (Parameter: Text, PlayerID)
--- @field LanguageSet     Die Sprache wurde geändert (Parameter: OldLanguage, NewLanguage)
--- @field QuestFailure    Ein Quest schlug fehl (Parameter: QuestID)
--- @field QuestInterrupt  Ein Quest wurde unterbrochen (Parameter: QuestID)
--- @field QuestReset      Ein Quest wurde zurückgesetzt (Parameter: QuestID)
--- @field QuestSuccess    Ein Quest wurde erfolgreich abgeschlossen (Parameter: QuestID)
--- @field QuestTrigger    Ein Quest wurde aktiviert (Parameter: QuestID)
+-- @field ChatOpened       Das Chatfenster wird angezeigt (Parameter: PlayerID)
+-- @field ChatClosed       Die Chateingabe wird bestätigt (Parameter: Text, PlayerID)
+-- @field LanguageSet      Die Sprache wurde geändert (Parameter: OldLanguage, NewLanguage)
+-- @field QuestFailure     Ein Quest schlug fehl (Parameter: QuestID)
+-- @field QuestInterrupt   Ein Quest wurde unterbrochen (Parameter: QuestID)
+-- @field QuestReset       Ein Quest wurde zurückgesetzt (Parameter: QuestID)
+-- @field QuestSuccess     Ein Quest wurde erfolgreich abgeschlossen (Parameter: QuestID)
+-- @field QuestTrigger     Ein Quest wurde aktiviert (Parameter: QuestID)
+-- @field LoadscreenClosed Der Ladebildschirm wurde beendet.
 --
 QSB.ScriptEvents = QSB.ScriptEvents or {};
 
@@ -746,7 +747,7 @@ function Revision:OnPlayerPressedEscape()
     Revision.Event:DispatchScriptCommand(
         QSB.ScriptCommands.SendScriptEvent,
         0,
-        QSB.ScriptEvents.EscapePressed,
+        "EscapePressed",
         GUI.GetPlayerID()
     );
     -- Local
@@ -757,6 +758,7 @@ end
 -- Loadscreen
 
 function Revision:SetupLoadscreenHandler()
+    QSB.ScriptEvents.LoadscreenClosed = self.Event:CreateScriptEvent("Event_LoadscreenClosed");
     if self.Environment == QSB.Environment.GLOBAL then
         self.Event:CreateScriptCommand(
             "Cmd_RegisterLoadscreenHidden",
@@ -769,7 +771,6 @@ function Revision:SetupLoadscreenHandler()
         );
         return;
     end
-    QSB.ScriptEvents.LoadscreenClosed = self.Event:CreateScriptEvent("Event_LoadscreenClosed");
 
     self.Job:CreateEventJob(
         Events.LOGIC_EVENT_EVERY_TURN,
@@ -2400,19 +2401,16 @@ function Revision.Chat:ShowInputBox(_PlayerID, _Debug)
     Revision.Job:CreateEventJob(
         Events.LOGIC_EVENT_EVERY_TURN,
         function()
+            -- Open chat
             Input.ChatMode();
-            if not Framework.IsNetworkGame() then
-                Game.GameTimeSetFactor(GUI.GetPlayerID(), 0.0000001);
-            end
             XGUIEng.SetText("/InGame/Root/Normal/ChatInput/ChatInput", "");
             XGUIEng.ShowWidget("/InGame/Root/Normal/ChatInput", 1);
             XGUIEng.SetFocus("/InGame/Root/Normal/ChatInput/ChatInput");
-
             -- Send event to global script
             Revision.Event:DispatchScriptCommand(
                 QSB.ScriptCommands.SendScriptEvent,
                 GUI.GetPlayerID(),
-                QSB.ScriptEvents.ChatOpened,
+                "ChatOpened",
                 _PlayerID
             );
             -- Send event to local script
@@ -2420,6 +2418,12 @@ function Revision.Chat:ShowInputBox(_PlayerID, _Debug)
                 QSB.ScriptEvents.ChatOpened,
                 _PlayerID
             );
+            -- Slow down game time. We can not set the game time to 0 because
+            -- then Logic.ExecuteInLuaLocalState and GUI.SendScriptCommand do
+            -- not work anymore.
+            if not Framework.IsNetworkGame() then
+                Game.GameTimeSetFactor(GUI.GetPlayerID(), 0.0000001);
+            end
             return true;
         end
     )
@@ -2469,7 +2473,7 @@ function Revision.Chat:SendInputToGlobalScript(_Text, _Debug)
     Revision.Event:DispatchScriptCommand(
         QSB.ScriptCommands.SendScriptEvent,
         0,
-        QSB.ScriptEvents.ChatClosed,
+        "ChatClosed",
         (_Text or "<<<ES>>>"),
         GUI.GetPlayerID(),
         _Debug == true
@@ -3864,73 +3868,6 @@ function API.SetResourceAmount(_Entity, _StartAmount, _RefillAmount)
 end
 
 ---
--- Ermittelt alle Entities in der Kategorie auf dem Territorium und gibt
--- sie als Liste zurück.
---
--- @param[type=number] _PlayerID  PlayerID [0-8] oder -1 für alle
--- @param[type=number] _Category  Kategorie, der die Entities angehören
--- @param[type=number] _Territory Zielterritorium
--- @within Werkzeugkasten
--- @local
--- @usage
--- local Found = API.GetEntitiesOfCategoryInTerritory(1, EntityCategories.Hero, 5)
---
-function API.GetEntitiesOfCategoryInTerritory(_PlayerID, _Category, _Territory)
-    local PlayerEntities = {};
-    local Units = {};
-    if (_PlayerID == -1) then
-        for i=0,8 do
-            local NumLast = 0;
-            repeat
-                Units = { Logic.GetEntitiesOfCategoryInTerritory(_Territory, i, _Category, NumLast) };
-                PlayerEntities = Array_Append(PlayerEntities, Units);
-                NumLast = NumLast + #Units;
-            until #Units == 0;
-        end
-    else
-        local NumLast = 0;
-        repeat
-            Units = { Logic.GetEntitiesOfCategoryInTerritory(_Territory, _PlayerID, _Category, NumLast) };
-            PlayerEntities = Array_Append(PlayerEntities, Units);
-            NumLast = NumLast + #Units;
-        until #Units == 0;
-    end
-    return PlayerEntities;
-end
-
----
--- Sucht auf den angegebenen Territorium nach Entities mit bestimmten
--- Kategorien. Dabei kann für eine Partei oder für mehrere Parteien gesucht
--- werden.
---
--- @param _PlayerID    PlayerID [0-8] oder Table mit PlayerIDs (Einzelne Spielernummer oder Table)
--- @param _Category    Kategorien oder Table mit Kategorien (Einzelne Kategorie oder Table)
--- @param _Territory   Zielterritorium oder Table mit Territorien (Einzelnes Territorium oder Table)
--- @return[type=table] Liste mit Resultaten
--- @within Werkzeugkasten
---
--- @usage
--- local Result = API.GetEntitiesOfCategoriesInTerritories({1, 2, 3}, EntityCategories.Hero, {5, 12, 23, 24});
---
-function API.GetEntitiesOfCategoriesInTerritories(_PlayerID, _Category, _Territory)
-    -- Tables erzwingen
-    local p = (type(_PlayerID) == "table" and _PlayerID) or {_PlayerID};
-    local c = (type(_Category) == "table" and _Category) or {_Category};
-    local t = (type(_Territory) == "table" and _Territory) or {_Territory};
-
-    local PlayerEntities = {};
-    for i=1, #p, 1 do
-        for j=1, #c, 1 do
-            for k=1, #t, 1 do  
-                local Units = API.GetEntitiesOfCategoryInTerritory(p[i], c[j], t[k]);
-                PlayerEntities = Array_Append(PlayerEntities, Units);
-            end
-        end
-    end
-    return PlayerEntities;
-end
-
----
 -- Gibt dem Entity einen eindeutigen Skriptnamen und gibt ihn zurück.
 -- Hat das Entity einen Namen, bleibt dieser unverändert und wird
 -- zurückgegeben.
@@ -4024,6 +3961,36 @@ function API.GetRandomFemaleSettlerType()
     local Type = math.random(1, #QSB.PossibleSettlerTypes.Female);
     return QSB.PossibleSettlerTypes.Female[Type];
 end
+
+---
+-- Bestimmt die Distanz zwischen zwei Punkten. Es können Entity-IDs,
+-- Skriptnamen oder Positionstables angegeben werden.
+--
+-- Wenn die Distanz nicht bestimmt werden kann, wird -1 zurückgegeben.
+--
+-- @param _pos1 Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
+-- @param _pos2 Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
+-- @return[type=number] Entfernung zwischen den Punkten
+-- @within Position
+-- @usage
+-- local Distance = API.GetDistance("HQ1", Logic.GetKnightID(1))
+--
+function API.GetDistance( _pos1, _pos2 )
+    if (type(_pos1) == "string") or (type(_pos1) == "number") then
+        _pos1 = GetPosition(_pos1);
+    end
+    if (type(_pos2) == "string") or (type(_pos2) == "number") then
+        _pos2 = GetPosition(_pos2);
+    end
+    if type(_pos1) ~= "table" or type(_pos2) ~= "table" then
+        warn("API.GetDistance: Distance could not be calculated!");
+        return -1;
+    end
+    local xDistance = (_pos1.X - _pos2.X);
+    local yDistance = (_pos1.Y - _pos2.Y);
+    return math.sqrt((xDistance^2) + (yDistance^2));
+end
+GetDistance = API.GetDistance;
 
 -- -------------------------------------------------------------------------- --
 -- Group
@@ -6122,12 +6089,41 @@ function B_Goal_UnitsOnTerritory:AddParameter(_Index, _Parameter)
 end
 
 function B_Goal_UnitsOnTerritory:CustomFunction(_Quest)
-    local Units = API.GetEntitiesOfCategoryInTerritory(self.PlayerID, EntityCategories[self.Category], self.TerritoryID);
-    if self.bRelSmallerThan == false and #Units >= self.NumberOfUnits then
+    local PlayerEntities;
+    if API.SearchEntitiesOfCategoryInTerritory then
+        local PlayerID = (self.PlayerID == -1 and nil) or self.PlayerID;
+        PlayerEntities = API.SearchEntitiesOfCategoryInTerritory(self.TerritoryID, EntityCategories[self.Category], PlayerID);
+    else
+        PlayerEntities = self:GetEntities(self.TerritoryID, self.PlayerID, EntityCategories[self.Category]);
+    end
+    if self.bRelSmallerThan == false and #PlayerEntities >= self.NumberOfUnits then
         return true;
-    elseif self.bRelSmallerThan == true and #Units < self.NumberOfUnits then
+    elseif self.bRelSmallerThan == true and #PlayerEntities < self.NumberOfUnits then
         return true;
     end
+end
+
+function B_Goal_UnitsOnTerritory:GetEntities(_TerritoryID, _PlayerID, _Category)
+    local PlayerEntities = {};
+    local Units = {};
+    if (_PlayerID == -1) then
+        for i=0,8 do
+            local NumLast = 0;
+            repeat
+                Units = {Logic.GetEntitiesOfCategoryInTerritory(_TerritoryID, i, _PlayerID, NumLast)};
+                PlayerEntities = Array_Append(PlayerEntities, Units);
+                NumLast = NumLast + #Units;
+            until #Units == 0;
+        end
+    else
+        local NumLast = 0;
+        repeat
+            Units = { Logic.GetEntitiesOfCategoryInTerritory(_TerritoryID, _PlayerID, _Category, NumLast)};
+            PlayerEntities = Array_Append(PlayerEntities, Units);
+            NumLast = NumLast + #Units;
+        until #Units == 0;
+    end
+    return PlayerEntities;
 end
 
 function B_Goal_UnitsOnTerritory:GetCustomData( _Index )
@@ -13877,14 +13873,14 @@ if not MapEditor and not GUI then
 
     gvMission = gvMission or {};
     gvMission.ContentPath      = "maps/" ..MapTypeFolder.. "/" ..Framework.GetCurrentMapName() .. "/";
-    gvMission.MusicRootPath    = "music/";
+    gvMission.MusicRootPath    = gvMission.ContentPath.. "music/";
     gvMission.PlaylistRootPath = "config/sound/";
 
     Logic.ExecuteInLuaLocalState([[
         gvMission = gvMission or {};
         gvMission.GlobalVariables = Logic.CreateReferenceToTableInGlobaLuaState("gvMission");
         gvMission.ContentPath      = "maps/]] ..MapTypeFolder.. [[/" ..Framework.GetCurrentMapName() .. "/";
-        gvMission.MusicRootPath    = "music/";
+        gvMission.MusicRootPath    = gvMission.ContentPath.. "music/";
         gvMission.PlaylistRootPath = "config/sound/";
 
         Script.Load(gvMission.ContentPath.. "questsystembehavior.lua");
@@ -13916,6 +13912,823 @@ if not MapEditor and not GUI then
     if ModuleKnightTitleRequirements then
         InitKnightTitleTables();
     end
+end
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+ModuleEntitySurveillance = {
+    Properties = {
+        Name = "ModuleEntitySurveillance",
+    },
+
+    Global = {
+        RegisteredEntities = {},
+        MineAmounts = {},
+        AttackedEntities = {},
+        OverkillEntities = {},
+        DisableThiefStorehouseHeist = false,
+        DisableThiefCathedralSabotage = false,
+        DisableThiefCisternSabotage = false,
+
+        -- TODO: Add predators?
+        StaticSpawnerTypes = {
+            "B_NPC_BanditsHQ_ME",
+            "B_NPC_BanditsHQ_NA",
+            "B_NPC_BanditsHQ_NE",
+            "B_NPC_BanditsHQ_SE",
+            "B_NPC_BanditsHutBig_ME",
+            "B_NPC_BanditsHutBig_NA",
+            "B_NPC_BanditsHutBig_NE",
+            "B_NPC_BanditsHutBig_SE",
+            "B_NPC_BanditsHutSmall_ME",
+            "B_NPC_BanditsHutSmall_NA",
+            "B_NPC_BanditsHutSmall_NE",
+            "B_NPC_BanditsHutSmall_SE",
+            "B_NPC_Barracks_ME",
+            "B_NPC_Barracks_NA",
+            "B_NPC_Barracks_NE",
+            "B_NPC_Barracks_SE",
+            "B_NPC_BanditsHQ_AS",
+            "B_NPC_BanditsHutBig_AS",
+            "B_NPC_BanditsHutSmall_AS",
+            "B_NPC_Barracks_AS",
+        },
+
+        -- Those are "fluctuating" spawner entities that are keep appearing
+        -- and disappearing depending of if they have resources spawned. They
+        -- change their ID every time they do it. So scriptnames are a nono.
+        DynamicSpawnerTypes = {
+            "S_AxisDeer_AS",
+            "S_Deer_ME",
+            "S_FallowDeer_SE",
+            "S_Gazelle_NA",
+            "S_Herbs",
+            "S_Moose_NE",
+            "S_RawFish",
+            "S_Reindeer_NE",
+            "S_WildBoar",
+            "S_Zebra_NA",
+        },
+    },
+    Local = {},
+    Shared = {},
+}
+
+-- Global ------------------------------------------------------------------- --
+
+function ModuleEntitySurveillance.Global:OnGameStart()
+    QSB.ScriptEvents.SettlerAttracted = API.RegisterScriptEvent("Event_SettlerAttracted");
+    QSB.ScriptEvents.EntitySpawned = API.RegisterScriptEvent("Event_EntitySpawned");
+    QSB.ScriptEvents.EntityDestroyed = API.RegisterScriptEvent("Event_EntityDestroyed");
+    QSB.ScriptEvents.EntityHurt = API.RegisterScriptEvent("Event_EntityHurt");
+    QSB.ScriptEvents.EntityKilled = API.RegisterScriptEvent("Event_EntityKilled");
+    QSB.ScriptEvents.EntityOwnerChanged = API.RegisterScriptEvent("Event_EntityOwnerChanged");
+    QSB.ScriptEvents.EntityResourceChanged = API.RegisterScriptEvent("Event_EntityResourceChanged");
+
+    QSB.ScriptEvents.ThiefInfiltratedBuilding = API.RegisterScriptEvent("Event_ThiefInfiltratedBuilding");
+    QSB.ScriptEvents.ThiefDeliverEarnings = API.RegisterScriptEvent("Event_ThiefDeliverEarnings");
+    QSB.ScriptEvents.BuildingConstructed = API.RegisterScriptEvent("Event_BuildingConstructed");
+    QSB.ScriptEvents.BuildingUpgradeCollapsed = API.RegisterScriptEvent("Event_BuildingUpgradeCollapsed");
+    QSB.ScriptEvents.BuildingUpgraded = API.RegisterScriptEvent("Event_BuildingUpgraded");
+
+    self:StartTriggers();
+    self:OverrideCallback();
+    self:OverrideLogic();
+end
+
+function ModuleEntitySurveillance.Global:OnEvent(_ID, _Event, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.SaveGameLoaded then
+        self:OnSaveGameLoaded();
+    elseif _ID == QSB.ScriptEvents.EntityHurt then
+        self.AttackedEntities[arg[1]] = {arg[3], 100};
+    end
+end
+
+function ModuleEntitySurveillance.Global:TriggerEntityOnwershipChangedEvent(_OldID, _OldOwnerID, _NewID, _NewOwnerID)
+    _OldID = (type(_OldID) ~= "table" and {_OldID}) or _OldID;
+    _NewID = (type(_NewID) ~= "table" and {_NewID}) or _NewID;
+    assert(#_OldID == #_NewID, "Sums of entities with changed owner does not add up!");
+    for i=1, #_OldID do
+        API.SendScriptEvent(QSB.ScriptEvents.EntityOwnerChanged, _OldID[i], _OldOwnerID, _NewID[i], _NewOwnerID);
+        Logic.ExecuteInLuaLocalState(string.format(
+            "API.SendScriptEvent(QSB.ScriptEvents.EntityOwnerChanged, %d)",
+            _OldID[i], _OldOwnerID, _NewID[i], _NewOwnerID
+        ));
+    end
+end
+
+function ModuleEntitySurveillance.Global:OnSaveGameLoaded()
+    self:OverrideLogic();
+end
+
+function ModuleEntitySurveillance.Global:CleanTaggedAndDeadEntities()
+    -- check if entity should no longer be considered attacked
+    for k,v in pairs(self.AttackedEntities) do
+        self.AttackedEntities[k][2] = v[2] - 1;
+        if v[2] <= 0 then
+            self.AttackedEntities[k] = nil;
+        else
+            -- Send killed event for knights
+            if IsExisting(k) and IsExisting(v[1]) and Logic.IsKnight(k) then
+                if not self.OverkillEntities[k] and Logic.KnightGetResurrectionProgress(k) ~= 1 then
+                    local PlayerID1 = Logic.EntityGetPlayer(k);
+                    local PlayerID2 = Logic.EntityGetPlayer(v[1]);
+                    self:TriggerEntityKilledEvent(k, PlayerID1, v[1], PlayerID2);
+                    self.OverkillEntities[k] = 50;
+                    self.AttackedEntities[k] = nil;
+                end
+            end
+        end
+    end
+    -- unregister overkill entities
+    for k,v in pairs(self.OverkillEntities) do
+        self.OverkillEntities[k] = v - 1;
+        if v <= 0 then
+            self.OverkillEntities[k] = nil;
+        end
+    end
+end
+
+function ModuleEntitySurveillance.Global:OverrideCallback()
+    GameCallback_SettlerSpawned_Orig_QSB_EntityCore = GameCallback_SettlerSpawned;
+    GameCallback_SettlerSpawned = function(_PlayerID, _EntityID)
+        GameCallback_SettlerSpawned_Orig_QSB_EntityCore(_PlayerID, _EntityID);
+        ModuleEntitySurveillance.Global:TriggerSettlerArrivedEvent(_PlayerID, _EntityID);
+    end
+
+    GameCallback_OnBuildingConstructionComplete_Orig_QSB_EntityCore = GameCallback_OnBuildingConstructionComplete;
+    GameCallback_OnBuildingConstructionComplete = function(_PlayerID, _EntityID)
+        GameCallback_OnBuildingConstructionComplete_Orig_QSB_EntityCore(_PlayerID, _EntityID);
+        ModuleEntitySurveillance.Global:TriggerConstructionCompleteEvent(_PlayerID, _EntityID);
+    end
+
+    GameCallback_FarmAnimalChangedPlayerID_Orig_QSB_EntityCore = GameCallback_FarmAnimalChangedPlayerID;
+    GameCallback_FarmAnimalChangedPlayerID = function(_PlayerID, _NewEntityID, _OldEntityID)
+        GameCallback_FarmAnimalChangedPlayerID_Orig_QSB_EntityCore(_PlayerID, _NewEntityID, _OldEntityID);
+        local OldPlayerID = Logic.EntityGetPlayer(_OldEntityID);
+        local NewPlayerID = Logic.EntityGetPlayer(_NewEntityID);
+        ModuleEntitySurveillance.Global:TriggerEntityOnwershipChangedEvent(_OldEntityID, OldPlayerID, _NewEntityID, NewPlayerID);
+    end
+
+    GameCallback_EntityCaptured_Orig_QSB_EntityCore = GameCallback_EntityCaptured;
+    GameCallback_EntityCaptured = function(_OldEntityID, _OldEntityPlayerID, _NewEntityID, _NewEntityPlayerID)
+        GameCallback_EntityCaptured_Orig_QSB_EntityCore(_OldEntityID, _OldEntityPlayerID, _NewEntityID, _NewEntityPlayerID)
+        ModuleEntitySurveillance.Global:TriggerEntityOnwershipChangedEvent(_OldEntityID, _OldEntityPlayerID, _NewEntityID, _NewEntityPlayerID);
+    end
+
+    GameCallback_CartFreed_Orig_QSB_EntityCore = GameCallback_CartFreed;
+    GameCallback_CartFreed = function(_OldEntityID, _OldEntityPlayerID, _NewEntityID, _NewEntityPlayerID)
+        GameCallback_CartFreed_Orig_QSB_EntityCore(_OldEntityID, _OldEntityPlayerID, _NewEntityID, _NewEntityPlayerID);
+        ModuleEntitySurveillance.Global:TriggerEntityOnwershipChangedEvent(_OldEntityID, _OldEntityPlayerID, _NewEntityID, _NewEntityPlayerID);
+    end
+
+    GameCallback_OnThiefDeliverEarnings_Orig_QSB_EntityCore = GameCallback_OnThiefDeliverEarnings;
+    GameCallback_OnThiefDeliverEarnings = function(_ThiefPlayerID, _ThiefID, _BuildingID, _GoodAmount)
+        GameCallback_OnThiefDeliverEarnings_Orig_QSB_EntityCore(_ThiefPlayerID, _ThiefID, _BuildingID, _GoodAmount);
+        local BuildingPlayerID = Logic.EntityGetPlayer(_BuildingID);
+        ModuleEntitySurveillance.Global:TriggerThiefDeliverEarningsEvent(_ThiefID, _ThiefPlayerID, _BuildingID, BuildingPlayerID, _GoodAmount);
+    end
+
+    GameCallback_OnThiefStealBuilding_Orig_QSB_EntityCore = GameCallback_OnThiefStealBuilding;
+    GameCallback_OnThiefStealBuilding = function(_ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID)
+        ModuleEntitySurveillance.Global:TriggerThiefStealFromBuildingEvent(_ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID);
+    end
+
+    GameCallback_OnBuildingUpgraded_Orig_QSB_EntityCore = GameCallback_OnBuildingUpgradeFinished;
+	GameCallback_OnBuildingUpgradeFinished = function(_PlayerID, _EntityID, _NewUpgradeLevel)
+		GameCallback_OnBuildingUpgraded_Orig_QSB_EntityCore(_PlayerID, _EntityID, _NewUpgradeLevel);
+        ModuleEntitySurveillance.Global:TriggerUpgradeCompleteEvent(_PlayerID, _EntityID, _NewUpgradeLevel);
+    end
+
+    GameCallback_OnUpgradeLevelCollapsed_Orig_QSB_EntityCore = GameCallback_OnUpgradeLevelCollapsed;
+    GameCallback_OnUpgradeLevelCollapsed = function(_PlayerID, _BuildingID, _NewUpgradeLevel)
+        GameCallback_OnUpgradeLevelCollapsed_Orig_QSB_EntityCore(_PlayerID, _BuildingID, _NewUpgradeLevel);
+        ModuleEntitySurveillance.Global:TriggerUpgradeCollapsedEvent(_PlayerID, _BuildingID, _NewUpgradeLevel);
+    end
+end
+
+function ModuleEntitySurveillance.Global:OverrideLogic()
+    self.Logic_ChangeEntityPlayerID = Logic.ChangeEntityPlayerID;
+    Logic.ChangeEntityPlayerID = function(...)
+        local OldID = {arg[1]};
+        local OldPlayerID = Logic.EntityGetPlayer(arg[1]);
+        local NewID = {self.Logic_ChangeEntityPlayerID(unpack(arg))};
+        local NewPlayerID = Logic.EntityGetPlayer(NewID[1]);
+        ModuleEntitySurveillance.Global:TriggerEntityOnwershipChangedEvent(OldID, OldPlayerID, NewID, NewPlayerID);
+        return NewID;
+    end
+
+    self.Logic_ChangeSettlerPlayerID = Logic.ChangeSettlerPlayerID;
+    Logic.ChangeSettlerPlayerID = function(...)
+        local OldID = {arg[1]};
+        OldID = Array_Append(OldID, API.GetGroupSoldiers(arg[1]));
+        local OldPlayerID = Logic.EntityGetPlayer(arg[1]);
+        local NewID = {self.Logic_ChangeSettlerPlayerID(unpack(arg))};
+        NewID = Array_Append(NewID, API.GetGroupSoldiers(NewID[1]));
+        local NewPlayerID = Logic.EntityGetPlayer(NewID[1]);
+        ModuleEntitySurveillance.Global:TriggerEntityOnwershipChangedEvent(OldID, OldPlayerID, NewID, NewPlayerID);
+        return NewID[1];
+    end
+end
+
+function ModuleEntitySurveillance.Global:TriggerThiefDeliverEarningsEvent(_ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID, _GoodAmount)
+    API.SendScriptEvent(QSB.ScriptEvents.ThiefDeliverEarnings, _ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID, _GoodAmount);
+    Logic.ExecuteInLuaLocalState(string.format(
+        "API.SendScriptEvent(QSB.ScriptEvents.ThiefDeliverEarnings, %d, %d, %d, %d, %d)",
+        _ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID, _GoodAmount
+    ));
+end
+
+function ModuleEntitySurveillance.Global:TriggerThiefStealFromBuildingEvent(_ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID)
+    local HeadquartersID = Logic.GetHeadquarters(_BuildingPlayerID);
+    local CathedralID = Logic.GetCathedral(_BuildingPlayerID);
+    local StorehouseID = Logic.GetStoreHouse(_BuildingPlayerID);
+    local IsVillageStorehouse = Logic.IsEntityInCategory(StorehouseID, EntityCategories.VillageStorehouse) == 0;
+    local BuildingType = Logic.GetEntityType(_BuildingID);
+
+    -- Aus Lagerhaus stehlen
+    if StorehouseID == _BuildingID and (not IsVillageStorehouse or HeadquartersID == 0) then
+        if not self.DisableThiefStorehouseHeist then
+            GameCallback_OnThiefStealBuilding_Orig_QSB_EntityCore(_ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID);
+        end
+    end
+    -- Kirche sabotieren
+    if CathedralID == _BuildingID then
+        if not self.DisableThiefCathedralSabotage then
+            GameCallback_OnThiefStealBuilding_Orig_QSB_EntityCore(_ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID);
+        end
+    end
+    -- Brunnen sabotieren
+    if Framework.GetGameExtraNo() > 0 and BuildingType == Entities.B_Cistern then
+        if not self.DisableThiefCisternSabotage then
+            GameCallback_OnThiefStealBuilding_Orig_QSB_EntityCore(_ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID);
+        end
+    end
+
+    -- Send event
+    API.SendScriptEvent(QSB.ScriptEvents.ThiefInfiltratedBuilding, _ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID);
+    Logic.ExecuteInLuaLocalState(string.format(
+        "API.SendScriptEvent(QSB.ScriptEvents.ThiefInfiltratedBuilding, %d, %d, %d, %d)",
+        _ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID
+    ));
+end
+
+function ModuleEntitySurveillance.Global:TriggerEntitySpawnedEvent(_EntityID, _SpawnerID)
+    local PlayerID = Logic.EntityGetPlayer(_EntityID);
+    API.SendScriptEvent(QSB.ScriptEvents.EntitySpawned, _EntityID, PlayerID, _SpawnerID);
+    Logic.ExecuteInLuaLocalState(string.format(
+        "API.SendScriptEvent(QSB.ScriptEvents.EntitySpawned, %d, %d, %d)",
+        _EntityID, PlayerID, _SpawnerID
+    ));
+end
+
+function ModuleEntitySurveillance.Global:TriggerSettlerArrivedEvent(_PlayerID, _EntityID)
+    API.SendScriptEvent(QSB.ScriptEvents.SettlerAttracted, _EntityID, _PlayerID);
+    Logic.ExecuteInLuaLocalState(string.format(
+        "API.SendScriptEvent(QSB.ScriptEvents.SettlerAttracted, %d, %d)",
+        _EntityID, _PlayerID
+    ));
+end
+
+function ModuleEntitySurveillance.Global:TriggerEntityDestroyedEvent(_EntityID, _PlayerID)
+    API.SendScriptEvent(QSB.ScriptEvents.EntityDestroyed, _EntityID, _PlayerID);
+    Logic.ExecuteInLuaLocalState(string.format(
+        "API.SendScriptEvent(QSB.ScriptEvents.EntityDestroyed, %d, %d)",
+        _EntityID, _PlayerID
+    ));
+end
+
+function ModuleEntitySurveillance.Global:TriggerEntityKilledEvent(_EntityID1, _PlayerID1, _EntityID2, _PlayerID2)
+    API.SendScriptEvent(QSB.ScriptEvents.EntityKilled, _EntityID1, _PlayerID1, _EntityID2, _PlayerID2);
+    Logic.ExecuteInLuaLocalState(string.format(
+        "API.SendScriptEvent(QSB.ScriptEvents.EntityKilled, %d, %d, %d, %d)",
+        _EntityID1, _PlayerID1, _EntityID2, _PlayerID2
+    ));
+end
+
+function ModuleEntitySurveillance.Global:TriggerConstructionCompleteEvent(_PlayerID, _EntityID)
+    API.SendScriptEvent(QSB.ScriptEvents.BuildingConstructed, _EntityID, _PlayerID);
+    Logic.ExecuteInLuaLocalState(string.format(
+        "API.SendScriptEvent(QSB.ScriptEvents.BuildingConstructed, %d, %d)",
+        _EntityID, _PlayerID
+    ));
+end
+
+function ModuleEntitySurveillance.Global:TriggerUpgradeCompleteEvent(_PlayerID, _EntityID, _NewUpgradeLevel)
+    API.SendScriptEvent(QSB.ScriptEvents.BuildingUpgraded, _EntityID, _PlayerID, _NewUpgradeLevel);
+    Logic.ExecuteInLuaLocalState(string.format(
+        "API.SendScriptEvent(QSB.ScriptEvents.BuildingUpgraded, %d, %d, %d)",
+        _EntityID, _PlayerID, _NewUpgradeLevel
+    ));
+end
+
+function ModuleEntitySurveillance.Global:TriggerUpgradeCollapsedEvent(_PlayerID, _EntityID, _NewUpgradeLevel)
+    API.SendScriptEvent(QSB.ScriptEvents.BuildingUpgradeCollapsed, _EntityID, _PlayerID, _NewUpgradeLevel);
+    Logic.ExecuteInLuaLocalState(string.format(
+        "API.SendScriptEvent(QSB.ScriptEvents.BuildingUpgradeCollapsed, %d, %d, %d)",
+        _EntityID, _PlayerID, _NewUpgradeLevel
+    ));
+end
+
+function ModuleEntitySurveillance.Global:StartTriggers()
+    API.StartHiResJob(function()
+        if Logic.GetCurrentTurn() > 0 then
+            ModuleEntitySurveillance.Global:CleanTaggedAndDeadEntities();
+            ModuleEntitySurveillance.Global:CheckOnSpawnerEntities();
+        end
+    end);
+
+    API.StartJob(function()
+        local MineEntityTypes = {
+            Entities.R_IronMine,
+            Entities.R_StoneMine
+        };
+        for i= 1, #MineEntityTypes do
+            local Mines = Logic.GetEntitiesOfType(MineEntityTypes[i]);
+            for j= 1, #Mines do
+                local Old = self.MineAmounts[Mines[j]];
+                local New = Logic.GetResourceDoodadGoodAmount(Mines[j]);
+                if Old and New and Old ~= New then
+                    local Type = Logic.GetResourceDoodadGoodType(Mines[j]);
+                    API.SendScriptEvent(QSB.ScriptEvents.EntityResourceChanged, Mines[j], Type, Old, New);
+                    Logic.ExecuteInLuaLocalState(string.format(
+                        [[API.SendScriptEvent(QSB.ScriptEvents.EntityResourceChanged, %d, %d, %d, %d)]],
+                        Mines[j], Type, Old, New
+                    ));
+                end
+                self.MineAmounts[Mines[j]] = New;
+            end
+        end
+    end);
+
+    API.StartJobByEventType(
+        Events.LOGIC_EVENT_ENTITY_DESTROYED,
+        function()
+            local EntityID1 = Event.GetEntityID();
+            local PlayerID1 = Logic.EntityGetPlayer(EntityID1);
+            ModuleEntitySurveillance.Global:TriggerEntityDestroyedEvent(EntityID1, PlayerID1);
+            if ModuleEntitySurveillance.Global.AttackedEntities[EntityID1] ~= nil then
+                local EntityID2 = ModuleEntitySurveillance.Global.AttackedEntities[EntityID1][1];
+                local PlayerID2 = Logic.EntityGetPlayer(EntityID2);
+                ModuleEntitySurveillance.Global.AttackedEntities[EntityID1] = nil;
+                ModuleEntitySurveillance.Global:TriggerEntityKilledEvent(EntityID1, PlayerID1, EntityID2, PlayerID2);
+            end
+        end
+    );
+
+    API.StartJobByEventType(
+        Events.LOGIC_EVENT_ENTITY_HURT_ENTITY,
+        function()
+            local EntityID1 = Event.GetEntityID1();
+            local PlayerID1 = Logic.EntityGetPlayer(EntityID1);
+            local EntityID2 = Event.GetEntityID2();
+            local PlayerID2 = Logic.EntityGetPlayer(EntityID2);
+
+            API.SendScriptEvent(QSB.ScriptEvents.EntityHurt, EntityID2, PlayerID2, EntityID1, PlayerID1);
+            Logic.ExecuteInLuaLocalState(string.format(
+                [[API.SendScriptEvent(QSB.ScriptEvents.EntityHurt, %d, %d, %d, %d)]],
+                EntityID2, PlayerID2, EntityID1, PlayerID1
+            ));
+        end
+    );
+end
+
+function ModuleEntitySurveillance.Global:CheckOnSpawnerEntities()
+    -- Get spawners
+    local SpawnerEntities = {};
+    for i= 1, #self.DynamicSpawnerTypes do
+        if Entities[self.DynamicSpawnerTypes[i]] then
+            if Logic.GetCurrentTurn() % 10 == i then
+                for k, v in pairs(Logic.GetEntitiesOfType(Entities[self.DynamicSpawnerTypes[i]])) do
+                    table.insert(SpawnerEntities, v);
+                end
+            end
+        end
+    end
+    for i= 1, #self.StaticSpawnerTypes do
+        if Entities[self.StaticSpawnerTypes[i]] then
+            if Logic.GetCurrentTurn() % 10 == i then
+                for k, v in pairs(Logic.GetEntitiesOfType(Entities[self.StaticSpawnerTypes[i]])) do
+                    table.insert(SpawnerEntities, v);
+                end
+            end
+        end
+    end
+    -- Check spawned entities
+    for i= 1, #SpawnerEntities do
+        for k, v in pairs{Logic.GetSpawnedEntities(SpawnerEntities[i])} do
+            -- On Spawner entity spawned
+            if not self.RegisteredEntities[v] then
+                self:TriggerEntitySpawnedEvent(v, SpawnerEntities[i]);
+                self.RegisteredEntities[v] = SpawnerEntities[i];
+            end
+        end
+    end
+end
+
+-- Local -------------------------------------------------------------------- --
+
+function ModuleEntitySurveillance.Local:OnGameStart()
+    QSB.ScriptEvents.SettlerAttracted = API.RegisterScriptEvent("Event_SettlerAttracted");
+    QSB.ScriptEvents.EntitySpawned = API.RegisterScriptEvent("Event_EntitySpawned");
+    QSB.ScriptEvents.EntityDestroyed = API.RegisterScriptEvent("Event_EntityDestroyed");
+    QSB.ScriptEvents.EntityHurt = API.RegisterScriptEvent("Event_EntityHurt");
+    QSB.ScriptEvents.EntityKilled = API.RegisterScriptEvent("Event_EntityKilled");
+    QSB.ScriptEvents.EntityOwnerChanged = API.RegisterScriptEvent("Event_EntityOwnerChanged");
+    QSB.ScriptEvents.EntityResourceChanged = API.RegisterScriptEvent("Event_EntityResourceChanged");
+
+    QSB.ScriptEvents.ThiefInfiltratedBuilding = API.RegisterScriptEvent("Event_ThiefInfiltratedBuilding");
+    QSB.ScriptEvents.ThiefDeliverEarnings = API.RegisterScriptEvent("Event_ThiefDeliverEarnings");
+    QSB.ScriptEvents.BuildingConstructed = API.RegisterScriptEvent("Event_BuildingConstructed");
+    QSB.ScriptEvents.BuildingUpgradeCollapsed = API.RegisterScriptEvent("Event_BuildingUpgradeCollapsed");
+    QSB.ScriptEvents.BuildingUpgraded = API.RegisterScriptEvent("Event_BuildingUpgraded");
+
+    self:OverrideAfterBuildingPlacement();
+end
+
+function ModuleEntitySurveillance.Local:OnEvent(_ID, _Event, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    end
+end
+
+-- Shared ------------------------------------------------------------------- --
+
+function ModuleEntitySurveillance.Shared:IterateOverEntities(_Filter, _TypeList)
+    _TypeList = _TypeList or Entities;
+    local ResultList = {};
+    for _, v in pairs(_TypeList) do
+        local AllEntitiesOfType = Logic.GetEntitiesOfType(v);
+        for i= 1, #AllEntitiesOfType do
+            if _Filter(AllEntitiesOfType[i]) then
+                table.insert(ResultList, AllEntitiesOfType[i]);
+            end
+        end
+    end
+    return ResultList;
+end
+
+-- -------------------------------------------------------------------------- --
+
+Revision:RegisterModule(ModuleEntitySurveillance);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Ermöglicht, Entities suchen und auf bestimmte Ereignisse reagieren.
+--
+-- <h5>Entity Suche</h5>
+-- TODO
+--
+-- <h5>Diebstahleffekte</h5>
+-- Die Effekte von Diebstählen können deaktiviert und mittels Event neu
+-- geschrieben werden.
+--
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
+-- </ul>
+--
+-- @within Beschreibung
+-- @set sort=true
+--
+
+---
+-- Events, auf die reagiert werden kann.
+--
+-- @field EntitySpawned Ein Entity wurde aus einem Spawner erzeugt. (Parameter: EntityID, PlayerID, SpawnerID)
+-- @field SettlerAttracted Ein Siedler kommt in die Siedlung. (Parameter: EntityID, PlayerID)
+-- @field EntityDestroyed Ein Entity wurde zerstört. Wird auch durch Spieler ändern ausgelöst! (Parameter: EntityID, PlayerID)
+-- @field EntityHurt Ein Entity wurde angegriffen. (Parameter: AttackedEntityID, AttackedPlayerID, AttackingEntityID, AttackingPlayerID)
+-- @field EntityKilled Ein Entity wurde getötet. (Parameter: KilledEntityID, KilledPlayerID, KillerEntityID, KillerPlayerID)
+-- @field EntityOwnerChanged Ein Entity wechselt den Besitzer. (Parameter: OldIDList, OldPlayer, NewIDList, OldPlayer)
+-- @field EntityResourceChanged Resourcen im Entity verändern sich. (Parameter: EntityID, GoodType, OldAmount, NewAmount)
+-- @field BuildingConstructed Ein Gebäude wurde fertiggestellt. (Parameter: BuildingID, PlayerID)
+-- @field BuildingUpgraded Ein Gebäude wurde aufgewertet. (Parameter: BuildingID, PlayerID, NewUpgradeLevel)
+-- @field BuildingUpgradeCollapsed Eine Ausbaustufe eines Gebäudes wurde zerstört. (Parameter: BuildingID, PlayerID, NewUpgradeLevel)
+-- @field ThiefInfiltratedBuilding Ein Dieb hat ein Gebäude infiltriert. (Parameter: ThiefID, PlayerID, BuildingID, BuildingPlayerID)
+-- @field ThiefDeliverEarnings Ein Dieb liefert seine Beute ab. (Parameter: ThiefID, PlayerID, BuildingID, BuildingPlayerID, GoldAmount)
+--
+-- @within Event
+--
+QSB.ScriptEvents = QSB.ScriptEvents or {};
+
+-- -------------------------------------------------------------------------- --
+-- Search
+
+---
+-- Findet <u>alle</u> Entities.
+--
+-- <h5>Multiplayer</h5>
+-- Im Multiplayer kann diese Funktion nur in synchron
+-- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
+--
+-- @param[type=number]  _PlayerID               (Optional) ID des Besitzers
+-- @param[type=boolean] _WithoutDefeatResistant (Optional) Niederlageresistente Entities filtern
+-- @return[type=table] Liste mit Ergebnissen
+-- @within Suche
+-- @see API.CommenceEntitySearch
+--
+-- @usage
+-- -- ALLE Entities
+-- local Result = API.SearchEntities();
+-- -- Alle Entities von Spieler 5.
+-- local Result = API.SearchEntities(5);
+--
+function API.SearchEntities(_PlayerID, _WithoutDefeatResistant)
+    if _WithoutDefeatResistant == nil then
+        _WithoutDefeatResistant = false;
+    end
+    local Filter = function(_ID)
+        if _PlayerID and Logic.EntityGetPlayer(_ID) ~= _PlayerID then
+            return false;
+        end
+        if _WithoutDefeatResistant then
+            if (Logic.IsBuilding(_ID) or Logic.IsWall(_ID)) and Logic.IsConstructionComplete(_ID) == 0 then
+                return false;
+            end
+            local Type = Logic.GetEntityType(_ID);
+            local TypeName = Logic.GetEntityType(Type);
+            if TypeName and (string.find(TypeName, "^S_") or string.find(TypeName, "^XD_")) then
+                return false;
+            end
+        end
+        return true;
+    end
+    return API.CommenceEntitySearch(Filter);
+end
+
+---
+-- Findet alle Entities des Typs in einem Gebiet.
+--
+-- <h5>Multiplayer</h5>
+-- Im Multiplayer kann diese Funktion nur in synchron
+-- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
+--
+-- @param[type=number] _Area     Größe des Suchgebiet
+-- @param              _Position Mittelpunkt (EntityID, Skriptname oder Table)
+-- @param[type=number] _Type     Typ des Entity
+-- @param[type=number] _PlayerID (Optional) ID des Besitzers
+-- @return[type=table] Liste mit Ergebnissen
+-- @within Suche
+-- @see API.CommenceEntitySearch
+--
+-- @usage
+-- local Result = API.SearchEntitiesInArea(5000, "Busches", Entities.R_HerbBush);
+--
+function API.SearchEntitiesOfTypeInArea(_Area, _Position, _Type, _PlayerID)
+    return API.SearchEntitiesInArea(_Area, _Position, _PlayerID, _Type, nil);
+end
+
+---
+-- Findet alle Entities der Kategorie in einem Gebiet.
+--
+-- <h5>Multiplayer</h5>
+-- Im Multiplayer kann diese Funktion nur in synchron
+-- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
+--
+-- @param[type=number] _Area     Größe des Suchgebiet
+-- @param              _Position Mittelpunkt (EntityID, Skriptname oder Table)
+-- @param[type=number] _Category Category des Entity
+-- @param[type=number] _PlayerID (Optional) ID des Besitzers
+-- @return[type=table] Liste mit Ergebnissen
+-- @within Suche
+-- @see API.CommenceEntitySearch
+--
+-- @usage
+-- local Result = API.SearchEntitiesInArea(5000, "City", EntityCategories.CityBuilding, 2);
+--
+function API.SearchEntitiesOfCategoryInArea(_Area, _Position, _Category, _PlayerID)
+    return API.SearchEntitiesInArea(_Area, _Position, _PlayerID, nil, _Category);
+end
+
+-- Not supposed to be used directly!
+function API.SearchEntitiesInArea(_Area, _Position, _PlayerID, _Type, _Category)
+    local Position = _Position;
+    if type(Position) ~= "table" then
+        Position = GetPosition(Position);
+    end
+    local Filter = function(_ID)
+        if _PlayerID and Logic.EntityGetPlayer(_ID) ~= _PlayerID then
+            return false;
+        end
+        if _Type and Logic.GetEntityType(_ID) ~= _Type then
+            return false;
+        end
+        if _Category and Logic.IsEntityInCategory(_ID, _Category) == 0 then
+            return false;
+        end
+        if API.GetDistance(_ID, Position) > _Area then
+            return false;
+        end
+        return true;
+    end
+    return API.CommenceEntitySearch(Filter);
+end
+
+---
+-- Findet alle Entities des Typs in einem Territorium.
+--
+-- <h5>Multiplayer</h5>
+-- Im Multiplayer kann diese Funktion nur in synchron
+-- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
+--
+-- @param[type=number] _Territory Territorium für die Suche
+-- @param[type=number] _Type      Typ des Entity
+-- @param[type=number] _PlayerID  (Optional) ID des Besitzers
+-- @return[type=table] Liste mit Ergebnissen
+-- @within Suche
+-- @see API.CommenceEntitySearch
+--
+-- @usage
+-- local Result = API.SearchEntitiesInTerritory(7, Entities.R_HerbBush);
+--
+function API.SearchEntitiesOfTypeInTerritory(_Territory, _Type, _PlayerID)
+    return API.SearchEntitiesInTerritory(_Territory, _PlayerID, _Type, nil);
+end
+
+---
+-- Findet alle Entities der Kategorie in einem Territorium.
+--
+-- <h5>Multiplayer</h5>
+-- Im Multiplayer kann diese Funktion nur in synchron
+-- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
+--
+-- @param[type=number] _Territory Territorium für die Suche
+-- @param[type=number] _Category  Category des Entity
+-- @param[type=number] _PlayerID  (Optional) ID des Besitzers
+-- @return[type=table] Liste mit Ergebnissen
+-- @within Suche
+-- @see API.CommenceEntitySearch
+--
+-- @usage
+-- local Result = API.SearchEntitiesInTerritory(7, EntityCategories.CityBuilding, 6);
+--
+function API.SearchEntitiesOfCategoryInTerritory(_Territory, _Category, _PlayerID)
+    return API.SearchEntitiesInTerritory(_Territory, _PlayerID, nil, _Category);
+end
+
+-- Not supposed to be used directly!
+function API.SearchEntitiesInTerritory(_Territory, _PlayerID, _Type, _Category)
+    local Filter = function(_ID)
+        if _PlayerID and Logic.EntityGetPlayer(_ID) ~= _PlayerID then
+            return false;
+        end
+        if _Type and Logic.GetEntityType(_ID) ~= _Type then
+            return false;
+        end
+        if _Category and Logic.IsEntityInCategory(_ID, _Category) == 0 then
+            return false;
+        end
+        if _Territory and GetTerritoryUnderEntity(_ID) ~= _Territory then
+            return false;
+        end
+        return true;
+    end
+    return API.CommenceEntitySearch(Filter);
+end
+
+---
+-- Führt eine benutzerdefinierte Suche nach Entities aus.
+--
+-- <b>Achtung</b>: Die Reihenfolge der Abfragen im Filter hat direkten
+-- Einfluss auf die Dauer der Suche. Während Abfragen auf den Besitzer oder
+-- den Typ schnell gehen, dauern Gebietssuchen lange! Es ist daher klug, zuerst
+-- Kriterien auszuschließen, die schnell bestimmt werden können!
+--
+-- <h5>Multiplayer</h5>
+-- Im Multiplayer kann diese Funktion nur in synchron
+-- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
+--
+-- @param[type=function] _Filter Funktion zur Filterung
+-- @return[type=table] Liste mit Ergebnissen
+-- @within Suche
+-- @see QSB.SearchPredicate
+--
+-- @usage
+-- -- Es werden alle Kühe und Schafe von Spieler 1 gefunden, die nicht auf den
+-- -- Territorien 7 und 15 sind.
+-- local Result = API.CommenceEntitySearch(
+--     function(_ID)
+--         -- Nur Entities von Spieler 1 akzeptieren
+--         if Logic.EntityGetPlayer(_ID) == 1 then
+--             -- Nur Entities akzeptieren, die Kühe oder Schafe sind.
+--             if Logic.IsEntityInCategory(_ID, EntityCategories.CattlePasture) == 1
+--             or Logic.IsEntityInCategory(_ID, EntityCategories.SheepPasture) == 1 then
+--                 -- Nur Entities akzeptieren, die nicht auf den Territorien 7 und 15 sind.
+--                 local Territory = GetTerritoryUnderEntity(_ID);
+--                 return Territory ~= 7 and Territory ~= 15;
+--             end
+--         end
+--         return false;
+--     end
+-- );
+--
+function API.CommenceEntitySearch(_Filter)
+    _Filter = _Filter or function(_ID)
+        return true;
+    end
+    return ModuleEntitySurveillance.Shared:IterateOverEntities(_Filter);
+end
+
+-- Compatibility option
+function API.GetEntitiesOfCategoryInTerritory(_PlayerID, _Category, _Territory)
+    return API.SearchEntitiesOfCategoryInTerritory(_Territory, _Category, _PlayerID);
+end
+
+-- Compatibility option
+-- Realy needed? Don't they throw the old version in the script anyway?
+function API.GetEntitiesOfCategoriesInTerritories(_PlayerID, _Category, _Territory)
+    local p = (type(_PlayerID) == "table" and _PlayerID) or {_PlayerID};
+    local c = (type(_Category) == "table" and _Category) or {_Category};
+    local t = (type(_Territory) == "table" and _Territory) or {_Territory};
+    local PlayerEntities = {};
+    for i=1, #p, 1 do
+        for j=1, #c, 1 do
+            for k=1, #t, 1 do
+                local Units = API.SearchEntitiesOfCategoryInTerritory(t[k], c[j], p[i]);
+                PlayerEntities = Array_Append(PlayerEntities, Units);
+            end
+        end
+    end
+    return PlayerEntities;
+end
+
+-- -------------------------------------------------------------------------- --
+-- Thief
+
+---
+-- Deaktiviert die Standardaktion wenn ein Dieb in ein Lagerhaus eindringt.
+--
+-- <b>Hinweis</b>: Wird die Standardaktion deaktiviert, stielt der Dieb
+-- stattdessen Informationen.
+--
+-- @param[type=boolean] _Flag Standardeffekt deaktiviert
+-- @within Dieb
+--
+-- @usage
+-- -- Deaktivieren
+-- API.ThiefDisableStorehouseEffect(true);
+-- -- Aktivieren
+-- API.ThiefDisableStorehouseEffect(false);
+--
+function API.ThiefDisableStorehouseEffect(_Flag)
+    ModuleEntitySurveillance.Global.DisableThiefStorehouseHeist = _Flag == true;
+end
+
+---
+-- Deaktiviert die Standardaktion wenn ein Dieb in eine Kirche eindringt.
+--
+-- <b>Hinweis</b>: Wird die Standardaktion deaktiviert, stielt der Dieb
+-- stattdessen Informationen.
+--
+-- @param[type=boolean] _Flag Standardeffekt deaktiviert
+-- @within Dieb
+--
+-- @usage
+-- -- Deaktivieren
+-- API.ThiefDisableCathedralEffect(true);
+-- -- Aktivieren
+-- API.ThiefDisableCathedralEffect(false);
+--
+function API.ThiefDisableCathedralEffect(_Flag)
+    ModuleEntitySurveillance.Global.DisableThiefCathedralSabotage = _Flag == true;
+end
+
+---
+-- Deaktiviert die Standardaktion wenn ein Dieb einen Brunnen sabotiert.
+--
+-- <b>Hinweis</b>: Brunnen können nur im Addon gebaut und sabotiert werden.
+--
+-- @param[type=boolean] _Flag Standardeffekt deaktiviert
+-- @within Dieb
+--
+-- @usage
+-- -- Deaktivieren
+-- API.ThiefDisableCisternEffect(true);
+-- -- Aktivieren
+-- API.ThiefDisableCisternEffect(false);
+--
+function API.ThiefDisableCisternEffect(_Flag)
+    ModuleEntitySurveillance.Global.DisableThiefCisternSabotage = _Flag == true;
 end
 
 --[[
@@ -13962,6 +14775,7 @@ QSB.PlayerNames = {};
 -- Global ------------------------------------------------------------------- --
 
 function ModuleGUI.Global:OnGameStart()
+    QSB.ScriptEvents.BuildingPlaced = API.RegisterScriptEvent("Event_BuildingPlaced");
     QSB.ScriptEvents.CinematicActivated = API.RegisterScriptEvent("Event_CinematicElementActivated");
     QSB.ScriptEvents.CinematicConcluded = API.RegisterScriptEvent("Event_CinematicElementConcluded");
     QSB.ScriptEvents.BorderScrollLocked = API.RegisterScriptEvent("Event_BorderScrollLocked");
@@ -14097,6 +14911,7 @@ end
 -- Local -------------------------------------------------------------------- --
 
 function ModuleGUI.Local:OnGameStart()
+    QSB.ScriptEvents.BuildingPlaced = API.RegisterScriptEvent("Event_BuildingPlaced");
     QSB.ScriptEvents.CinematicActivated = API.RegisterScriptEvent("Event_CinematicElementActivated");
     QSB.ScriptEvents.CinematicConcluded = API.RegisterScriptEvent("Event_CinematicElementConcluded");
     QSB.ScriptEvents.BorderScrollLocked = API.RegisterScriptEvent("Event_BorderScrollLocked");
@@ -14109,21 +14924,22 @@ function ModuleGUI.Local:OnGameStart()
     for i= 1, 8 do
         self.CinematicElementStatus[i] = {};
     end
+    self:PostTexturePositionsToGlobal();
+    self:OverrideAfterBuildingPlacement();
     self:OverrideInterfaceUpdateForCinematicMode();
     self:OverrideInterfaceThroneroomForCinematicMode();
-    self:ResetFarClipPlane();
     self:OverrideMissionGoodCounter();
     self:OverrideUpdateClaimTerritory();
     self:SetupHackRegisterHotkey();
-    self:PostTexturePositionsToGlobal();
+    self:ResetFarClipPlane();
 end
 
 function ModuleGUI.Local:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
         if not Framework.IsNetworkGame() then
-            API.DeactivateImageScreen(GUI.GetPlayerID());
-            API.ActivateNormalInterface(GUI.GetPlayerID());
+            self:InterfaceDeactivateImageBackground(GUI.GetPlayerID());
+            self:InterfaceActivateNormalInterface(GUI.GetPlayerID());
         end
     elseif _ID == QSB.ScriptEvents.CinematicActivated then
         self.CinematicElementStatus[arg[2]][arg[1]] = 1;
@@ -14136,9 +14952,30 @@ function ModuleGUI.Local:OnEvent(_ID, ...)
     elseif _ID == QSB.ScriptEvents.SaveGameLoaded then
         self:ResetFarClipPlane();
         self:UpdateHiddenWidgets();
-    elseif _ID == QSB.ScriptEvents.LoadscreenClosed then
-        self:InterfaceDeactivateImageBackground(GUI.GetPlayerID());
-        self:InterfaceActivateNormalInterface(GUI.GetPlayerID());
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+
+function ModuleGUI.Local:OverrideAfterBuildingPlacement()
+    GameCallback_GUI_AfterBuildingPlacement_Orig_EntityEventCore = GameCallback_GUI_AfterBuildingPlacement;
+    GameCallback_GUI_AfterBuildingPlacement = function ()
+        GameCallback_GUI_AfterBuildingPlacement_Orig_EntityEventCore();
+
+        local x,y = GUI.Debug_GetMapPositionUnderMouse();
+        API.StartHiResDelay(0, function()
+            local Results = {Logic.GetPlayerEntitiesInArea(GUI.GetPlayerID(), 0, x, y, 50, 16)};
+            for i= 2, Results[1] +1 do
+                if  Results[i]
+                and Results[i] ~= 0
+                and Logic.IsBuilding(Results[i]) == 1
+                and Logic.IsConstructionComplete(Results[i]) == 0
+                then
+                    API.BroadcastScriptEventToGlobal("BuildingPlaced", Results[i], Logic.EntityGetPlayer(Results[i]));
+                    API.SendScriptEvent(QSB.ScriptEvents.BuildingPlaced, Results[i], Logic.EntityGetPlayer(Results[i]));
+                end
+            end
+        end, x, y);
     end
 end
 
@@ -14149,7 +14986,7 @@ function ModuleGUI.Local:PostTexturePositionsToGlobal()
         if Logic.GetTime() > 1 then
             for k, v in pairs(g_TexturePositions) do
                 for kk, vv in pairs(v) do
-                    Revision.Event:DispatchScriptCommand(
+                    API.SendScriptCommand(
                         QSB.ScriptCommands.UpdateTexturePosition,
                         GUI.GetPlayerID(),
                         k,
@@ -14776,6 +15613,7 @@ CinematicElement = {
 ---
 -- Events, auf die reagiert werden kann.
 --
+-- @field BuildingPlaced      Ein Gebäude wurde in Auftrag gegeben. (Parameter: EntityID, PlayerID)
 -- @field CinematicActivated  Ein Kinoevent wurde aktiviert (Parameter: KinoEventID, PlayerID)
 -- @field CinematicConcluded  Ein Kinoevent wurde deaktiviert (Parameter: KinoEventID, PlayerID)
 -- @field BorderScrollLocked  Scrollen am Bildschirmrand wurde gesperrt (Parameter: PlayerID)
@@ -14973,15 +15811,15 @@ function API.GetCinematicElement(_Identifier, _PlayerID)
     QSB.CinematicElement[_PlayerID] = QSB.CinematicElement[_PlayerID] or {};
     if type(_Identifier) == "number" then
         if GUI then
-            return ModuleGUI.Local:GetCinematicElement(_Identifier);
+            return ModuleGUI.Local:GetCinematicElementStatus(_Identifier);
         end
-        return ModuleGUI.Global:GetCinematicElement(_Identifier);
+        return ModuleGUI.Global:GetCinematicElementStatus(_Identifier);
     end
     if QSB.CinematicElement[_PlayerID][_Identifier] then
         if GUI then
-            return ModuleGUI.Local:GetCinematicElement(QSB.CinematicElement[_PlayerID][_Identifier]);
+            return ModuleGUI.Local:GetCinematicElementStatus(QSB.CinematicElement[_PlayerID][_Identifier]);
         end
-        return ModuleGUI.Global:GetCinematicElement(QSB.CinematicElement[_PlayerID][_Identifier]);
+        return ModuleGUI.Global:GetCinematicElementStatus(QSB.CinematicElement[_PlayerID][_Identifier]);
     end
     return CinematicElement.NotTriggered;
 end
@@ -16072,6 +16910,8 @@ You may use and modify this file unter the terms of the MIT licence.
 (See https://en.wikipedia.org/wiki/MIT_License)
 ]]
 
+-- -------------------------------------------------------------------------- --
+
 ---
 -- Stellt verschiedene Dialogfenster zur Verfügung.
 --
@@ -16197,6 +17037,7 @@ function API.DialogRequestBox(_PlayerID, _Title, _Text, _Action, _OkCancel)
         return;
     end
     if type(_PlayerID) ~= "number" then
+        _OkCancel = _Action;
         _Action = _Text;
         _Text = _Title;
         _Title = _PlayerID;
@@ -16240,6 +17081,7 @@ function API.DialogSelectBox(_PlayerID, _Title, _Text, _Action, _List)
         return;
     end
     if type(_PlayerID) ~= "number" then
+        _List = _Action;
         _Action = _Text;
         _Text = _Title;
         _Title = _PlayerID;
@@ -18370,6 +19212,935 @@ function API.ModifyTradeOffer(_PlayerID, _GoodOrEntityType, _NewAmount)
         return;
     end
     return ModuleTrade.Global:ModifyTradeOffer(_PlayerID, _GoodOrEntityType, _NewAmount);
+end
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+ModuleBuildingButtons = {
+    Properties = {
+        Name = "ModuleBuildingButtons",
+        Version = "4.0.0 (ALPHA 1.0.0)",
+    },
+
+    Global = {},
+    Local = {
+        BuildingButtons = {
+            BindingCounter = 0,
+            Bindings = {},
+            Configuration = {
+                ["BuyAmmunitionCart"] = {
+                    TypeExclusion = "^B_.*StoreHouse",
+                    OriginalPosition = nil,
+                    Bind = nil,
+                },
+                ["BuyBattallion"] = {
+                    TypeExclusion = "^B_[CB]a[sr][tr][la][ec]",
+                    OriginalPosition = nil,
+                    Bind = nil,
+                },
+                ["PlaceField"] = {
+                    TypeExclusion = "^B_.*[BFH][aei][erv][kme]",
+                    OriginalPosition = nil,
+                    Bind = nil,
+                },
+                ["StartFestival"] = {
+                    TypeExclusion = "^B_Marketplace",
+                    OriginalPosition = nil,
+                    Bind = nil,
+                },
+                ["StartTheatrePlay"] = {
+                    TypeExclusion = "^B_Theatre",
+                    OriginalPosition = nil,
+                    Bind = nil,
+                },
+                ["UpgradeTurret"] = {
+                    TypeExclusion = "^B_WallTurret",
+                    OriginalPosition = nil,
+                    Bind = nil,
+                },
+                ["BuyBatteringRamCart"] = {
+                    TypeExclusion = "^B_SiegeEngineWorkshop",
+                    OriginalPosition = nil,
+                    Bind = nil,
+                },
+                ["BuyCatapultCart"] = {
+                    TypeExclusion = "^B_SiegeEngineWorkshop",
+                    OriginalPosition = nil,
+                    Bind = nil,
+                },
+                ["BuySiegeTowerCart"] = {
+                    TypeExclusion = "^B_SiegeEngineWorkshop",
+                    OriginalPosition = nil,
+                    Bind = nil,
+                },
+            },
+        },
+    },
+
+    Shared = {};
+}
+
+-- Global ------------------------------------------------------------------- --
+
+function ModuleBuildingButtons.Global:OnGameStart()
+    QSB.ScriptEvents.UpgradeCanceled = API.RegisterScriptEvent("Event_UpgradeCanceled");
+    QSB.ScriptEvents.UpgradeStarted = API.RegisterScriptEvent("Event_UpgradeStarted");
+    QSB.ScriptEvents.FestivalStarted = API.RegisterScriptEvent("Event_FestivalStarted");
+    QSB.ScriptEvents.SermonStarted = API.RegisterScriptEvent("Event_SermonStarted");
+    QSB.ScriptEvents.TheatrePlayStarted = API.RegisterScriptEvent("Event_TheatrePlayStarted");
+
+    -- Building upgrade started event
+    API.RegisterScriptCommand("Cmd_StartBuildingUpgrade", function(_BuildingID, _PlayerID)
+        if Logic.IsBuildingBeingUpgraded(_BuildingID) then
+            ModuleBuildingButtons.Global:SendStartBuildingUpgradeEvent(_BuildingID, _PlayerID);
+        end
+    end);
+    -- Building upgrade canceled event
+    API.RegisterScriptCommand("Cmd_CancelBuildingUpgrade", function(_BuildingID, _PlayerID)
+        if not Logic.IsBuildingBeingUpgraded(_BuildingID) then
+            ModuleBuildingButtons.Global:SendCancelBuildingUpgradeEvent(_BuildingID, _PlayerID);
+        end
+    end);
+    -- Theatre play started event
+    API.RegisterScriptCommand("Cmd_StartTheatrePlay", function(_BuildingID, _PlayerID)
+        if Logic.GetTheatrePlayProgress(_BuildingID) ~= 0 then
+            ModuleBuildingButtons.Global:SendTheatrePlayEvent(_BuildingID, _PlayerID);
+        end
+    end);
+    -- Festival started event
+    API.RegisterScriptCommand("Cmd_StartRegularFestival", function(_PlayerID)
+        if Logic.IsFestivalActive(_PlayerID) == true then
+            ModuleBuildingButtons.Global:SendStartRegularFestivalEvent(_PlayerID);
+        end
+    end);
+    -- Sermon started event
+    API.RegisterScriptCommand("Cmd_StartSermon", function(_PlayerID)
+        if Logic.IsSermonActive(_PlayerID) == true then
+            ModuleBuildingButtons.Global:SendStartSermonEvent(_PlayerID);
+        end
+    end);
+end
+
+function ModuleBuildingButtons.Global:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    end
+end
+
+function ModuleBuildingButtons.Global:SendStartBuildingUpgradeEvent(_BuildingID, _PlayerID)
+    API.SendScriptEvent(QSB.ScriptEvents.UpgradeStarted, _BuildingID, _PlayerID);
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[API.SendScriptEvent(QSB.ScriptEvents.UpgradeStarted, %d, %d)]],
+        _BuildingID,
+        _PlayerID
+    ));
+end
+
+function ModuleBuildingButtons.Global:SendCancelBuildingUpgradeEvent(_BuildingID, _PlayerID)
+    API.SendScriptEvent(QSB.ScriptEvents.UpgradeCanceled, _BuildingID, _PlayerID);
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[API.SendScriptEvent(QSB.ScriptEvents.UpgradeCanceled, %d, %d)]],
+        _BuildingID,
+        _PlayerID
+    ));
+end
+
+function ModuleBuildingButtons.Global:SendTheatrePlayEvent(_BuildingID, _PlayerID)
+    API.SendScriptEvent(QSB.ScriptEvents.TheatrePlayStarted, _BuildingID, _PlayerID);
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[API.SendScriptEvent(QSB.ScriptEvents.TheatrePlayStarted, %d, %d)]],
+        _BuildingID,
+        _PlayerID
+    ));
+end
+
+function ModuleBuildingButtons.Global:SendStartRegularFestivalEvent(_PlayerID)
+    API.SendScriptEvent(QSB.ScriptEvents.FestivalStarted, _PlayerID);
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[API.SendScriptEvent(QSB.ScriptEvents.FestivalStarted, %d)]],
+        _PlayerID
+    ));
+end
+
+function ModuleBuildingButtons.Global:SendStartSermonEvent(_PlayerID)
+    API.SendScriptEvent(QSB.ScriptEvents.SermonStarted, _PlayerID);
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[API.SendScriptEvent(QSB.ScriptEvents.SermonStarted, %d)]],
+        _PlayerID
+    ));
+end
+
+-- Local -------------------------------------------------------------------- --
+
+function ModuleBuildingButtons.Local:OnGameStart()
+    QSB.ScriptEvents.UpgradeCanceled = API.RegisterScriptEvent("Event_UpgradeCanceled");
+    QSB.ScriptEvents.UpgradeStarted = API.RegisterScriptEvent("Event_UpgradeStarted");
+    QSB.ScriptEvents.FestivalStarted = API.RegisterScriptEvent("Event_FestivalStarted");
+    QSB.ScriptEvents.SermonStarted = API.RegisterScriptEvent("Event_SermonStarted");
+    QSB.ScriptEvents.TheatrePlayStarted = API.RegisterScriptEvent("Event_TheatrePlayStarted");
+
+    self:InitBackupPositions();
+    self:OverrideOnSelectionChanged();
+    self:OverrideBuyAmmunitionCart();
+    self:OverrideBuyBattalion();
+    self:OverrideBuySiegeEngineCart();
+    self:OverridePlaceField();
+    self:OverrideStartFestival();
+    self:OverrideStartTheatrePlay();
+    self:OverrideUpgradeTurret();
+    self:OverrideUpgradeBuilding();
+    self:OverrideStartSermon();
+end
+
+function ModuleBuildingButtons.Local:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+
+function ModuleBuildingButtons.Local:OverrideOnSelectionChanged()
+    GameCallback_GUI_SelectionChanged_Orig_Interface = GameCallback_GUI_SelectionChanged;
+    GameCallback_GUI_SelectionChanged = function(_Source)
+        GameCallback_GUI_SelectionChanged_Orig_Interface(_Source);
+        ModuleBuildingButtons.Local:UnbindButtons();
+        ModuleBuildingButtons.Local:BindButtons(GUI.GetSelectedEntity());
+    end
+end
+
+function ModuleBuildingButtons.Local:OverrideBuyAmmunitionCart()
+    GUI_BuildingButtons.BuyAmmunitionCartClicked_Orig_Interface = GUI_BuildingButtons.BuyAmmunitionCartClicked;
+    GUI_BuildingButtons.BuyAmmunitionCartClicked = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        if not Button then
+            return GUI_BuildingButtons.BuyAmmunitionCartClicked_Orig_Interface();
+        end
+        Button.Action(WidgetID, EntityID);
+    end
+
+    GUI_BuildingButtons.BuyAmmunitionCartUpdate_Orig_Interface = GUI_BuildingButtons.BuyAmmunitionCartUpdate;
+    GUI_BuildingButtons.BuyAmmunitionCartUpdate = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        if not Button then
+            SetIcon(WidgetID, {10, 4});
+            XGUIEng.ShowWidget(WidgetID, 1);
+            XGUIEng.DisableButton(WidgetID, 0);
+            return GUI_BuildingButtons.BuyAmmunitionCartUpdate_Orig_Interface();
+        end
+        Button.Update(WidgetID, EntityID);
+    end
+end
+
+function ModuleBuildingButtons.Local:OverrideBuyBattalion()
+    GUI_BuildingButtons.BuyBattalionClicked_Orig_Interface = GUI_BuildingButtons.BuyBattalionClicked;
+    GUI_BuildingButtons.BuyBattalionClicked = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        if not Button then
+            return GUI_BuildingButtons.BuyBattalionClicked_Orig_Interface();
+        end
+        Button.Action(WidgetID, EntityID);
+    end
+
+    GUI_BuildingButtons.BuyBattalionMouseOver_Orig_Interface = GUI_BuildingButtons.BuyBattalionMouseOver;
+    GUI_BuildingButtons.BuyBattalionMouseOver = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button;
+        if ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName] then
+            Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        end
+        if not Button then
+            return GUI_BuildingButtons.BuyBattalionMouseOver_Orig_Interface();
+        end
+        Button.Tooltip(WidgetID, EntityID);
+    end
+
+    GUI_BuildingButtons.BuyBattalionUpdate_Orig_Interface = GUI_BuildingButtons.BuyBattalionUpdate;
+    GUI_BuildingButtons.BuyBattalionUpdate = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        if not Button then
+            XGUIEng.ShowWidget(WidgetID, 1);
+            XGUIEng.DisableButton(WidgetID, 0);
+            return GUI_BuildingButtons.BuyBattalionUpdate_Orig_Interface();
+        end
+        Button.Update(WidgetID, EntityID);
+    end
+end
+
+function ModuleBuildingButtons.Local:OverridePlaceField()
+    GUI_BuildingButtons.PlaceFieldClicked_Orig_Interface = GUI_BuildingButtons.PlaceFieldClicked;
+    GUI_BuildingButtons.PlaceFieldClicked = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        if not Button then
+            return GUI_BuildingButtons.PlaceFieldClicked_Orig_Interface();
+        end
+        Button.Action(WidgetID, EntityID);
+    end
+
+    GUI_BuildingButtons.PlaceFieldMouseOver_Orig_Interface = GUI_BuildingButtons.PlaceFieldMouseOver;
+    GUI_BuildingButtons.PlaceFieldMouseOver = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        if not Button then
+            return GUI_BuildingButtons.PlaceFieldMouseOver_Orig_Interface();
+        end
+        Button.Tooltip(WidgetID, EntityID);
+    end
+
+    GUI_BuildingButtons.PlaceFieldUpdate_Orig_Interface = GUI_BuildingButtons.PlaceFieldUpdate;
+    GUI_BuildingButtons.PlaceFieldUpdate = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        if not Button then
+            XGUIEng.ShowWidget(WidgetID, 1);
+            XGUIEng.DisableButton(WidgetID, 0);
+            return GUI_BuildingButtons.PlaceFieldUpdate_Orig_Interface();
+        end
+        Button.Update(WidgetID, EntityID);
+    end
+end
+
+function ModuleBuildingButtons.Local:OverrideStartFestival()
+    GUI_BuildingButtons.StartFestivalClicked = function(_FestivalIndex)
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        if not Button then
+            local PlayerID = GUI.GetPlayerID();
+            local Costs = {Logic.GetFestivalCost(PlayerID, _FestivalIndex)};
+            local CanBuyBoolean, CanNotBuyString = AreCostsAffordable(Costs);
+            if EntityID ~= Logic.GetMarketplace(PlayerID) then
+                return;
+            end
+            if CanBuyBoolean == true then
+                Sound.FXPlay2DSound("ui\\menu_click");
+                GUI.StartFestival(PlayerID, _FestivalIndex);
+                StartEventMusic(MusicSystem.EventFestivalMusic, PlayerID);
+                StartKnightVoiceForPermanentSpecialAbility(Entities.U_KnightSong);
+                GUI.AddBuff(Buffs.Buff_Festival);
+                API.BroadcastScriptCommand(QSB.ScriptCommands.StartRegularFestival, PlayerID);
+            else
+                Message(CanNotBuyString);
+            end
+            return;
+        end
+        Button.Action(WidgetID, EntityID);
+    end
+
+    GUI_BuildingButtons.StartFestivalMouseOver_Orig_Interface = GUI_BuildingButtons.StartFestivalMouseOver;
+    GUI_BuildingButtons.StartFestivalMouseOver = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        if not Button then
+            return GUI_BuildingButtons.StartFestivalMouseOver_Orig_Interface();
+        end
+        Button.Tooltip(WidgetID, EntityID);
+    end
+
+    GUI_BuildingButtons.StartFestivalUpdate_Orig_Interface = GUI_BuildingButtons.StartFestivalUpdate;
+    GUI_BuildingButtons.StartFestivalUpdate = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        if not Button then
+            SetIcon(WidgetID, {4, 15});
+            XGUIEng.ShowWidget(WidgetID, 1);
+            XGUIEng.DisableButton(WidgetID, 0);
+            return GUI_BuildingButtons.StartFestivalUpdate_Orig_Interface();
+        end
+        Button.Update(WidgetID, EntityID);
+    end
+end
+
+function ModuleBuildingButtons.Local:OverrideStartTheatrePlay()
+    GUI_BuildingButtons.StartTheatrePlayClicked = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        if not Button then
+            local PlayerID = GUI.GetPlayerID();
+            local GoodType = Logic.GetGoodTypeOnOutStockByIndex(EntityID, 0);
+            local Amount = Logic.GetMaxAmountOnStock(EntityID);
+            local Costs = {GoodType, Amount};
+            local CanBuyBoolean, CanNotBuyString = AreCostsAffordable(Costs);
+            if Logic.CanStartTheatrePlay(EntityID) == true then
+                Sound.FXPlay2DSound("ui\\menu_click");
+                GUI.StartTheatrePlay(EntityID);
+                API.BroadcastScriptCommand(QSB.ScriptCommands.StartTheatrePlay, PlayerID);
+            elseif CanBuyBoolean == false then
+                Message(CanNotBuyString);
+            end
+            return;
+        end
+        Button.Action(WidgetID, EntityID);
+    end
+
+    GUI_BuildingButtons.StartTheatrePlayMouseOver_Orig_Interface = GUI_BuildingButtons.StartTheatrePlayMouseOver;
+    GUI_BuildingButtons.StartTheatrePlayMouseOver = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        if not Button then
+            return GUI_BuildingButtons.StartTheatrePlayMouseOver_Orig_Interface();
+        end
+        Button.Tooltip(WidgetID, EntityID);
+    end
+
+    GUI_BuildingButtons.StartTheatrePlayUpdate_Orig_Interface = GUI_BuildingButtons.StartTheatrePlayUpdate;
+    GUI_BuildingButtons.StartTheatrePlayUpdate = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        if not Button then
+            SetIcon(WidgetID, {16, 2});
+            XGUIEng.ShowWidget(WidgetID, 1);
+            XGUIEng.DisableButton(WidgetID, 0);
+            return GUI_BuildingButtons.StartTheatrePlayUpdate_Orig_Interface();
+        end
+        Button.Update(WidgetID, EntityID);
+    end
+end
+
+function ModuleBuildingButtons.Local:OverrideUpgradeTurret()
+    GUI_BuildingButtons.UpgradeTurretClicked_Orig_Interface = GUI_BuildingButtons.UpgradeTurretClicked;
+    GUI_BuildingButtons.UpgradeTurretClicked = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        if not Button then
+            return GUI_BuildingButtons.UpgradeTurretClicked_Orig_Interface();
+        end
+        Button.Action(WidgetID, EntityID);
+    end
+
+    GUI_BuildingButtons.UpgradeTurretMouseOver_Orig_Interface = GUI_BuildingButtons.UpgradeTurretMouseOver;
+    GUI_BuildingButtons.UpgradeTurretMouseOver = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        if not Button then
+            return GUI_BuildingButtons.UpgradeTurretMouseOver_Orig_Interface();
+        end
+        Button.Tooltip(WidgetID, EntityID);
+    end
+
+    GUI_BuildingButtons.UpgradeTurretUpdate_Orig_Interface = GUI_BuildingButtons.UpgradeTurretUpdate;
+    GUI_BuildingButtons.UpgradeTurretUpdate = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        if not Button then
+            XGUIEng.ShowWidget(WidgetID, 1);
+            XGUIEng.DisableButton(WidgetID, 0);
+            return GUI_BuildingButtons.UpgradeTurretUpdate_Orig_Interface();
+        end
+        Button.Update(WidgetID, EntityID);
+    end
+end
+
+function ModuleBuildingButtons.Local:OverrideBuySiegeEngineCart()
+    GUI_BuildingButtons.BuySiegeEngineCartClicked_Orig_Interface = GUI_BuildingButtons.BuySiegeEngineCartClicked;
+    GUI_BuildingButtons.BuySiegeEngineCartClicked = function(_EntityType)
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button;
+        if WidgetName == "BuyCatapultCart"
+        or WidgetName == "BuySiegeTowerCart"
+        or WidgetName == "BuyBatteringRamCart" then
+            Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        end
+        if not Button then
+            return GUI_BuildingButtons.BuySiegeEngineCartClicked_Orig_Interface(_EntityType);
+        end
+        Button.Action(WidgetID, EntityID);
+    end
+
+    GUI_BuildingButtons.BuySiegeEngineCartMouseOver_Orig_Interface = GUI_BuildingButtons.BuySiegeEngineCartMouseOver;
+    GUI_BuildingButtons.BuySiegeEngineCartMouseOver = function(_EntityType, _Right)
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button;
+        if WidgetName == "BuyCatapultCart"
+        or WidgetName == "BuySiegeTowerCart"
+        or WidgetName == "BuyBatteringRamCart" then
+            Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        end
+        if not Button then
+            return GUI_BuildingButtons.BuySiegeEngineCartMouseOver_Orig_Interface(_EntityType, _Right);
+        end
+        Button.Tooltip(WidgetID, EntityID);
+    end
+
+    GUI_BuildingButtons.BuySiegeEngineCartUpdate_Orig_Interface = GUI_BuildingButtons.BuySiegeEngineCartUpdate;
+    GUI_BuildingButtons.BuySiegeEngineCartUpdate = function(_EntityType)
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
+        local EntityID = GUI.GetSelectedEntity();
+        local Button;
+        if WidgetName == "BuyCatapultCart"
+        or WidgetName == "BuySiegeTowerCart"
+        or WidgetName == "BuyBatteringRamCart" then
+            Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
+        end
+        if not Button then
+            if WidgetName == "BuyBatteringRamCart" then
+                SetIcon(WidgetID, {9, 2});
+            elseif WidgetName == "BuySiegeTowerCart" then
+                SetIcon(WidgetID, {9, 3});
+            elseif WidgetName == "BuyCatapultCart" then
+                SetIcon(WidgetID, {9, 1});
+            end
+            XGUIEng.ShowWidget(WidgetID, 1);
+            XGUIEng.DisableButton(WidgetID, 0);
+            return GUI_BuildingButtons.BuySiegeEngineCartUpdate_Orig_Interface(_EntityType);
+        end
+        Button.Update(WidgetID, EntityID);
+    end
+end
+
+function ModuleBuildingButtons.Local:OverrideUpgradeBuilding()
+    GUI_BuildingButtons.UpgradeClicked = function()
+        local WidgetID = XGUIEng.GetCurrentWidgetID();
+        local EntityID = GUI.GetSelectedEntity();
+        if Logic.CanCancelUpgradeBuilding(EntityID) then
+            Sound.FXPlay2DSound("ui\\menu_click");
+            GUI.CancelBuildingUpgrade(EntityID);
+            XGUIEng.ShowAllSubWidgets("/InGame/Root/Normal/BuildingButtons", 1);
+            API.BroadcastScriptCommand(QSB.ScriptCommands.CancelBuildingUpgrade, EntityID, GUI.GetPlayerID());
+            return;
+        end
+        local Costs = GUI_BuildingButtons.GetUpgradeCosts();
+        local CanBuyBoolean, CanNotBuyString = AreCostsAffordable(Costs);
+        if CanBuyBoolean == true then
+            Sound.FXPlay2DSound("ui\\menu_click");
+            GUI.UpgradeBuilding(EntityID, nil);
+            StartKnightVoiceForPermanentSpecialAbility(Entities.U_KnightWisdom);
+            if WidgetID ~= 0 then
+                SaveButtonPressed(WidgetID);
+            end
+            API.BroadcastScriptCommand(QSB.ScriptCommands.StartBuildingUpgrade, EntityID, GUI.GetPlayerID());
+        else
+            Message(CanNotBuyString);
+        end
+    end
+end
+
+function ModuleBuildingButtons.Local:OverrideStartSermon()
+    function GUI_BuildingButtons.StartSermonClicked()
+        local PlayerID = GUI.GetPlayerID();
+        if Logic.CanSermonBeActivated(PlayerID) then
+            GUI.ActivateSermon(PlayerID);
+            StartKnightVoiceForPermanentSpecialAbility(Entities.U_KnightHealing);
+            GUI.AddBuff(Buffs.Buff_Sermon);
+            local CathedralID = Logic.GetCathedral(PlayerID);
+            local x, y = Logic.GetEntityPosition(CathedralID);
+            local z = 0;
+            Sound.FXPlay3DSound("buildings\\building_start_sermon", x, y, z);
+            API.BroadcastScriptCommand(QSB.ScriptCommands.StartSermon, GUI.GetPlayerID());
+        end
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+
+function ModuleBuildingButtons.Local:InitBackupPositions()
+    for k, v in pairs(self.BuildingButtons.Configuration) do
+        local x, y = XGUIEng.GetWidgetLocalPosition("/InGame/Root/Normal/BuildingButtons/" ..k);
+        self.BuildingButtons.Configuration[k].OriginalPosition = {x, y};
+    end
+end
+
+function ModuleBuildingButtons.Local:GetButtonsForOverwrite(_ID, _Amount)
+    local Buttons = {};
+    local Type = Logic.GetEntityType(_ID);
+    local TypeName = Logic.GetEntityTypeName(Type);
+    for k, v in pairs(self.BuildingButtons.Configuration) do
+        if #Buttons == _Amount then
+            break;
+        end
+        if not TypeName:find(v.TypeExclusion) then
+            table.insert(Buttons, k);
+        end
+    end
+    assert(#Buttons == _Amount);
+    table.sort(Buttons);
+    return Buttons;
+end
+
+function ModuleBuildingButtons.Local:AddButtonBinding(_Type, _X, _Y, _ActionFunction, _TooltipController, _UpdateController)
+    if not self.BuildingButtons.Bindings[_Type] then
+        self.BuildingButtons.Bindings[_Type] = {};
+    end
+    if #self.BuildingButtons.Bindings[_Type] < 6 then
+        self.BuildingButtons.BindingCounter = self.BuildingButtons.BindingCounter +1;
+        table.insert(self.BuildingButtons.Bindings[_Type], {
+            ID       = self.BuildingButtons.BindingCounter,
+            Position = {_X, _Y},
+            Action   = _ActionFunction,
+            Tooltip  = _TooltipController,
+            Update   = _UpdateController,
+        });
+        return self.BuildingButtons.BindingCounter;
+    end
+    return 0;
+end
+
+function ModuleBuildingButtons.Local:RemoveButtonBinding(_Type, _ID)
+    if not self.BuildingButtons.Bindings[_Type] then
+        self.BuildingButtons.Bindings[_Type] = {};
+    end
+    for i= #self.BuildingButtons.Bindings[_Type], 1, -1 do
+        if self.BuildingButtons.Bindings[_Type][i].ID == _ID then
+            table.remove(self.BuildingButtons.Bindings[_Type], i);
+        end
+    end
+end
+
+function ModuleBuildingButtons.Local:BindButtons(_ID)
+    if _ID == nil or _ID == 0 or (Logic.IsBuilding(_ID) == 0 and not Logic.IsWall(_ID)) then
+        return self:UnbindButtons();
+    end
+    local Name = Logic.GetEntityName(_ID);
+    local Type = Logic.GetEntityType(_ID);
+
+    local Key;
+    if self.BuildingButtons.Bindings[Name] then
+        Key = Name;
+    end
+    -- TODO: Proper inclusion of categories
+    -- The problem is, that an entity might have more than one category. So this
+    -- makes direct mapping impossible...
+    if not Key and self.BuildingButtons.Bindings[Type] then
+        Key = Type;
+    end
+    if not Key and self.BuildingButtons.Bindings[0] then
+        Key = 0;
+    end
+
+    if Key then
+        local ButtonNames = self:GetButtonsForOverwrite(_ID, #self.BuildingButtons.Bindings[Key]);
+        local DefaultPositionIndex = 0;
+        for i= 1, #self.BuildingButtons.Bindings[Key] do
+            self.BuildingButtons.Configuration[ButtonNames[i]].Bind = self.BuildingButtons.Bindings[Key][i];
+            XGUIEng.ShowWidget("/InGame/Root/Normal/BuildingButtons/" ..ButtonNames[i], 1);
+            XGUIEng.DisableButton("/InGame/Root/Normal/BuildingButtons/" ..ButtonNames[i], 0);
+            local Position = self.BuildingButtons.Bindings[Key][i].Position;
+            if not Position[1] or not Position[2] then
+                local AnchorPosition = {12, 296};
+                Position[1] = AnchorPosition[1] + (64 * DefaultPositionIndex);
+                Position[2] = AnchorPosition[2];
+                DefaultPositionIndex = DefaultPositionIndex +1;
+            end
+            XGUIEng.SetWidgetLocalPosition(
+                "/InGame/Root/Normal/BuildingButtons/" ..ButtonNames[i],
+                Position[1],
+                Position[2]
+            );
+        end
+    end
+end
+
+function ModuleBuildingButtons.Local:UnbindButtons()
+    for k, v in pairs(self.BuildingButtons.Configuration) do
+        local Position = self.BuildingButtons.Configuration[k].OriginalPosition;
+        if Position then
+            XGUIEng.SetWidgetLocalPosition("/InGame/Root/Normal/BuildingButtons/" ..k, Position[1], Position[2]);
+        end
+        self.BuildingButtons.Configuration[k].Bind = nil;
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+
+Revision:RegisterModule(ModuleBuildingButtons);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Zusätzliche Buttons im Gebäudemenü platzieren.
+--
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
+-- <li><a href="QSB_1_GUI.api.html">(0) Benutzerschnittstelle</a></li>
+-- </ul>
+--
+-- @within Beschreibung
+-- @set sort=true
+--
+
+---
+-- Events, auf die reagiert werden kann.
+--
+-- @field UpgradeStarted     Ein Ausbau wurde gestartet. (Parameter: EntityID, PlayerID)
+-- @field UpgradeCanceled    Ein Ausbau wurde abgebrochen. (Parameter: EntityID, PlayerID)
+-- @field FestivalStarted    Ein Fest wurde gestartet. (Parameter: PlayerID)
+-- @field SermonStarted      Eine Predigt wurde gestartet. (Parameter: PlayerID)
+-- @field TheatrePlayStarted Ein Schauspiel wurde abgebrochen. (Parameter: EntityID, PlayerID)
+--
+QSB.ScriptEvents = QSB.ScriptEvents or {};
+
+---
+-- Fügt einen allgemeinen Gebäudeschalter an der Position hinzu.
+--
+-- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+-- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+-- Update-Funktion.
+--
+-- Die Position wird lokal zur linken oberen Ecke des Fensters angegeben.
+--
+-- @param[type=number]   _X       X-Position des Button
+-- @param[type=number]   _Y       Y-Position des Button
+-- @param[type=function] _Action  Funktion für die Aktion beim Klicken
+-- @param[type=function] _Tooltip Funktion für die angezeigte Beschreibung
+-- @param[type=function] _Update  Funktion für Anzeige und Verfügbarkeit
+-- @return[type=number] ID des Bindung
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- SpecialButtonID = API.AddBuildingButton(
+--     -- Position (X, Y)
+--     230, 180,
+--     -- Aktion
+--     function(_WidgetID, _BuildingID)
+--         GUI.AddNote("Hier passiert etwas!");
+--     end,
+--     -- Tooltip
+--     function(_WidgetID, _BuildingID)
+--         -- Es MUSS ein Kostentooltip verwendet werden.
+--         API.SetTooltipCosts("Beschreibung", "Das ist die Beschreibung!");
+--     end,
+--     -- Update
+--     function(_WidgetID, _BuildingID)
+--         -- Ausblenden, wenn noch in Bau
+--         if Logic.IsConstructionComplete(_BuildingID) == 0 then
+--             XGUIEng.ShowWidget(_WidgetID, 0);
+--             return;
+--         end
+--         -- Deaktivieren, wenn ausgebaut wird.
+--         if Logic.IsBuildingBeingUpgraded(_BuildingID) then
+--             XGUIEng.DisableButton(_WidgetID, 1);
+--         end
+--         SetIcon(_WidgetID, {1, 1});
+--     end
+-- );
+--
+function API.AddBuildingButtonAtPosition(_X, _Y, _Action, _Tooltip, _Update)
+    return ModuleBuildingButtons.Local:AddButtonBinding(0, _X, _Y, _Action, _Tooltip, _Update);
+end
+
+---
+-- Fügt einen allgemeinen Gebäudeschalter hinzu.
+--
+-- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+-- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+-- Update-Funktion.
+--
+-- @param[type=function] _Action  Funktion für die Aktion beim Klicken
+-- @param[type=function] _Tooltip Funktion für die angezeigte Beschreibung
+-- @param[type=function] _Update  Funktion für Anzeige und Verfügbarkeit
+-- @return[type=number] ID des Bindung
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- SpecialButtonID = API.AddBuildingButton(
+--     -- Aktion
+--     function(_WidgetID, _BuildingID)
+--         GUI.AddNote("Hier passiert etwas!");
+--     end,
+--     -- Tooltip
+--     function(_WidgetID, _BuildingID)
+--         -- Es MUSS ein Kostentooltip verwendet werden.
+--         API.SetTooltipCosts("Beschreibung", "Das ist die Beschreibung!");
+--     end,
+--     -- Update
+--     function(_WidgetID, _BuildingID)
+--         -- Ausblenden, wenn noch in Bau
+--         if Logic.IsConstructionComplete(_BuildingID) == 0 then
+--             XGUIEng.ShowWidget(_WidgetID, 0);
+--             return;
+--         end
+--         -- Deaktivieren, wenn ausgebaut wird.
+--         if Logic.IsBuildingBeingUpgraded(_BuildingID) then
+--             XGUIEng.DisableButton(_WidgetID, 1);
+--         end
+--         SetIcon(_WidgetID, {1, 1});
+--     end
+-- );
+--
+function API.AddBuildingButton(_Action, _Tooltip, _Update)
+    return API.AddBuildingButtonAtPosition(nil, nil, _Action, _Tooltip, _Update);
+end
+
+---
+-- Fügt einen Gebäudeschalter für den Entity-Typ hinzu.
+--
+-- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+-- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+-- Update-Funktion. Wenn ein Typ einen Button zugewiesen bekommt, werden alle 
+-- allgemeinen Buttons für den Typ ignoriert.
+--
+-- @param[type=number]   _Type    Typ des Gebäudes
+-- @param[type=number]   _X       X-Position des Button
+-- @param[type=number]   _Y       Y-Position des Button
+-- @param[type=function] _Action  Funktion für die Aktion beim Klicken
+-- @param[type=function] _Tooltip Funktion für die angezeigte Beschreibung
+-- @param[type=function] _Update  Funktion für Anzeige und Verfügbarkeit
+-- @return[type=number] ID des Bindung
+-- @within Anwenderfunktionen
+-- @see API.AddBuildingButton
+--
+function API.AddBuildingButtonByTypeAtPosition(_Type, _X, _Y, _Action, _Tooltip, _Update)
+    return ModuleBuildingButtons.Local:AddButtonBinding(_Type, _X, _Y, _Action, _Tooltip, _Update);
+end
+
+---
+-- Fügt einen Gebäudeschalter für den Entity-Typ hinzu.
+--
+-- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+-- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+-- Update-Funktion. Wenn ein Typ einen Button zugewiesen bekommt, werden alle 
+-- allgemeinen Buttons für den Typ ignoriert.
+--
+-- @param[type=number]   _Type    Typ des Gebäudes
+-- @param[type=function] _Action  Funktion für die Aktion beim Klicken
+-- @param[type=function] _Tooltip Funktion für die angezeigte Beschreibung
+-- @param[type=function] _Update  Funktion für Anzeige und Verfügbarkeit
+-- @return[type=number] ID des Bindung
+-- @within Anwenderfunktionen
+-- @see API.AddBuildingButton
+--
+function API.AddBuildingButtonByType(_Type, _Action, _Tooltip, _Update)
+    return API.AddBuildingButtonByTypeAtPosition(_Type, nil, nil, _Action, _Tooltip, _Update);
+end
+
+---
+-- Fügt einen Gebäudeschalter für das Entity hinzu.
+--
+-- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+-- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+-- Update-Funktion. Wenn ein Entity einen Button zugewiesen bekommt, werden
+-- alle allgemeinen Buttons und alle Buttons für Typen für das Entity ignoriert.
+--
+-- @param[type=function] _ScriptName Scriptname des Entity
+-- @param[type=number]   _X          X-Position des Button
+-- @param[type=number]   _Y          Y-Position des Button
+-- @param[type=function] _Action     Funktion für die Aktion beim Klicken
+-- @param[type=function] _Tooltip    Funktion für die angezeigte Beschreibung
+-- @param[type=function] _Update     Funktion für Anzeige und Verfügbarkeit
+-- @return[type=number] ID des Bindung
+-- @within Anwenderfunktionen
+-- @see API.AddBuildingButton
+--
+function API.AddBuildingButtonByEntityAtPosition(_ScriptName, _X, _Y, _Action, _Tooltip, _Update)
+    return ModuleBuildingButtons.Local:AddButtonBinding(_ScriptName, _X, _Y, _Action, _Tooltip, _Update);
+end
+
+---
+-- Fügt einen Gebäudeschalter für das Entity hinzu.
+--
+-- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
+-- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
+-- Update-Funktion. Wenn ein Entity einen Button zugewiesen bekommt, werden
+-- alle allgemeinen Buttons und alle Buttons für Typen für das Entity ignoriert.
+--
+-- @param[type=function] _ScriptName Scriptname des Entity
+-- @param[type=function] _Action     Funktion für die Aktion beim Klicken
+-- @param[type=function] _Tooltip    Funktion für die angezeigte Beschreibung
+-- @param[type=function] _Update     Funktion für Anzeige und Verfügbarkeit
+-- @return[type=number] ID des Bindung
+-- @within Anwenderfunktionen
+-- @see API.AddBuildingButton
+--
+function API.AddBuildingButtonByEntity(_ScriptName, _Action, _Tooltip, _Update)
+    return API.AddBuildingButtonByEntityAtPosition(_ScriptName, nil, nil, _Action, _Tooltip, _Update);
+end
+
+---
+-- Entfernt einen allgemeinen Gebäudeschalter.
+--
+-- @param[type=number] _ID ID des Bindung
+-- @within Anwenderfunktionen
+-- @usage
+-- API.DropBuildingButton(SpecialButtonID);
+--
+function API.DropBuildingButton(_ID)
+    return ModuleBuildingButtons.Local:RemoveButtonBinding(0, _ID);
+end
+
+---
+-- Entfernt einen Gebäudeschalter vom Gebäudetypen.
+--
+-- @param[type=number] _Type Typ des Gebäudes
+-- @param[type=number] _ID   ID des Bindung
+-- @within Anwenderfunktionen
+-- @usage
+-- API.DropBuildingButtonFromType(Entities.B_Bakery, SpecialButtonID);
+--
+function API.DropBuildingButtonFromType(_Type, _ID)
+    return ModuleBuildingButtons.Local:RemoveButtonBinding(_Type, _ID);
+end
+
+---
+-- Entfernt einen Gebäudeschalter vom benannten Gebäude.
+--
+-- @param[type=string] _ScriptName Skriptname des Entity
+-- @param[type=number] _ID         ID des Bindung
+-- @within Anwenderfunktionen
+-- @usage
+-- API.DropBuildingButtonFromEntity("Bakery", SpecialButtonID);
+--
+function API.DropBuildingButtonFromEntity(_ScriptName, _ID)
+    return ModuleBuildingButtons.Local:RemoveButtonBinding(_ScriptName, _ID);
 end
 
 --[[
@@ -20536,7 +22307,7 @@ function ModuleKnightTitleRequirements.Local:OnEvent(_ID, ...)
         end
     elseif _ID == QSB.ScriptEvents.GoodsConsumed then
         local PlayerID = Logic.EntityGetPlayer(arg[1]);
-        self.Local:RegisterConsumedGoods(PlayerID, arg[2]);
+        self:RegisterConsumedGoods(PlayerID, arg[2]);
     end
 end
 
@@ -22692,8 +24463,6 @@ end
 function ModuleQuest.Global:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
-    elseif _ID == QSB.ScriptEvents.ChatClosed then
-        self:ProcessChatInput(arg[1], arg[2], arg[3]);
     end
 end
 
@@ -23180,9 +24949,6 @@ function ModuleQuest.Global:FindQuestNames(_Pattern, _ExactName)
 end
 
 function ModuleQuest.Global:ProcessChatInput(_Text, _PlayerID, _IsDebug)
-    if not _IsDebug or GUI.GetPlayerID() ~= _PlayerID then
-        return;
-    end
     local Commands = Revision.Text:CommandTokenizer(_Text);
     for i= 1, #Commands, 1 do
         if Commands[1] == "fail" or Commands[1] == "restart"
@@ -23222,7 +24988,20 @@ end
 function ModuleQuest.Local:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.ChatClosed then
+        self:ProcessChatInput(arg[1], arg[2], arg[3]);
     end
+end
+
+function ModuleQuest.Local:ProcessChatInput(_Text, _PlayerID, _IsDebug)
+    if not _IsDebug or GUI.GetPlayerID() ~= _PlayerID then
+        return;
+    end
+    -- FIXME: This will not work in Multiplayer (Does it need to?)
+    GUI.SendScriptCommand(string.format(
+        [[ModuleQuest.Global:ProcessChatInput("%s", %d, %s)]],
+        _Text, _PlayerID, tostring(_IsDebug == true)
+    ));
 end
 
 -- -------------------------------------------------------------------------- --
@@ -23542,7 +25321,7 @@ function ModuleTypewriter.Global:OnGameStart()
     end);
 end
 
-function ModuleQuest.Global:OnEvent(_ID, ...)
+function ModuleTypewriter.Global:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     end
@@ -23590,8 +25369,7 @@ function ModuleTypewriter.Global:PlayTypewriter(_Data)
 
     API.SendScriptEvent(QSB.ScriptEvents.TypewriterStarted, _Data.PlayerID, _Data);
     Logic.ExecuteInLuaLocalState(string.format(
-        [[API.SendScriptEvent(%d, %d, %s)]],
-        QSB.ScriptEvents.TypewriterStarted,
+        [[API.SendScriptEvent(QSB.ScriptEvents.TypewriterStarted, %d, %s)]],
         _Data.PlayerID,
         table.tostring(_Data)
     ));
@@ -23617,8 +25395,7 @@ function ModuleTypewriter.Global:FinishTypewriter(_PlayerID)
         ));
         API.SendScriptEvent(QSB.ScriptEvents.TypewriterEnded, EventPlayer, EventData);
         Logic.ExecuteInLuaLocalState(string.format(
-            [[API.SendScriptEvent(%d, %d, %s)]],
-            QSB.ScriptEvents.TypewriterEnded,
+            [[API.SendScriptEvent(QSB.ScriptEvents.TypewriterEnded, %d, %s)]],
             EventPlayer,
             table.tostring(EventData)
         ));
@@ -23732,7 +25509,7 @@ function ModuleTypewriter.Local:OnGameStart()
     QSB.ScriptEvents.TypewriterEnded = API.RegisterScriptEvent("Event_TypewriterEnded");
 end
 
-function ModuleQuest.Local:OnEvent(_ID, ...)
+function ModuleTypewriter.Local:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     end
@@ -23894,838 +25671,6 @@ function API.StartTypewriter(_Data)
     return ModuleTypewriter.Global:StartTypewriter(_Data);
 end
 API.SimpleTypewriter = API.StartTypewriter;
-
---[[
-Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
-
-This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
-You may use and modify this file unter the terms of the MIT licence.
-(See https://en.wikipedia.org/wiki/MIT_License)
-]]
-
--- -------------------------------------------------------------------------- --
-
-ModuleBuildingButtons = {
-    Properties = {
-        Name = "ModuleBuildingButtons",
-        Version = "4.0.0 (ALPHA 1.0.0)",
-    },
-
-    Global = {},
-    Local = {
-        BuildingButtons = {
-            BindingCounter = 0,
-            Bindings = {},
-            Configuration = {
-                ["BuyAmmunitionCart"] = {
-                    TypeExclusion = "^B_.*StoreHouse",
-                    OriginalPosition = nil,
-                    Bind = nil,
-                },
-                ["BuyBattallion"] = {
-                    TypeExclusion = "^B_[CB]a[sr][tr][la][ec]",
-                    OriginalPosition = nil,
-                    Bind = nil,
-                },
-                ["PlaceField"] = {
-                    TypeExclusion = "^B_.*[BFH][aei][erv][kme]",
-                    OriginalPosition = nil,
-                    Bind = nil,
-                },
-                ["StartFestival"] = {
-                    TypeExclusion = "^B_Marketplace",
-                    OriginalPosition = nil,
-                    Bind = nil,
-                },
-                ["StartTheatrePlay"] = {
-                    TypeExclusion = "^B_Theatre",
-                    OriginalPosition = nil,
-                    Bind = nil,
-                },
-                ["UpgradeTurret"] = {
-                    TypeExclusion = "^B_WallTurret",
-                    OriginalPosition = nil,
-                    Bind = nil,
-                },
-                ["BuyBatteringRamCart"] = {
-                    TypeExclusion = "^B_SiegeEngineWorkshop",
-                    OriginalPosition = nil,
-                    Bind = nil,
-                },
-                ["BuyCatapultCart"] = {
-                    TypeExclusion = "^B_SiegeEngineWorkshop",
-                    OriginalPosition = nil,
-                    Bind = nil,
-                },
-                ["BuySiegeTowerCart"] = {
-                    TypeExclusion = "^B_SiegeEngineWorkshop",
-                    OriginalPosition = nil,
-                    Bind = nil,
-                },
-            },
-        },
-    },
-
-    Shared = {};
-}
-
--- Global ------------------------------------------------------------------- --
-
-function ModuleBuildingButtons.Global:OnGameStart()
-    QSB.ScriptEvents.UpgradeCanceled = API.RegisterScriptEvent("Event_UpgradeCanceled");
-    QSB.ScriptEvents.UpgradeStarted = API.RegisterScriptEvent("Event_UpgradeStarted");
-
-    API.RegisterScriptCommand("Cmd_StartBuildingUpgrade", function(_BuildingID, _PlayerID)
-        if Logic.IsBuildingBeingUpgraded(_BuildingID) then
-            ModuleBuildingButtons.Global:SendStartBuildingUpgradeEvent(_BuildingID, _PlayerID);
-        end
-    end);
-    API.RegisterScriptCommand("Cmd_CancelBuildingUpgrade", function(_BuildingID, _PlayerID)
-        if not Logic.IsBuildingBeingUpgraded(_BuildingID) then
-            ModuleBuildingButtons.Global:SendCancelBuildingUpgradeEvent(_BuildingID, _PlayerID);
-        end
-    end);
-end
-
-function ModuleBuildingButtons.Global:OnEvent(_ID, ...)
-    if _ID == QSB.ScriptEvents.LoadscreenClosed then
-        self.LoadscreenClosed = true;
-    end
-end
-
-function ModuleBuildingButtons.Global:SendStartBuildingUpgradeEvent(_BuildingID, _PlayerID)
-    API.SendScriptEvent(QSB.ScriptEvents.UpgradeStarted, _BuildingID, _PlayerID);
-    Logic.ExecuteInLuaLocalState(string.format(
-        [[API.SendScriptEvent(%d, %d, %d)]],
-        QSB.ScriptEvents.UpgradeStarted,
-        _BuildingID,
-        _PlayerID
-    ));
-end
-
-function ModuleBuildingButtons.Global:SendCancelBuildingUpgradeEvent(_BuildingID, _PlayerID)
-    API.SendScriptEvent(QSB.ScriptEvents.UpgradeCanceled, _BuildingID, _PlayerID);
-    Logic.ExecuteInLuaLocalState(string.format(
-        [[API.SendScriptEvent(%d, %d, %d)]],
-        QSB.ScriptEvents.UpgradeCanceled,
-        _BuildingID,
-        _PlayerID
-    ));
-end
-
--- Local -------------------------------------------------------------------- --
-
-function ModuleBuildingButtons.Local:OnGameStart()
-    QSB.ScriptEvents.UpgradeCanceled = API.RegisterScriptEvent("Event_UpgradeCanceled");
-    QSB.ScriptEvents.UpgradeStarted = API.RegisterScriptEvent("Event_UpgradeStarted");
-
-    self:InitBackupPositions();
-    self:OverrideOnSelectionChanged();
-    self:OverrideBuyAmmunitionCart();
-    self:OverrideBuyBattalion();
-    self:OverrideBuySiegeEngineCart();
-    self:OverridePlaceField();
-    self:OverrideStartFestival();
-    self:OverrideStartTheatrePlay();
-    self:OverrideUpgradeTurret();
-    self:OverrideUpgradeBuilding();
-end
-
-function ModuleBuildingButtons.Local:OnEvent(_ID, ...)
-    if _ID == QSB.ScriptEvents.LoadscreenClosed then
-        self.LoadscreenClosed = true;
-    end
-end
-
--- -------------------------------------------------------------------------- --
-
-function ModuleBuildingButtons.Local:OverrideOnSelectionChanged()
-    GameCallback_GUI_SelectionChanged_Orig_Interface = GameCallback_GUI_SelectionChanged;
-    GameCallback_GUI_SelectionChanged = function(_Source)
-        GameCallback_GUI_SelectionChanged_Orig_Interface(_Source);
-        ModuleBuildingButtons.Local:UnbindButtons();
-        ModuleBuildingButtons.Local:BindButtons(GUI.GetSelectedEntity());
-    end
-end
-
-function ModuleBuildingButtons.Local:OverrideBuyAmmunitionCart()
-    GUI_BuildingButtons.BuyAmmunitionCartClicked_Orig_Interface = GUI_BuildingButtons.BuyAmmunitionCartClicked;
-    GUI_BuildingButtons.BuyAmmunitionCartClicked = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        if not Button then
-            return GUI_BuildingButtons.BuyAmmunitionCartClicked_Orig_Interface();
-        end
-        Button.Action(WidgetID, EntityID);
-    end
-
-    GUI_BuildingButtons.BuyAmmunitionCartUpdate_Orig_Interface = GUI_BuildingButtons.BuyAmmunitionCartUpdate;
-    GUI_BuildingButtons.BuyAmmunitionCartUpdate = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        if not Button then
-            SetIcon(WidgetID, {10, 4});
-            XGUIEng.ShowWidget(WidgetID, 1);
-            XGUIEng.DisableButton(WidgetID, 0);
-            return GUI_BuildingButtons.BuyAmmunitionCartUpdate_Orig_Interface();
-        end
-        Button.Update(WidgetID, EntityID);
-    end
-end
-
-function ModuleBuildingButtons.Local:OverrideBuyBattalion()
-    GUI_BuildingButtons.BuyBattalionClicked_Orig_Interface = GUI_BuildingButtons.BuyBattalionClicked;
-    GUI_BuildingButtons.BuyBattalionClicked = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        if not Button then
-            return GUI_BuildingButtons.BuyBattalionClicked_Orig_Interface();
-        end
-        Button.Action(WidgetID, EntityID);
-    end
-
-    GUI_BuildingButtons.BuyBattalionMouseOver_Orig_Interface = GUI_BuildingButtons.BuyBattalionMouseOver;
-    GUI_BuildingButtons.BuyBattalionMouseOver = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button;
-        if ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName] then
-            Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        end
-        if not Button then
-            return GUI_BuildingButtons.BuyBattalionMouseOver_Orig_Interface();
-        end
-        Button.Tooltip(WidgetID, EntityID);
-    end
-
-    GUI_BuildingButtons.BuyBattalionUpdate_Orig_Interface = GUI_BuildingButtons.BuyBattalionUpdate;
-    GUI_BuildingButtons.BuyBattalionUpdate = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        if not Button then
-            XGUIEng.ShowWidget(WidgetID, 1);
-            XGUIEng.DisableButton(WidgetID, 0);
-            return GUI_BuildingButtons.BuyBattalionUpdate_Orig_Interface();
-        end
-        Button.Update(WidgetID, EntityID);
-    end
-end
-
-function ModuleBuildingButtons.Local:OverridePlaceField()
-    GUI_BuildingButtons.PlaceFieldClicked_Orig_Interface = GUI_BuildingButtons.PlaceFieldClicked;
-    GUI_BuildingButtons.PlaceFieldClicked = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        if not Button then
-            return GUI_BuildingButtons.PlaceFieldClicked_Orig_Interface();
-        end
-        Button.Action(WidgetID, EntityID);
-    end
-
-    GUI_BuildingButtons.PlaceFieldMouseOver_Orig_Interface = GUI_BuildingButtons.PlaceFieldMouseOver;
-    GUI_BuildingButtons.PlaceFieldMouseOver = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        if not Button then
-            return GUI_BuildingButtons.PlaceFieldMouseOver_Orig_Interface();
-        end
-        Button.Tooltip(WidgetID, EntityID);
-    end
-
-    GUI_BuildingButtons.PlaceFieldUpdate_Orig_Interface = GUI_BuildingButtons.PlaceFieldUpdate;
-    GUI_BuildingButtons.PlaceFieldUpdate = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        if not Button then
-            XGUIEng.ShowWidget(WidgetID, 1);
-            XGUIEng.DisableButton(WidgetID, 0);
-            return GUI_BuildingButtons.PlaceFieldUpdate_Orig_Interface();
-        end
-        Button.Update(WidgetID, EntityID);
-    end
-end
-
-function ModuleBuildingButtons.Local:OverrideStartFestival()
-    GUI_BuildingButtons.StartFestivalClicked_Orig_Interface = GUI_BuildingButtons.StartFestivalClicked;
-    GUI_BuildingButtons.StartFestivalClicked = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        if not Button then
-            return GUI_BuildingButtons.StartFestivalClicked_Orig_Interface();
-        end
-        Button.Action(WidgetID, EntityID);
-    end
-
-    GUI_BuildingButtons.StartFestivalMouseOver_Orig_Interface = GUI_BuildingButtons.StartFestivalMouseOver;
-    GUI_BuildingButtons.StartFestivalMouseOver = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        if not Button then
-            return GUI_BuildingButtons.StartFestivalMouseOver_Orig_Interface();
-        end
-        Button.Tooltip(WidgetID, EntityID);
-    end
-
-    GUI_BuildingButtons.StartFestivalUpdate_Orig_Interface = GUI_BuildingButtons.StartFestivalUpdate;
-    GUI_BuildingButtons.StartFestivalUpdate = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        if not Button then
-            SetIcon(WidgetID, {4, 15});
-            XGUIEng.ShowWidget(WidgetID, 1);
-            XGUIEng.DisableButton(WidgetID, 0);
-            return GUI_BuildingButtons.StartFestivalUpdate_Orig_Interface();
-        end
-        Button.Update(WidgetID, EntityID);
-    end
-end
-
-function ModuleBuildingButtons.Local:OverrideStartTheatrePlay()
-    GUI_BuildingButtons.StartTheatrePlayClicked_Orig_Interface = GUI_BuildingButtons.StartTheatrePlayClicked;
-    GUI_BuildingButtons.StartTheatrePlayClicked = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        if not Button then
-            return GUI_BuildingButtons.StartTheatrePlayClicked_Orig_Interface();
-        end
-        Button.Action(WidgetID, EntityID);
-    end
-
-    GUI_BuildingButtons.StartTheatrePlayMouseOver_Orig_Interface = GUI_BuildingButtons.StartTheatrePlayMouseOver;
-    GUI_BuildingButtons.StartTheatrePlayMouseOver = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        if not Button then
-            return GUI_BuildingButtons.StartTheatrePlayMouseOver_Orig_Interface();
-        end
-        Button.Tooltip(WidgetID, EntityID);
-    end
-
-    GUI_BuildingButtons.StartTheatrePlayUpdate_Orig_Interface = GUI_BuildingButtons.StartTheatrePlayUpdate;
-    GUI_BuildingButtons.StartTheatrePlayUpdate = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        if not Button then
-            SetIcon(WidgetID, {16, 2});
-            XGUIEng.ShowWidget(WidgetID, 1);
-            XGUIEng.DisableButton(WidgetID, 0);
-            return GUI_BuildingButtons.StartTheatrePlayUpdate_Orig_Interface();
-        end
-        Button.Update(WidgetID, EntityID);
-    end
-end
-
-function ModuleBuildingButtons.Local:OverrideUpgradeTurret()
-    GUI_BuildingButtons.UpgradeTurretClicked_Orig_Interface = GUI_BuildingButtons.UpgradeTurretClicked;
-    GUI_BuildingButtons.UpgradeTurretClicked = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        if not Button then
-            return GUI_BuildingButtons.UpgradeTurretClicked_Orig_Interface();
-        end
-        Button.Action(WidgetID, EntityID);
-    end
-
-    GUI_BuildingButtons.UpgradeTurretMouseOver_Orig_Interface = GUI_BuildingButtons.UpgradeTurretMouseOver;
-    GUI_BuildingButtons.UpgradeTurretMouseOver = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        if not Button then
-            return GUI_BuildingButtons.UpgradeTurretMouseOver_Orig_Interface();
-        end
-        Button.Tooltip(WidgetID, EntityID);
-    end
-
-    GUI_BuildingButtons.UpgradeTurretUpdate_Orig_Interface = GUI_BuildingButtons.UpgradeTurretUpdate;
-    GUI_BuildingButtons.UpgradeTurretUpdate = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        if not Button then
-            XGUIEng.ShowWidget(WidgetID, 1);
-            XGUIEng.DisableButton(WidgetID, 0);
-            return GUI_BuildingButtons.UpgradeTurretUpdate_Orig_Interface();
-        end
-        Button.Update(WidgetID, EntityID);
-    end
-end
-
-function ModuleBuildingButtons.Local:OverrideBuySiegeEngineCart()
-    GUI_BuildingButtons.BuySiegeEngineCartClicked_Orig_Interface = GUI_BuildingButtons.BuySiegeEngineCartClicked;
-    GUI_BuildingButtons.BuySiegeEngineCartClicked = function(_EntityType)
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button;
-        if WidgetName == "BuyCatapultCart"
-        or WidgetName == "BuySiegeTowerCart"
-        or WidgetName == "BuyBatteringRamCart" then
-            Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        end
-        if not Button then
-            return GUI_BuildingButtons.BuySiegeEngineCartClicked_Orig_Interface(_EntityType);
-        end
-        Button.Action(WidgetID, EntityID);
-    end
-
-    GUI_BuildingButtons.BuySiegeEngineCartMouseOver_Orig_Interface = GUI_BuildingButtons.BuySiegeEngineCartMouseOver;
-    GUI_BuildingButtons.BuySiegeEngineCartMouseOver = function(_EntityType, _Right)
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button;
-        if WidgetName == "BuyCatapultCart"
-        or WidgetName == "BuySiegeTowerCart"
-        or WidgetName == "BuyBatteringRamCart" then
-            Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        end
-        if not Button then
-            return GUI_BuildingButtons.BuySiegeEngineCartMouseOver_Orig_Interface(_EntityType, _Right);
-        end
-        Button.Tooltip(WidgetID, EntityID);
-    end
-
-    GUI_BuildingButtons.BuySiegeEngineCartUpdate_Orig_Interface = GUI_BuildingButtons.BuySiegeEngineCartUpdate;
-    GUI_BuildingButtons.BuySiegeEngineCartUpdate = function(_EntityType)
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local WidgetName = XGUIEng.GetWidgetNameByID(WidgetID);
-        local EntityID = GUI.GetSelectedEntity();
-        local Button;
-        if WidgetName == "BuyCatapultCart"
-        or WidgetName == "BuySiegeTowerCart"
-        or WidgetName == "BuyBatteringRamCart" then
-            Button = ModuleBuildingButtons.Local.BuildingButtons.Configuration[WidgetName].Bind;
-        end
-        if not Button then
-            if WidgetName == "BuyBatteringRamCart" then
-                SetIcon(WidgetID, {9, 2});
-            elseif WidgetName == "BuySiegeTowerCart" then
-                SetIcon(WidgetID, {9, 3});
-            elseif WidgetName == "BuyCatapultCart" then
-                SetIcon(WidgetID, {9, 1});
-            end
-            XGUIEng.ShowWidget(WidgetID, 1);
-            XGUIEng.DisableButton(WidgetID, 0);
-            return GUI_BuildingButtons.BuySiegeEngineCartUpdate_Orig_Interface(_EntityType);
-        end
-        Button.Update(WidgetID, EntityID);
-    end
-end
-
-function ModuleBuildingButtons.Local:OverrideUpgradeBuilding()
-    GUI_BuildingButtons.UpgradeClicked = function()
-        local WidgetID = XGUIEng.GetCurrentWidgetID();
-        local EntityID = GUI.GetSelectedEntity();
-        if Logic.CanCancelUpgradeBuilding(EntityID) then
-            Sound.FXPlay2DSound("ui\\menu_click");
-            GUI.CancelBuildingUpgrade(EntityID);
-            XGUIEng.ShowAllSubWidgets("/InGame/Root/Normal/BuildingButtons", 1);
-            API.BroadcastScriptCommand(QSB.ScriptCommands.CancelBuildingUpgrade, EntityID, GUI.GetPlayerID());
-            return;
-        end
-        local Costs = GUI_BuildingButtons.GetUpgradeCosts();
-        local CanBuyBoolean, CanNotBuyString = AreCostsAffordable(Costs);
-        if CanBuyBoolean == true then
-            Sound.FXPlay2DSound("ui\\menu_click");
-            GUI.UpgradeBuilding(EntityID, nil);
-            StartKnightVoiceForPermanentSpecialAbility(Entities.U_KnightWisdom);
-            if WidgetID ~= 0 then
-                SaveButtonPressed(WidgetID);
-            end
-            API.BroadcastScriptCommand(QSB.ScriptCommands.StartBuildingUpgrade, EntityID, GUI.GetPlayerID());
-        else
-            Message(CanNotBuyString);
-        end
-    end
-end-- -------------------------------------------------------------------------- --
-
-function ModuleBuildingButtons.Local:InitBackupPositions()
-    for k, v in pairs(self.BuildingButtons.Configuration) do
-        local x, y = XGUIEng.GetWidgetLocalPosition("/InGame/Root/Normal/BuildingButtons/" ..k);
-        self.BuildingButtons.Configuration[k].OriginalPosition = {x, y};
-    end
-end
-
-function ModuleBuildingButtons.Local:GetButtonsForOverwrite(_ID, _Amount)
-    local Buttons = {};
-    local Type = Logic.GetEntityType(_ID);
-    local TypeName = Logic.GetEntityTypeName(Type);
-    for k, v in pairs(self.BuildingButtons.Configuration) do
-        if #Buttons == _Amount then
-            break;
-        end
-        if not TypeName:find(v.TypeExclusion) then
-            table.insert(Buttons, k);
-        end
-    end
-    assert(#Buttons == _Amount);
-    table.sort(Buttons);
-    return Buttons;
-end
-
-function ModuleBuildingButtons.Local:AddButtonBinding(_Type, _X, _Y, _ActionFunction, _TooltipController, _UpdateController)
-    if not self.BuildingButtons.Bindings[_Type] then
-        self.BuildingButtons.Bindings[_Type] = {};
-    end
-    if #self.BuildingButtons.Bindings[_Type] < 6 then
-        self.BuildingButtons.BindingCounter = self.BuildingButtons.BindingCounter +1;
-        table.insert(self.BuildingButtons.Bindings[_Type], {
-            ID       = self.BuildingButtons.BindingCounter,
-            Position = {_X, _Y},
-            Action   = _ActionFunction,
-            Tooltip  = _TooltipController,
-            Update   = _UpdateController,
-        });
-        return self.BuildingButtons.BindingCounter;
-    end
-    return 0;
-end
-
-function ModuleBuildingButtons.Local:RemoveButtonBinding(_Type, _ID)
-    if not self.BuildingButtons.Bindings[_Type] then
-        self.BuildingButtons.Bindings[_Type] = {};
-    end
-    for i= #self.BuildingButtons.Bindings[_Type], 1, -1 do
-        if self.BuildingButtons.Bindings[_Type][i].ID == _ID then
-            table.remove(self.BuildingButtons.Bindings[_Type], i);
-        end
-    end
-end
-
-function ModuleBuildingButtons.Local:BindButtons(_ID)
-    if _ID == nil or _ID == 0 or (Logic.IsBuilding(_ID) == 0 and not Logic.IsWall(_ID)) then
-        return self:UnbindButtons();
-    end
-    local Name = Logic.GetEntityName(_ID);
-    local Type = Logic.GetEntityType(_ID);
-
-    local Key;
-    if self.BuildingButtons.Bindings[Name] then
-        Key = Name;
-    end
-    -- TODO: Proper inclusion of categories
-    -- The problem is, that an entity might have more than one category. So this
-    -- makes direct mapping impossible...
-    if not Key and self.BuildingButtons.Bindings[Type] then
-        Key = Type;
-    end
-    if not Key and self.BuildingButtons.Bindings[0] then
-        Key = 0;
-    end
-
-    if Key then
-        local ButtonNames = self:GetButtonsForOverwrite(_ID, #self.BuildingButtons.Bindings[Key]);
-        local DefaultPositionIndex = 0;
-        for i= 1, #self.BuildingButtons.Bindings[Key] do
-            self.BuildingButtons.Configuration[ButtonNames[i]].Bind = self.BuildingButtons.Bindings[Key][i];
-            XGUIEng.ShowWidget("/InGame/Root/Normal/BuildingButtons/" ..ButtonNames[i], 1);
-            XGUIEng.DisableButton("/InGame/Root/Normal/BuildingButtons/" ..ButtonNames[i], 0);
-            local Position = self.BuildingButtons.Bindings[Key][i].Position;
-            if not Position[1] or not Position[2] then
-                local AnchorPosition = {12, 296};
-                Position[1] = AnchorPosition[1] + (64 * DefaultPositionIndex);
-                Position[2] = AnchorPosition[2];
-                DefaultPositionIndex = DefaultPositionIndex +1;
-            end
-            XGUIEng.SetWidgetLocalPosition(
-                "/InGame/Root/Normal/BuildingButtons/" ..ButtonNames[i],
-                Position[1],
-                Position[2]
-            );
-        end
-    end
-end
-
-function ModuleBuildingButtons.Local:UnbindButtons()
-    for k, v in pairs(self.BuildingButtons.Configuration) do
-        local Position = self.BuildingButtons.Configuration[k].OriginalPosition;
-        if Position then
-            XGUIEng.SetWidgetLocalPosition("/InGame/Root/Normal/BuildingButtons/" ..k, Position[1], Position[2]);
-        end
-        self.BuildingButtons.Configuration[k].Bind = nil;
-    end
-end
-
--- -------------------------------------------------------------------------- --
-
-Revision:RegisterModule(ModuleBuildingButtons);
-
---[[
-Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
-
-This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
-You may use and modify this file unter the terms of the MIT licence.
-(See https://en.wikipedia.org/wiki/MIT_License)
-]]
-
--- -------------------------------------------------------------------------- --
-
----
--- Zusätzliche Buttons im Gebäudemenü platzieren.
---
--- <b>Vorausgesetzte Module:</b>
--- <ul>
--- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
--- <li><a href="QSB_1_GUI.api.html">(0) Benutzerschnittstelle</a></li>
--- </ul>
---
--- @within Beschreibung
--- @set sort=true
---
-
----
--- Events, auf die reagiert werden kann.
---
--- @field UpgradeStarted  Ein Ausbau wurde gestartet. (Parameter: EntityID, PlayerID)
--- @field UpgradeCanceled Ein Ausbau wurde abgebrochen. (Parameter: EntityID, PlayerID)
---
-QSB.ScriptEvents = QSB.ScriptEvents or {};
-
----
--- Fügt einen allgemeinen Gebäudeschalter an der Position hinzu.
---
--- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
--- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
--- Update-Funktion.
---
--- Die Position wird lokal zur linken oberen Ecke des Fensters angegeben.
---
--- @param[type=number]   _X       X-Position des Button
--- @param[type=number]   _Y       Y-Position des Button
--- @param[type=function] _Action  Funktion für die Aktion beim Klicken
--- @param[type=function] _Tooltip Funktion für die angezeigte Beschreibung
--- @param[type=function] _Update  Funktion für Anzeige und Verfügbarkeit
--- @return[type=number] ID des Bindung
--- @within Anwenderfunktionen
---
--- @usage
--- SpecialButtonID = API.AddBuildingButton(
---     -- Position (X, Y)
---     230, 180,
---     -- Aktion
---     function(_WidgetID, _BuildingID)
---         GUI.AddNote("Hier passiert etwas!");
---     end,
---     -- Tooltip
---     function(_WidgetID, _BuildingID)
---         -- Es MUSS ein Kostentooltip verwendet werden.
---         API.SetTooltipCosts("Beschreibung", "Das ist die Beschreibung!");
---     end,
---     -- Update
---     function(_WidgetID, _BuildingID)
---         -- Ausblenden, wenn noch in Bau
---         if Logic.IsConstructionComplete(_BuildingID) == 0 then
---             XGUIEng.ShowWidget(_WidgetID, 0);
---             return;
---         end
---         -- Deaktivieren, wenn ausgebaut wird.
---         if Logic.IsBuildingBeingUpgraded(_BuildingID) then
---             XGUIEng.DisableButton(_WidgetID, 1);
---         end
---         SetIcon(_WidgetID, {1, 1});
---     end
--- );
---
-function API.AddBuildingButtonAtPosition(_X, _Y, _Action, _Tooltip, _Update)
-    return ModuleBuildingButtons.Local:AddButtonBinding(0, _X, _Y, _Action, _Tooltip, _Update);
-end
-
----
--- Fügt einen allgemeinen Gebäudeschalter hinzu.
---
--- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
--- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
--- Update-Funktion.
---
--- @param[type=function] _Action  Funktion für die Aktion beim Klicken
--- @param[type=function] _Tooltip Funktion für die angezeigte Beschreibung
--- @param[type=function] _Update  Funktion für Anzeige und Verfügbarkeit
--- @return[type=number] ID des Bindung
--- @within Anwenderfunktionen
---
--- @usage
--- SpecialButtonID = API.AddBuildingButton(
---     -- Aktion
---     function(_WidgetID, _BuildingID)
---         GUI.AddNote("Hier passiert etwas!");
---     end,
---     -- Tooltip
---     function(_WidgetID, _BuildingID)
---         -- Es MUSS ein Kostentooltip verwendet werden.
---         API.SetTooltipCosts("Beschreibung", "Das ist die Beschreibung!");
---     end,
---     -- Update
---     function(_WidgetID, _BuildingID)
---         -- Ausblenden, wenn noch in Bau
---         if Logic.IsConstructionComplete(_BuildingID) == 0 then
---             XGUIEng.ShowWidget(_WidgetID, 0);
---             return;
---         end
---         -- Deaktivieren, wenn ausgebaut wird.
---         if Logic.IsBuildingBeingUpgraded(_BuildingID) then
---             XGUIEng.DisableButton(_WidgetID, 1);
---         end
---         SetIcon(_WidgetID, {1, 1});
---     end
--- );
---
-function API.AddBuildingButton(_Action, _Tooltip, _Update)
-    return API.AddBuildingButtonAtPosition(nil, nil, _Action, _Tooltip, _Update);
-end
-
----
--- Fügt einen Gebäudeschalter für den Entity-Typ hinzu.
---
--- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
--- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
--- Update-Funktion. Wenn ein Typ einen Button zugewiesen bekommt, werden alle 
--- allgemeinen Buttons für den Typ ignoriert.
---
--- @param[type=number]   _Type    Typ des Gebäudes
--- @param[type=number]   _X       X-Position des Button
--- @param[type=number]   _Y       Y-Position des Button
--- @param[type=function] _Action  Funktion für die Aktion beim Klicken
--- @param[type=function] _Tooltip Funktion für die angezeigte Beschreibung
--- @param[type=function] _Update  Funktion für Anzeige und Verfügbarkeit
--- @return[type=number] ID des Bindung
--- @within Anwenderfunktionen
--- @see API.AddBuildingButton
---
-function API.AddBuildingButtonByTypeAtPosition(_Type, _X, _Y, _Action, _Tooltip, _Update)
-    return ModuleBuildingButtons.Local:AddButtonBinding(_Type, _X, _Y, _Action, _Tooltip, _Update);
-end
-
----
--- Fügt einen Gebäudeschalter für den Entity-Typ hinzu.
---
--- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
--- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
--- Update-Funktion. Wenn ein Typ einen Button zugewiesen bekommt, werden alle 
--- allgemeinen Buttons für den Typ ignoriert.
---
--- @param[type=number]   _Type    Typ des Gebäudes
--- @param[type=function] _Action  Funktion für die Aktion beim Klicken
--- @param[type=function] _Tooltip Funktion für die angezeigte Beschreibung
--- @param[type=function] _Update  Funktion für Anzeige und Verfügbarkeit
--- @return[type=number] ID des Bindung
--- @within Anwenderfunktionen
--- @see API.AddBuildingButton
---
-function API.AddBuildingButtonByType(_Type, _Action, _Tooltip, _Update)
-    return API.AddBuildingButtonByTypeAtPosition(_Type, nil, nil, _Action, _Tooltip, _Update);
-end
-
----
--- Fügt einen Gebäudeschalter für das Entity hinzu.
---
--- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
--- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
--- Update-Funktion. Wenn ein Entity einen Button zugewiesen bekommt, werden
--- alle allgemeinen Buttons und alle Buttons für Typen für das Entity ignoriert.
---
--- @param[type=function] _ScriptName Scriptname des Entity
--- @param[type=number]   _X          X-Position des Button
--- @param[type=number]   _Y          Y-Position des Button
--- @param[type=function] _Action     Funktion für die Aktion beim Klicken
--- @param[type=function] _Tooltip    Funktion für die angezeigte Beschreibung
--- @param[type=function] _Update     Funktion für Anzeige und Verfügbarkeit
--- @return[type=number] ID des Bindung
--- @within Anwenderfunktionen
--- @see API.AddBuildingButton
---
-function API.AddBuildingButtonByEntityAtPosition(_ScriptName, _X, _Y, _Action, _Tooltip, _Update)
-    return ModuleBuildingButtons.Local:AddButtonBinding(_ScriptName, _X, _Y, _Action, _Tooltip, _Update);
-end
-
----
--- Fügt einen Gebäudeschalter für das Entity hinzu.
---
--- Einem Gebäude können maximal 6 Buttons zugewiesen werden! Auf diese Weise
--- hinzugefügte Buttons sind prinzipiell immer sichtbar, abhängig von ihrer
--- Update-Funktion. Wenn ein Entity einen Button zugewiesen bekommt, werden
--- alle allgemeinen Buttons und alle Buttons für Typen für das Entity ignoriert.
---
--- @param[type=function] _ScriptName Scriptname des Entity
--- @param[type=function] _Action     Funktion für die Aktion beim Klicken
--- @param[type=function] _Tooltip    Funktion für die angezeigte Beschreibung
--- @param[type=function] _Update     Funktion für Anzeige und Verfügbarkeit
--- @return[type=number] ID des Bindung
--- @within Anwenderfunktionen
--- @see API.AddBuildingButton
---
-function API.AddBuildingButtonByEntity(_ScriptName, _Action, _Tooltip, _Update)
-    return API.AddBuildingButtonByEntityAtPosition(_ScriptName, nil, nil, _Action, _Tooltip, _Update);
-end
-
----
--- Entfernt einen allgemeinen Gebäudeschalter.
---
--- @param[type=number] _ID ID des Bindung
--- @within Anwenderfunktionen
--- @usage
--- API.DropBuildingButton(SpecialButtonID);
---
-function API.DropBuildingButton(_ID)
-    return ModuleBuildingButtons.Local:RemoveButtonBinding(0, _ID);
-end
-
----
--- Entfernt einen Gebäudeschalter vom Gebäudetypen.
---
--- @param[type=number] _Type Typ des Gebäudes
--- @param[type=number] _ID   ID des Bindung
--- @within Anwenderfunktionen
--- @usage
--- API.DropBuildingButtonFromType(Entities.B_Bakery, SpecialButtonID);
---
-function API.DropBuildingButtonFromType(_Type, _ID)
-    return ModuleBuildingButtons.Local:RemoveButtonBinding(_Type, _ID);
-end
-
----
--- Entfernt einen Gebäudeschalter vom benannten Gebäude.
---
--- @param[type=string] _ScriptName Skriptname des Entity
--- @param[type=number] _ID         ID des Bindung
--- @within Anwenderfunktionen
--- @usage
--- API.DropBuildingButtonFromEntity("Bakery", SpecialButtonID);
---
-function API.DropBuildingButtonFromEntity(_ScriptName, _ID)
-    return ModuleBuildingButtons.Local:RemoveButtonBinding(_ScriptName, _ID);
-end
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.

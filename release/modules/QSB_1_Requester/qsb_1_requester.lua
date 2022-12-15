@@ -572,6 +572,8 @@ You may use and modify this file unter the terms of the MIT licence.
 (See https://en.wikipedia.org/wiki/MIT_License)
 ]]
 
+-- -------------------------------------------------------------------------- --
+
 ---
 -- Stellt verschiedene Dialogfenster zur Verfügung.
 --
@@ -697,6 +699,7 @@ function API.DialogRequestBox(_PlayerID, _Title, _Text, _Action, _OkCancel)
         return;
     end
     if type(_PlayerID) ~= "number" then
+        _OkCancel = _Action;
         _Action = _Text;
         _Text = _Title;
         _Title = _PlayerID;
@@ -740,6 +743,7 @@ function API.DialogSelectBox(_PlayerID, _Title, _Text, _Action, _List)
         return;
     end
     if type(_PlayerID) ~= "number" then
+        _List = _Action;
         _Action = _Text;
         _Text = _Title;
         _Title = _PlayerID;

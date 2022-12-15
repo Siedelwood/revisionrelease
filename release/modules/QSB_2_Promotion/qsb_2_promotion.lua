@@ -104,7 +104,7 @@ function ModuleKnightTitleRequirements.Local:OnEvent(_ID, ...)
         end
     elseif _ID == QSB.ScriptEvents.GoodsConsumed then
         local PlayerID = Logic.EntityGetPlayer(arg[1]);
-        self.Local:RegisterConsumedGoods(PlayerID, arg[2]);
+        self:RegisterConsumedGoods(PlayerID, arg[2]);
     end
 end
 

@@ -43,6 +43,7 @@
 <li><a href="#Spielstand">Spielstand</a></li>
 <li><a href="#Chat">Chat</a></li>
 <li><a href="#Text">Text</a></li>
+<li><a href="#Position">Position</a></li>
 <li><a href="#Quest">Quest</a></li>
 <li><a href="#Debug">Debug</a></li>
 <li><a href="#ScriptingValue">ScriptingValue</a></li>
@@ -54,16 +55,17 @@
 
 <h2>Modules</h2>
 <ul class="nowrap">
+  <li><a href="../modules/modules.qsb_1_entitysurveillance.qsb_1_entitysurveillance.html">(1) Entitätenüberwachung</a></li>
   <li><a href="../modules/modules.qsb_1_gui.qsb_1_gui.html">(1) Benutzerschnittstelle</a></li>
   <li><a href="../modules/modules.qsb_1_requester.qsb_1_requester.html">(1) Dialogfenster</a></li>
   <li><a href="../modules/modules.qsb_1_sound.qsb_1_sound.html">(1) Sound</a></li>
   <li><a href="../modules/modules.qsb_1_trade.qsb_1_trade.html">(1) Handelserweiterung</a></li>
+  <li><a href="../modules/modules.qsb_2_buildingbuttons.qsb_2_buildingbuttons.html">(2) Gebäudeschalter</a></li>
   <li><a href="../modules/modules.qsb_2_npc.qsb_2_npc.html">(2) Ansprechbare Siedler</a></li>
   <li><a href="../modules/modules.qsb_2_objects.qsb_2_objects.html">(2) Interaktive Objekte</a></li>
   <li><a href="../modules/modules.qsb_2_promotion.qsb_2_promotion.html">(2) Aufstiegsbedingungen</a></li>
   <li><a href="../modules/modules.qsb_2_quest.qsb_2_quest.html">(2) Aufträge</a></li>
   <li><a href="../modules/modules.qsb_4_typewriter.qsb_4_typewriter.html">(4) Schreibmaschinentext</a></li>
-  <li><a href="../modules/modules.qsb_5_buildingbuttons.qsb_5_buildingbuttons.html">(5) Gebäudeschalter</a></li>
   <li><a href="../modules/modules.qsb_5_weather.qsb_5_weather.html">(5) Wetter</a></li>
   <li><strong>(0) Basismodul</strong></li>
 </ul>
@@ -649,11 +651,6 @@
 	<td class="summary">Gibt dem Entity einen eindeutigen Skriptnamen und gibt ihn zurück.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.GetEntitiesOfCategoriesInTerritories">API.GetEntitiesOfCategoriesInTerritories (_PlayerID, _Category, _Territory)</a></td>
-	<td class="summary">Sucht auf den angegebenen Territorium nach Entities mit bestimmten
- Kategorien.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#API.GetEntityCategoyList">API.GetEntityCategoyList (_Entity)</a></td>
 	<td class="summary">Gibt alle Kategorien zurück, zu denen das Entity gehört.</td>
 	</tr>
@@ -867,6 +864,13 @@
 	<tr>
 	<td class="name" nowrap><a href="#API.StaticNote">API.StaticNote (_Text)</a></td>
 	<td class="summary">Schreibt eine Nachricht in das Debug Window.</td>
+	</tr>
+</table>
+<h2><a href="#Position">Position</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.GetDistance">API.GetDistance (_pos1, _pos2)</a></td>
+	<td class="summary">Bestimmt die Distanz zwischen zwei Punkten.</td>
 	</tr>
 </table>
 <h2><a href="#Quest">Quest</a></h2>
@@ -1326,28 +1330,31 @@
 
     <ul>
         <li><span class="parameter">ChatOpened</span>
-              Das Chatfenster wird angezeigt (Parameter: PlayerID)
+               Das Chatfenster wird angezeigt (Parameter: PlayerID)
         </li>
         <li><span class="parameter">ChatClosed</span>
-              Die Chateingabe wird bestätigt (Parameter: Text, PlayerID)
+               Die Chateingabe wird bestätigt (Parameter: Text, PlayerID)
         </li>
         <li><span class="parameter">LanguageSet</span>
-             Die Sprache wurde geändert (Parameter: OldLanguage, NewLanguage)
+              Die Sprache wurde geändert (Parameter: OldLanguage, NewLanguage)
         </li>
         <li><span class="parameter">QuestFailure</span>
-            Ein Quest schlug fehl (Parameter: QuestID)
+             Ein Quest schlug fehl (Parameter: QuestID)
         </li>
         <li><span class="parameter">QuestInterrupt</span>
-          Ein Quest wurde unterbrochen (Parameter: QuestID)
+           Ein Quest wurde unterbrochen (Parameter: QuestID)
         </li>
         <li><span class="parameter">QuestReset</span>
-              Ein Quest wurde zurückgesetzt (Parameter: QuestID)
+               Ein Quest wurde zurückgesetzt (Parameter: QuestID)
         </li>
         <li><span class="parameter">QuestSuccess</span>
-            Ein Quest wurde erfolgreich abgeschlossen (Parameter: QuestID)
+             Ein Quest wurde erfolgreich abgeschlossen (Parameter: QuestID)
         </li>
         <li><span class="parameter">QuestTrigger</span>
-            Ein Quest wurde aktiviert (Parameter: QuestID)
+             Ein Quest wurde aktiviert (Parameter: QuestID)
+        </li>
+        <li><span class="parameter">LoadscreenClosed</span>
+         Der Ladebildschirm wurde beendet.
         </li>
     </ul>
 
@@ -2642,45 +2649,6 @@
 
 
 
-
-</dd>
-    <dt>
-    <a name = "API.GetEntitiesOfCategoriesInTerritories"></a>
-    <strong>API.GetEntitiesOfCategoriesInTerritories (_PlayerID, _Category, _Territory)</strong>
-    </dt>
-    <dd>
-    Sucht auf den angegebenen Territorium nach Entities mit bestimmten
- Kategorien.  Dabei kann für eine Partei oder für mehrere Parteien gesucht
- werden.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-            PlayerID [0-8] oder Table mit PlayerIDs (Einzelne Spielernummer oder Table)
-        </li>
-        <li><span class="parameter">_Category</span>
-            Kategorien oder Table mit Kategorien (Einzelne Kategorie oder Table)
-        </li>
-        <li><span class="parameter">_Territory</span>
-           Zielterritorium oder Table mit Territorien (Einzelnes Territorium oder Table)
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-        Liste mit Resultaten
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Result = API.GetEntitiesOfCategoriesInTerritories({<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>}, EntityCategories.Hero, {<span class="number">5</span>, <span class="number">12</span>, <span class="number">23</span>, <span class="number">24</span>});</pre>
-    </ul>
 
 </dd>
     <dt>
@@ -4237,6 +4205,46 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
     <h3>Beispiel:</h3>
     <ul>
         <pre class="example">API.StaticNote(<span class="string">"Das ist eine dauerhafte Information!"</span>);</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Position"></a>Position</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.GetDistance"></a>
+    <strong>API.GetDistance (_pos1, _pos2)</strong>
+    </dt>
+    <dd>
+    Bestimmt die Distanz zwischen zwei Punkten.  Es können Entity-IDs,
+ Skriptnamen oder Positionstables angegeben werden.
+<p> Wenn die Distanz nicht bestimmt werden kann, wird -1 zurückgegeben.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_pos1</span>
+         Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
+        </li>
+        <li><span class="parameter">_pos2</span>
+         Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Entfernung zwischen den Punkten
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Distance = API.GetDistance(<span class="string">"HQ1"</span>, Logic.GetKnightID(<span class="number">1</span>))</pre>
     </ul>
 
 </dd>
@@ -6956,7 +6964,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-12-14 18:36:22 </i>
+<i style="float:right;">Last updated 2022-12-15 23:44:54 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 
