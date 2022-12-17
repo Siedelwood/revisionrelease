@@ -488,6 +488,7 @@ function Revision:LoadKernel()
     self.Chat:Initalize();
     self.Text:Initalize();
     self.Bugfix:Initalize();
+    self.ScriptingValue:Initalize();
     self.Utils:Initalize();
     self.Quest:Initalize();
     self.Debug:Initalize();
@@ -623,6 +624,7 @@ function Revision:OnSaveGameLoaded()
     self.Chat:OnSaveGameLoaded();
     self.Text:OnSaveGameLoaded();
     self.Bugfix:OnSaveGameLoaded();
+    self.ScriptingValue:OnSaveGameLoaded();
     self.Utils:OnSaveGameLoaded();
     self.Quest:OnSaveGameLoaded();
     self.Debug:OnSaveGameLoaded();
@@ -1041,6 +1043,7 @@ function Revision.LuaBase:OverrideTable()
         return Revision.LuaBase:ConvertTableToString(t);
     end
 
+    -- FIXME: Does not work?
     table.insertAll = function(t, ...)
         for i= 1, #arg do
             if not table.contains(t, arg[i]) then
@@ -1050,6 +1053,7 @@ function Revision.LuaBase:OverrideTable()
         return t;
     end
 
+    -- FIXME: Does not work?
     table.removeAll = function(t, ...)
         for i= 1, #arg do
             for k, v in pairs(t) do
@@ -3963,6 +3967,160 @@ function API.GetRandomFemaleSettlerType()
 end
 
 ---
+-- Gibt die Ausrichtung des Entity zurück.
+--
+-- @param               _Entity  Entity (Scriptname oder ID)
+-- @return[type=number] Ausrichtung in Grad
+-- @within Werkzeugkasten
+--
+function API.GetEntityOrientation(_Entity)
+    local EntityID = GetID(_Entity);
+    if EntityID > 0 then
+        return API.Round(Logic.GetEntityOrientation(EntityID));
+    end
+    error("API.GetEntityOrientation: _Entity (" ..tostring(_Entity).. ") does not exist!");
+    return 0;
+end
+
+---
+-- Setzt die Ausrichtung des Entity.
+--
+-- @param               _Entity  Entity (Scriptname oder ID)
+-- @param[type=number] _Orientation Neue Ausrichtung
+-- @within Werkzeugkasten
+--
+function API.SetEntityOrientation(_Entity, _Orientation)
+    if GUI then
+        return;
+    end
+    local EntityID = GetID(_Entity);
+    if EntityID > 0 then
+        if type(_Orientation) ~= "number" then
+            error("API.SetEntityOrientation: _Orientation is wrong!");
+            return
+        end
+        Logic.SetOrientation(EntityID, API.Round(_Orientation));
+    else
+        error("API.SetEntityOrientation: _Entity (" ..tostring(_Entity).. ") does not exist!");
+    end
+end
+
+---
+-- Gibt das Entity aus der Liste zurück, welches dem Ziel am nähsten ist.
+--
+-- @param             _Target Entity oder Position
+-- @param[type=table] _List   Liste von Entities oder Positionen
+-- @return Nähste Entity oder Position
+-- @within Werkzeugkasten
+-- @usage
+-- local Clostest = API.GetClosestToTarget("HQ1", {"Marcus", "Alandra", "Hakim"});
+--
+function API.GetClosestToTarget(_Target, _List)
+    local ClosestToTarget = 0;
+    local ClosestToTargetDistance = Logic.WorldGetSize();
+    for i= 1, #_List, 1 do
+        local DistanceBetween = API.GetDistance(_List[i], _Target);
+        if DistanceBetween < ClosestToTargetDistance then
+            ClosestToTargetDistance = DistanceBetween;
+            ClosestToTarget = _List[i];
+        end
+    end
+    return ClosestToTarget;
+end
+
+---
+-- Lokalisiert ein Entity auf der Map. Es können sowohl Skriptnamen als auch
+-- IDs verwendet werden. Wenn das Entity nicht gefunden wird, wird eine
+-- Tabelle mit XYZ = 0 zurückgegeben.
+--
+-- @param _Entity Entity (Skriptname oder ID)
+-- @return[type=table] Positionstabelle {X= x, Y= y, Z= z}
+-- @within Werkzeugkasten
+-- @usage
+-- local Position = API.GetPosition("Hans");
+--
+function API.GetPosition(_Entity)
+    if _Entity == nil then
+        return {X= 0, Y= 0, Z= 0};
+    end
+    if (type(_Entity) == "table") then
+        return _Entity;
+    end
+    if (not IsExisting(_Entity)) then
+        warn("API.GetPosition: Entity (" ..tostring(_Entity).. ") does not exist!");
+        return {X= 0, Y= 0, Z= 0};
+    end
+    local x, y, z = Logic.EntityGetPos(GetID(_Entity));
+    return {X= API.Round(x), Y= API.Round(y), Z= API.Round(y)};
+end
+API.LocateEntity = API.GetPosition;
+GetPosition = API.GetPosition;
+
+---
+-- Setzt ein Entity auf eine neue Position
+--
+-- @param _Entity Entity (Skriptname oder ID)
+-- @param _Target Ziel (Skriptname, ID oder Position)
+-- @within Werkzeugkasten
+-- @usage
+-- API.SetPosition("Hans", "Horst");
+--
+function API.SetPosition(_Entity, _Target)
+    local ID = GetID(_Entity);
+    if not ID then
+        return;
+    end
+
+    local Target;
+    if type(_Target) ~= "table" then
+        local ID2 = GetID(_Target);
+        local x,y,z = Logic.EntityGetPos(ID2);
+        Target = {X= x, Y= y};
+    else
+        Target = _Target;
+    end
+
+    if Logic.IsLeader(ID) == 1 then
+        local Soldiers = {Logic.GetSoldiersAttachedToLeader(ID)};
+        for i= 2, Soldiers[1]+1 do
+            Logic.DEBUG_SetSettlerPosition(Soldiers[i], Target.X, Target.Y);
+        end
+    end
+    Logic.DEBUG_SetSettlerPosition(ID, Target.X, Target.Y);
+end
+API.RelocateEntity = API.SetPosition;
+SetPosition = API.SetPosition;
+
+---
+-- Prüft, ob eine Positionstabelle eine gültige Position enthält.
+--
+-- Eine Position ist Ungültig, wenn sie sich nicht auf der Welt befindet.
+-- Das ist der Fall bei negativen Werten oder Werten, welche die Größe
+-- der Welt übersteigen.
+--
+-- @param[type=table] _pos Positionstable {X= x, Y= y}
+-- @return[type=boolean] Position ist valide
+-- @within Werkzeugkasten
+--
+function API.IsValidPosition(_pos)
+    if type(_pos) == "table" then
+        if (_pos.X ~= nil and type(_pos.X) == "number") and (_pos.Y ~= nil and type(_pos.Y) == "number") then
+            local world = {Logic.WorldGetSize()};
+            if _pos.Z and _pos.Z < 0 then
+                return false;
+            end
+            if _pos.X < world[1] and _pos.X > 0 and _pos.Y < world[2] and _pos.Y > 0 then
+                return true;
+            end
+        end
+    end
+    return false;
+end
+
+-- -------------------------------------------------------------------------- --
+-- Math
+
+---
 -- Bestimmt die Distanz zwischen zwei Punkten. Es können Entity-IDs,
 -- Skriptnamen oder Positionstables angegeben werden.
 --
@@ -3971,16 +4129,16 @@ end
 -- @param _pos1 Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
 -- @param _pos2 Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
 -- @return[type=number] Entfernung zwischen den Punkten
--- @within Position
+-- @within Werkzeugkasten
 -- @usage
 -- local Distance = API.GetDistance("HQ1", Logic.GetKnightID(1))
 --
 function API.GetDistance( _pos1, _pos2 )
     if (type(_pos1) == "string") or (type(_pos1) == "number") then
-        _pos1 = GetPosition(_pos1);
+        _pos1 = API.GetPosition(_pos1);
     end
     if (type(_pos2) == "string") or (type(_pos2) == "number") then
-        _pos2 = GetPosition(_pos2);
+        _pos2 = API.GetPosition(_pos2);
     end
     if type(_pos1) ~= "table" or type(_pos2) ~= "table" then
         warn("API.GetDistance: Distance could not be calculated!");
@@ -3991,6 +4149,241 @@ function API.GetDistance( _pos1, _pos2 )
     return math.sqrt((xDistance^2) + (yDistance^2));
 end
 GetDistance = API.GetDistance;
+
+---
+-- Rotiert ein Entity, sodass es zum Ziel schaut.
+--
+-- @param _Entity      Entity (Skriptname oder ID)
+-- @param _Target      Ziel (Skriptname, ID oder Position)
+-- @param[type=number] _Offset Winkel Offset
+-- @within Werkzeugkasten
+-- @usage
+-- API.LookAt("Hakim", "Alandra")
+--
+function API.LookAt(_Entity, _Target, _Offset)
+    _Offset = _Offset or 0;
+    local ID1 = GetID(_Entity);
+    if ID1 == 0 then
+        return;
+    end
+    local x1,y1,z1 = Logic.EntityGetPos(ID1);
+    local ID2;
+    local x2, y2, z2;
+    if type(_Target) == "table" then
+        x2 = _Target.X;
+        y2 = _Target.Y;
+        z2 = _Target.Z;
+    else
+        ID2 = GetID(_Target);
+        if ID2 == 0 then
+            return;
+        end
+        x2,y2,z2 = Logic.EntityGetPos(ID2);
+    end
+
+    if not API.IsValidPosition({X= x1, Y= y1, Z= z1}) then
+        return;
+    end
+    if not API.IsValidPosition({X= x2, Y= y2, Z= z2}) then
+        return;
+    end
+    Angle = math.deg(math.atan2((y2 - y1), (x2 - x1))) + _Offset;
+    if Angle < 0 then
+        Angle = Angle + 360;
+    end
+
+    if Logic.IsLeader(ID1) == 1 then
+        local Soldiers = {Logic.GetSoldiersAttachedToLeader(ID1)};
+        for i= 2, Soldiers[1]+1 do
+            Logic.SetOrientation(Soldiers[i], Angle);
+        end
+    end
+    Logic.SetOrientation(ID1, Angle);
+end
+LookAt = API.LookAt;
+
+---
+-- Bestimmt den Winkel zwischen zwei Punkten. Es können Entity-IDs,
+-- Skriptnamen oder Positionstables angegeben werden.
+--
+-- @param _Pos1 Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
+-- @param _Pos2 Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
+-- @return[type=number] Winkel zwischen den Punkten
+-- @within Werkzeugkasten
+-- @usage
+-- local Angle = API.GetAngleBetween("HQ1", Logic.GetKnightID(1))
+--
+function API.GetAngleBetween(_Pos1, _Pos2)
+	local delta_X = 0;
+	local delta_Y = 0;
+	local alpha   = 0;
+	if type (_Pos1) == "string" or type (_Pos1) == "number" then
+		_Pos1 = API.GetPosition(GetID(_Pos1));
+	end
+	if type (_Pos2) == "string" or type (_Pos2) == "number" then
+		_Pos2 = API.GetPosition(GetID(_Pos2));
+	end
+	delta_X = _Pos1.X - _Pos2.X;
+	delta_Y = _Pos1.Y - _Pos2.Y;
+	if delta_X == 0 and delta_Y == 0 then
+		return 0;
+	end
+	alpha = math.deg(math.asin(math.abs(delta_X)/(math.sqrt((delta_X ^ 2)+delta_Y ^ 2))));
+	if delta_X >= 0 and delta_Y > 0 then
+		alpha = 270 - alpha ;
+	elseif delta_X < 0 and delta_Y > 0 then
+		alpha = 270 + alpha;
+	elseif delta_X < 0 and delta_Y <= 0 then
+		alpha = 90  - alpha;
+	elseif delta_X >= 0 and delta_Y <= 0 then
+		alpha = 90  + alpha;
+	end
+	return alpha;
+end
+
+---
+-- Bestimmt die Durchschnittsposition mehrerer Entities.
+--
+-- @param ... Positionen mit Komma getrennt
+-- @return[type=table] Durchschnittsposition aller Positionen
+-- @within Werkzeugkasten
+-- @usage
+-- local Center = API.GetGeometricFocus("Hakim", "Marcus", "Alandra");
+--
+function API.GetGeometricFocus(...)
+    local PositionData = {X= 0, Y= 0, Z= 0};
+    local ValidEntryCount = 0;
+    for i= 1, #arg do
+        local Position = API.GetPosition(arg[i]);
+        if API.IsValidPosition(Position) then
+            PositionData.X = PositionData.X + Position.X;
+            PositionData.Y = PositionData.Y + Position.Y;
+            PositionData.Z = PositionData.Z + (Position.Z or 0);
+            ValidEntryCount = ValidEntryCount +1;
+        end
+    end
+    return {
+        X= PositionData.X * (1/ValidEntryCount);
+        Y= PositionData.Y * (1/ValidEntryCount);
+        Z= PositionData.Z * (1/ValidEntryCount);
+    }
+end
+
+---
+-- Gib eine Position auf einer Linie im relativen Abstand zur ersten Position
+-- zurück.
+--
+-- @param               _Pos1       Erste Position
+-- @param               _Pos2       Zweite Position
+-- @param[type=number]  _Percentage Entfernung zu Erster Position
+-- @return[type=table] Position auf Linie
+-- @within Werkzeugkasten
+-- @usage
+-- local Position = API.GetLinePosition("HQ1", "HQ2", 0.75);
+--
+function API.GetLinePosition(_Pos1, _Pos2, _Percentage)
+    if _Percentage > 1 then
+        _Percentage = _Percentage / 100;
+    end
+
+    if not API.IsValidPosition(_Pos1) and not IsExisting(_Pos1) then
+        error("API.GetLinePosition: _Pos1 does not exist or is invalid position!");
+        return;
+    end
+    local Pos1 = _Pos1;
+    if type(Pos1) ~= "table" then
+        Pos1 = API.GetPosition(Pos1);
+    end
+
+    if not API.IsValidPosition(_Pos2) and not IsExisting(_Pos2) then
+        error("API.GetLinePosition: _Pos1 does not exist or is invalid position!");
+        return;
+    end
+    local Pos2 = _Pos2;
+    if type(Pos2) ~= "table" then
+        Pos2 = API.GetPosition(Pos2);
+    end
+
+	local dx = Pos2.X - Pos1.X;
+	local dy = Pos2.Y - Pos1.Y;
+    return {X= Pos1.X+(dx*_Percentage), Y= Pos1.Y+(dy*_Percentage)};
+end
+
+---
+-- Gib Positionen im gleichen Abstand auf der Linie zurück.
+--
+-- @param               _Pos1    Erste Position
+-- @param               _Pos2    Zweite Position
+-- @param[type=number]  _Periode Anzahl an Positionen
+-- @return[type=table] Positionen auf Linie
+-- @within Werkzeugkasten
+-- @usage
+-- local PositionList = API.GetLinePositions("HQ1", "HQ2", 6);
+--
+function API.GetLinePositions(_Pos1, _Pos2, _Periode)
+    local PositionList = {};
+    for i= 0, 100, (1/_Periode)*100 do
+        local Section = API.GetLinePosition(_Pos1, _Pos2, i);
+        table.insert(PositionList, Section);
+    end
+    return PositionList;
+end
+
+---
+-- Gibt eine Position auf einer Kreisbahn um einen Punkt zurück.
+--
+-- @param               _Target          Entity oder Position
+-- @param[type=number]  _Distance        Entfernung um das Zentrum
+-- @param[type=number]  _Angle           Winkel auf dem Kreis
+-- @return[type=table] Position auf Kreisbahn
+-- @within Werkzeugkasten
+-- @usage
+-- local Position = API.GetCirclePosition("HQ1", 3000, -45);
+--
+function API.GetCirclePosition(_Target, _Distance, _Angle)
+    if not API.IsValidPosition(_Target) and not IsExisting(_Target) then
+        error("API.GetCirclePosition: _Target does not exist or is invalid position!");
+        return;
+    end
+
+    local Position = _Target;
+    local Orientation = 0+ (_Angle or 0);
+    if type(_Target) ~= "table" then
+        local EntityID = GetID(_Target);
+        Orientation = Logic.GetEntityOrientation(EntityID)+(_Angle or 0);
+        Position = API.GetPosition(EntityID);
+    end
+
+    local Result = {
+        X= Position.X+_Distance * math.cos(math.rad(Orientation)),
+        Y= Position.Y+_Distance * math.sin(math.rad(Orientation)),
+        Z= Position.Z
+    };
+    return Result;
+end
+API.GetRelatiePos = API.GetCirclePosition;
+
+---
+-- Gibt Positionen im gleichen Abstand auf der Kreisbahn zurück.
+--
+-- @param               _Target          Entity oder Position
+-- @param[type=number]  _Distance        Entfernung um das Zentrum
+-- @param[type=number]  _Periode         Anzahl an Positionen
+-- @param[type=number]  _Offset          Start Offset
+-- @return[type=table] Positionend auf Kreisbahn
+-- @within Werkzeugkasten
+-- @usage
+-- local PositionList = API.GetCirclePositions("Position", 3000, 6, 45);
+--
+function API.GetCirclePositions(_Target, _Distance, _Periode, _Offset)
+    local Periode = API.Round(360 / _Periode, 0);
+    local PositionList = {};
+    for i= (Periode + _Offset), (360 + _Offset) do
+        local Section = API.GetCirclePosition(_Target, _Distance, i);
+        table.insert(PositionList, Section);
+    end
+    return PositionList;
+end
 
 -- -------------------------------------------------------------------------- --
 -- Group
@@ -4555,7 +4948,6 @@ end
 
 function Revision.Debug:OnSaveGameLoaded()
     if Revision.Environment == QSB.Environment.LOCAL then
-        self:InitalizeQuestTrace();
         self:InitalizeDebugWidgets();
         self:InitalizeQsbDebugHotkeys();
     end
@@ -4578,7 +4970,6 @@ function Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _Developing
         self.DevelopingCheats,
         self.DevelopingShell
     );
-    self:InitalizeQuestTrace();
 
     Logic.ExecuteInLuaLocalState(string.format(
         [[
@@ -4601,11 +4992,6 @@ function Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _Developing
         tostring(self.DevelopingCheats),
         tostring(self.DevelopingShell)
     ));
-end
-
-function Revision.Debug:InitalizeQuestTrace()
-    DEBUG_EnableQuestDebugKeys();
-    DEBUG_QuestTrace(self.TraceQuests == true);
 end
 
 function Revision.Debug:InitalizeDebugWidgets()

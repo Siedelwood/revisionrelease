@@ -43,7 +43,6 @@
 <li><a href="#Spielstand">Spielstand</a></li>
 <li><a href="#Chat">Chat</a></li>
 <li><a href="#Text">Text</a></li>
-<li><a href="#Position">Position</a></li>
 <li><a href="#Quest">Quest</a></li>
 <li><a href="#Debug">Debug</a></li>
 <li><a href="#ScriptingValue">ScriptingValue</a></li>
@@ -55,16 +54,17 @@
 
 <h2>Modules</h2>
 <ul class="nowrap">
-  <li><a href="../modules/modules.qsb_1_entitysurveillance.qsb_1_entitysurveillance.html">(1) Entitätenüberwachung</a></li>
+  <li><a href="../modules/modules.qsb_1_entity.qsb_1_entity.html">(1) Entitätensteuerung</a></li>
   <li><a href="../modules/modules.qsb_1_gui.qsb_1_gui.html">(1) Benutzerschnittstelle</a></li>
   <li><a href="../modules/modules.qsb_1_requester.qsb_1_requester.html">(1) Dialogfenster</a></li>
   <li><a href="../modules/modules.qsb_1_sound.qsb_1_sound.html">(1) Sound</a></li>
   <li><a href="../modules/modules.qsb_1_trade.qsb_1_trade.html">(1) Handelserweiterung</a></li>
-  <li><a href="../modules/modules.qsb_2_buildingbuttons.qsb_2_buildingbuttons.html">(2) Gebäudeschalter</a></li>
+  <li><a href="../modules/modules.qsb_2_buildingui.qsb_2_buildingui.html">(2) Gebäudeschalter</a></li>
   <li><a href="../modules/modules.qsb_2_npc.qsb_2_npc.html">(2) Ansprechbare Siedler</a></li>
   <li><a href="../modules/modules.qsb_2_objects.qsb_2_objects.html">(2) Interaktive Objekte</a></li>
   <li><a href="../modules/modules.qsb_2_promotion.qsb_2_promotion.html">(2) Aufstiegsbedingungen</a></li>
   <li><a href="../modules/modules.qsb_2_quest.qsb_2_quest.html">(2) Aufträge</a></li>
+  <li><a href="../modules/modules.qsb_3_lifestock.qsb_3_lifestock.html">(3) Viehzucht</a></li>
   <li><a href="../modules/modules.qsb_4_typewriter.qsb_4_typewriter.html">(4) Schreibmaschinentext</a></li>
   <li><a href="../modules/modules.qsb_5_weather.qsb_5_weather.html">(5) Wetter</a></li>
   <li><strong>(0) Basismodul</strong></li>
@@ -651,12 +651,36 @@
 	<td class="summary">Gibt dem Entity einen eindeutigen Skriptnamen und gibt ihn zurück.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#API.GetAngleBetween">API.GetAngleBetween (_Pos1, _Pos2)</a></td>
+	<td class="summary">Bestimmt den Winkel zwischen zwei Punkten.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetCirclePosition">API.GetCirclePosition (_Target, _Distance, _Angle)</a></td>
+	<td class="summary">Gibt eine Position auf einer Kreisbahn um einen Punkt zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetCirclePositions">API.GetCirclePositions (_Target, _Distance, _Periode, _Offset)</a></td>
+	<td class="summary">Gibt Positionen im gleichen Abstand auf der Kreisbahn zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetClosestToTarget">API.GetClosestToTarget (_Target, _List)</a></td>
+	<td class="summary">Gibt das Entity aus der Liste zurück, welches dem Ziel am nähsten ist.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetDistance">API.GetDistance (_pos1, _pos2)</a></td>
+	<td class="summary">Bestimmt die Distanz zwischen zwei Punkten.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#API.GetEntityCategoyList">API.GetEntityCategoyList (_Entity)</a></td>
 	<td class="summary">Gibt alle Kategorien zurück, zu denen das Entity gehört.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.GetEntityHealth">API.GetEntityHealth (_Entity)</a></td>
 	<td class="summary">Gibt die relative Gesundheit des Entity zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetEntityOrientation">API.GetEntityOrientation (_Entity)</a></td>
+	<td class="summary">Gibt die Ausrichtung des Entity zurück.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.GetEntityTaskList">API.GetEntityTaskList (_Entity)</a></td>
@@ -675,12 +699,29 @@
 	<td class="summary">Gibt den Typnamen des Entity zurück.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#API.GetGeometricFocus">API.GetGeometricFocus (...)</a></td>
+	<td class="summary">Bestimmt die Durchschnittsposition mehrerer Entities.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#API.GetGroupLeader">API.GetGroupLeader (_Entity)</a></td>
 	<td class="summary">Gibt den Leader des Soldaten zurück.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.GetGroupSoldiers">API.GetGroupSoldiers (_Entity)</a></td>
 	<td class="summary">Gibt die IDs aller Soldaten zurück, die zum Battalion gehören.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetLinePosition">API.GetLinePosition (_Pos1, _Pos2, _Percentage)</a></td>
+	<td class="summary">Gib eine Position auf einer Linie im relativen Abstand zur ersten Position
+ zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetLinePositions">API.GetLinePositions (_Pos1, _Pos2, _Periode)</a></td>
+	<td class="summary">Gib Positionen im gleichen Abstand auf der Linie zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetPosition">API.GetPosition (_Entity)</a></td>
+	<td class="summary">Lokalisiert ein Entity auf der Map.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.GetResourceAmount">API.GetResourceAmount (_Entity)</a></td>
@@ -708,6 +749,14 @@
 	<td class="summary">Prüft, ob das Entity mindestens eine der Kategorien hat.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#API.IsValidPosition">API.IsValidPosition (_pos)</a></td>
+	<td class="summary">Prüft, ob eine Positionstabelle eine gültige Position enthält.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.LookAt">API.LookAt (_Entity, _Target, _Offset)</a></td>
+	<td class="summary">Rotiert ein Entity, sodass es zum Ziel schaut.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#API.ReplaceEntity">API.ReplaceEntity (_Entity, _Type, _NewOwner)</a></td>
 	<td class="summary">Ersetzt ein Entity mit einem neuen eines anderen Typs.</td>
 	</tr>
@@ -728,8 +777,16 @@
 	<td class="summary">Weist dem Entity ein Neues Model zu.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#API.SetEntityOrientation">API.SetEntityOrientation (_Entity, _Orientation)</a></td>
+	<td class="summary">Setzt die Ausrichtung des Entity.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#API.SetEntityTaskList">API.SetEntityTaskList (_Entity, _NewTask)</a></td>
 	<td class="summary">Setzt die aktuelle Tasklist des Entity.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.SetPosition">API.SetPosition (_Entity, _Target)</a></td>
+	<td class="summary">Setzt ein Entity auf eine neue Position</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.SetResourceAmount">API.SetResourceAmount (_Entity, _StartAmount, _RefillAmount)</a></td>
@@ -864,13 +921,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#API.StaticNote">API.StaticNote (_Text)</a></td>
 	<td class="summary">Schreibt eine Nachricht in das Debug Window.</td>
-	</tr>
-</table>
-<h2><a href="#Position">Position</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#API.GetDistance">API.GetDistance (_pos1, _pos2)</a></td>
-	<td class="summary">Bestimmt die Distanz zwischen zwei Punkten.</td>
 	</tr>
 </table>
 <h2><a href="#Quest">Quest</a></h2>
@@ -2652,6 +2702,190 @@
 
 </dd>
     <dt>
+    <a name = "API.GetAngleBetween"></a>
+    <strong>API.GetAngleBetween (_Pos1, _Pos2)</strong>
+    </dt>
+    <dd>
+    Bestimmt den Winkel zwischen zwei Punkten.  Es können Entity-IDs,
+ Skriptnamen oder Positionstables angegeben werden.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Pos1</span>
+         Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
+        </li>
+        <li><span class="parameter">_Pos2</span>
+         Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Winkel zwischen den Punkten
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Angle = API.GetAngleBetween(<span class="string">"HQ1"</span>, Logic.GetKnightID(<span class="number">1</span>))</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetCirclePosition"></a>
+    <strong>API.GetCirclePosition (_Target, _Distance, _Angle)</strong>
+    </dt>
+    <dd>
+    Gibt eine Position auf einer Kreisbahn um einen Punkt zurück.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Target</span>
+                  Entity oder Position
+        </li>
+        <li><span class="parameter">_Distance</span>
+            <span class="types"><span class="type">number</span></span>
+                Entfernung um das Zentrum
+        </li>
+        <li><span class="parameter">_Angle</span>
+            <span class="types"><span class="type">number</span></span>
+                   Winkel auf dem Kreis
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Position auf Kreisbahn
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Position = API.GetCirclePosition(<span class="string">"HQ1"</span>, <span class="number">3000</span>, -<span class="number">45</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetCirclePositions"></a>
+    <strong>API.GetCirclePositions (_Target, _Distance, _Periode, _Offset)</strong>
+    </dt>
+    <dd>
+    Gibt Positionen im gleichen Abstand auf der Kreisbahn zurück.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Target</span>
+                  Entity oder Position
+        </li>
+        <li><span class="parameter">_Distance</span>
+            <span class="types"><span class="type">number</span></span>
+                Entfernung um das Zentrum
+        </li>
+        <li><span class="parameter">_Periode</span>
+            <span class="types"><span class="type">number</span></span>
+                 Anzahl an Positionen
+        </li>
+        <li><span class="parameter">_Offset</span>
+            <span class="types"><span class="type">number</span></span>
+                  Start Offset
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Positionend auf Kreisbahn
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> PositionList = API.GetCirclePositions(<span class="string">"Position"</span>, <span class="number">3000</span>, <span class="number">6</span>, <span class="number">45</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetClosestToTarget"></a>
+    <strong>API.GetClosestToTarget (_Target, _List)</strong>
+    </dt>
+    <dd>
+    Gibt das Entity aus der Liste zurück, welches dem Ziel am nähsten ist.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Target</span>
+         Entity oder Position
+        </li>
+        <li><span class="parameter">_List</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+           Liste von Entities oder Positionen
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+        Nähste Entity oder Position
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Clostest = API.GetClosestToTarget(<span class="string">"HQ1"</span>, {<span class="string">"Marcus"</span>, <span class="string">"Alandra"</span>, <span class="string">"Hakim"</span>});</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetDistance"></a>
+    <strong>API.GetDistance (_pos1, _pos2)</strong>
+    </dt>
+    <dd>
+    Bestimmt die Distanz zwischen zwei Punkten.  Es können Entity-IDs,
+ Skriptnamen oder Positionstables angegeben werden.
+<p> Wenn die Distanz nicht bestimmt werden kann, wird -1 zurückgegeben.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_pos1</span>
+         Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
+        </li>
+        <li><span class="parameter">_pos2</span>
+         Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Entfernung zwischen den Punkten
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Distance = API.GetDistance(<span class="string">"HQ1"</span>, Logic.GetKnightID(<span class="number">1</span>))</pre>
+    </ul>
+
+</dd>
+    <dt>
     <a name = "API.GetEntityCategoyList"></a>
     <strong>API.GetEntityCategoyList (_Entity)</strong>
     </dt>
@@ -2700,6 +2934,32 @@
 
            <span class="types"><span class="type">number</span></span>
         Aktuelle Gesundheit
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.GetEntityOrientation"></a>
+    <strong>API.GetEntityOrientation (_Entity)</strong>
+    </dt>
+    <dd>
+    Gibt die Ausrichtung des Entity zurück.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+          Entity (Scriptname oder ID)
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Ausrichtung in Grad
     </ol>
 
 
@@ -2811,6 +3071,36 @@
 
 </dd>
     <dt>
+    <a name = "API.GetGeometricFocus"></a>
+    <strong>API.GetGeometricFocus (...)</strong>
+    </dt>
+    <dd>
+    Bestimmt die Durchschnittsposition mehrerer Entities.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         Positionen mit Komma getrennt
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Durchschnittsposition aller Positionen
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Center = API.GetGeometricFocus(<span class="string">"Hakim"</span>, <span class="string">"Marcus"</span>, <span class="string">"Alandra"</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
     <a name = "API.GetGroupLeader"></a>
     <strong>API.GetGroupLeader (_Entity)</strong>
     </dt>
@@ -2860,6 +3150,114 @@
 
 
 
+
+</dd>
+    <dt>
+    <a name = "API.GetLinePosition"></a>
+    <strong>API.GetLinePosition (_Pos1, _Pos2, _Percentage)</strong>
+    </dt>
+    <dd>
+    Gib eine Position auf einer Linie im relativen Abstand zur ersten Position
+ zurück.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Pos1</span>
+               Erste Position
+        </li>
+        <li><span class="parameter">_Pos2</span>
+               Zweite Position
+        </li>
+        <li><span class="parameter">_Percentage</span>
+            <span class="types"><span class="type">number</span></span>
+         Entfernung zu Erster Position
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Position auf Linie
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Position = API.GetLinePosition(<span class="string">"HQ1"</span>, <span class="string">"HQ2"</span>, <span class="number">0.75</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetLinePositions"></a>
+    <strong>API.GetLinePositions (_Pos1, _Pos2, _Periode)</strong>
+    </dt>
+    <dd>
+    Gib Positionen im gleichen Abstand auf der Linie zurück.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Pos1</span>
+            Erste Position
+        </li>
+        <li><span class="parameter">_Pos2</span>
+            Zweite Position
+        </li>
+        <li><span class="parameter">_Periode</span>
+            <span class="types"><span class="type">number</span></span>
+         Anzahl an Positionen
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Positionen auf Linie
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> PositionList = API.GetLinePositions(<span class="string">"HQ1"</span>, <span class="string">"HQ2"</span>, <span class="number">6</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetPosition"></a>
+    <strong>API.GetPosition (_Entity)</strong>
+    </dt>
+    <dd>
+    Lokalisiert ein Entity auf der Map.  Es können sowohl Skriptnamen als auch
+ IDs verwendet werden. Wenn das Entity nicht gefunden wird, wird eine
+ Tabelle mit XYZ = 0 zurückgegeben.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+         Entity (Skriptname oder ID)
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Positionstabelle {X= x, Y= y, Z= z}
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Position = API.GetPosition(<span class="string">"Hans"</span>);</pre>
+    </ul>
 
 </dd>
     <dt>
@@ -3019,6 +3417,68 @@
 
 
 
+
+</dd>
+    <dt>
+    <a name = "API.IsValidPosition"></a>
+    <strong>API.IsValidPosition (_pos)</strong>
+    </dt>
+    <dd>
+    Prüft, ob eine Positionstabelle eine gültige Position enthält.
+<p> Eine Position ist Ungültig, wenn sie sich nicht auf der Welt befindet.
+ Das ist der Fall bei negativen Werten oder Werten, welche die Größe
+ der Welt übersteigen.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_pos</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Positionstable {X= x, Y= y}
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Position ist valide
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.LookAt"></a>
+    <strong>API.LookAt (_Entity, _Target, _Offset)</strong>
+    </dt>
+    <dd>
+    Rotiert ein Entity, sodass es zum Ziel schaut.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+              Entity (Skriptname oder ID)
+        </li>
+        <li><span class="parameter">_Target</span>
+              Ziel (Skriptname, ID oder Position)
+        </li>
+        <li><span class="parameter">_Offset</span>
+            <span class="types"><span class="type">number</span></span>
+         Winkel Offset
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.LookAt(<span class="string">"Hakim"</span>, <span class="string">"Alandra"</span>)</pre>
+    </ul>
 
 </dd>
     <dt>
@@ -3202,6 +3662,30 @@
 
 </dd>
     <dt>
+    <a name = "API.SetEntityOrientation"></a>
+    <strong>API.SetEntityOrientation (_Entity, _Orientation)</strong>
+    </dt>
+    <dd>
+    Setzt die Ausrichtung des Entity.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+          Entity (Scriptname oder ID)
+        </li>
+        <li><span class="parameter">_Orientation</span>
+            <span class="types"><span class="type">number</span></span>
+         Neue Ausrichtung
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
     <a name = "API.SetEntityTaskList"></a>
     <strong>API.SetEntityTaskList (_Entity, _NewTask)</strong>
     </dt>
@@ -3223,6 +3707,33 @@
 
 
 
+
+</dd>
+    <dt>
+    <a name = "API.SetPosition"></a>
+    <strong>API.SetPosition (_Entity, _Target)</strong>
+    </dt>
+    <dd>
+    Setzt ein Entity auf eine neue Position
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+         Entity (Skriptname oder ID)
+        </li>
+        <li><span class="parameter">_Target</span>
+         Ziel (Skriptname, ID oder Position)
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.SetPosition(<span class="string">"Hans"</span>, <span class="string">"Horst"</span>);</pre>
+    </ul>
 
 </dd>
     <dt>
@@ -4205,46 +4716,6 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
     <h3>Beispiel:</h3>
     <ul>
         <pre class="example">API.StaticNote(<span class="string">"Das ist eine dauerhafte Information!"</span>);</pre>
-    </ul>
-
-</dd>
-</dl>
-    <h2 class="section-header "><a name="Position"></a>Position</h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "API.GetDistance"></a>
-    <strong>API.GetDistance (_pos1, _pos2)</strong>
-    </dt>
-    <dd>
-    Bestimmt die Distanz zwischen zwei Punkten.  Es können Entity-IDs,
- Skriptnamen oder Positionstables angegeben werden.
-<p> Wenn die Distanz nicht bestimmt werden kann, wird -1 zurückgegeben.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_pos1</span>
-         Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
-        </li>
-        <li><span class="parameter">_pos2</span>
-         Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Entfernung zwischen den Punkten
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Distance = API.GetDistance(<span class="string">"HQ1"</span>, Logic.GetKnightID(<span class="number">1</span>))</pre>
     </ul>
 
 </dd>
@@ -6964,7 +7435,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-12-15 23:44:54 </i>
+<i style="float:right;">Last updated 2022-12-17 15:26:19 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 

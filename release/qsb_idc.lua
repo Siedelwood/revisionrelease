@@ -488,6 +488,7 @@ function Revision:LoadKernel()
     self.Chat:Initalize();
     self.Text:Initalize();
     self.Bugfix:Initalize();
+    self.ScriptingValue:Initalize();
     self.Utils:Initalize();
     self.Quest:Initalize();
     self.Debug:Initalize();
@@ -623,6 +624,7 @@ function Revision:OnSaveGameLoaded()
     self.Chat:OnSaveGameLoaded();
     self.Text:OnSaveGameLoaded();
     self.Bugfix:OnSaveGameLoaded();
+    self.ScriptingValue:OnSaveGameLoaded();
     self.Utils:OnSaveGameLoaded();
     self.Quest:OnSaveGameLoaded();
     self.Debug:OnSaveGameLoaded();
@@ -1041,6 +1043,7 @@ function Revision.LuaBase:OverrideTable()
         return Revision.LuaBase:ConvertTableToString(t);
     end
 
+    -- FIXME: Does not work?
     table.insertAll = function(t, ...)
         for i= 1, #arg do
             if not table.contains(t, arg[i]) then
@@ -1050,6 +1053,7 @@ function Revision.LuaBase:OverrideTable()
         return t;
     end
 
+    -- FIXME: Does not work?
     table.removeAll = function(t, ...)
         for i= 1, #arg do
             for k, v in pairs(t) do
@@ -3963,6 +3967,160 @@ function API.GetRandomFemaleSettlerType()
 end
 
 ---
+-- Gibt die Ausrichtung des Entity zurück.
+--
+-- @param               _Entity  Entity (Scriptname oder ID)
+-- @return[type=number] Ausrichtung in Grad
+-- @within Werkzeugkasten
+--
+function API.GetEntityOrientation(_Entity)
+    local EntityID = GetID(_Entity);
+    if EntityID > 0 then
+        return API.Round(Logic.GetEntityOrientation(EntityID));
+    end
+    error("API.GetEntityOrientation: _Entity (" ..tostring(_Entity).. ") does not exist!");
+    return 0;
+end
+
+---
+-- Setzt die Ausrichtung des Entity.
+--
+-- @param               _Entity  Entity (Scriptname oder ID)
+-- @param[type=number] _Orientation Neue Ausrichtung
+-- @within Werkzeugkasten
+--
+function API.SetEntityOrientation(_Entity, _Orientation)
+    if GUI then
+        return;
+    end
+    local EntityID = GetID(_Entity);
+    if EntityID > 0 then
+        if type(_Orientation) ~= "number" then
+            error("API.SetEntityOrientation: _Orientation is wrong!");
+            return
+        end
+        Logic.SetOrientation(EntityID, API.Round(_Orientation));
+    else
+        error("API.SetEntityOrientation: _Entity (" ..tostring(_Entity).. ") does not exist!");
+    end
+end
+
+---
+-- Gibt das Entity aus der Liste zurück, welches dem Ziel am nähsten ist.
+--
+-- @param             _Target Entity oder Position
+-- @param[type=table] _List   Liste von Entities oder Positionen
+-- @return Nähste Entity oder Position
+-- @within Werkzeugkasten
+-- @usage
+-- local Clostest = API.GetClosestToTarget("HQ1", {"Marcus", "Alandra", "Hakim"});
+--
+function API.GetClosestToTarget(_Target, _List)
+    local ClosestToTarget = 0;
+    local ClosestToTargetDistance = Logic.WorldGetSize();
+    for i= 1, #_List, 1 do
+        local DistanceBetween = API.GetDistance(_List[i], _Target);
+        if DistanceBetween < ClosestToTargetDistance then
+            ClosestToTargetDistance = DistanceBetween;
+            ClosestToTarget = _List[i];
+        end
+    end
+    return ClosestToTarget;
+end
+
+---
+-- Lokalisiert ein Entity auf der Map. Es können sowohl Skriptnamen als auch
+-- IDs verwendet werden. Wenn das Entity nicht gefunden wird, wird eine
+-- Tabelle mit XYZ = 0 zurückgegeben.
+--
+-- @param _Entity Entity (Skriptname oder ID)
+-- @return[type=table] Positionstabelle {X= x, Y= y, Z= z}
+-- @within Werkzeugkasten
+-- @usage
+-- local Position = API.GetPosition("Hans");
+--
+function API.GetPosition(_Entity)
+    if _Entity == nil then
+        return {X= 0, Y= 0, Z= 0};
+    end
+    if (type(_Entity) == "table") then
+        return _Entity;
+    end
+    if (not IsExisting(_Entity)) then
+        warn("API.GetPosition: Entity (" ..tostring(_Entity).. ") does not exist!");
+        return {X= 0, Y= 0, Z= 0};
+    end
+    local x, y, z = Logic.EntityGetPos(GetID(_Entity));
+    return {X= API.Round(x), Y= API.Round(y), Z= API.Round(y)};
+end
+API.LocateEntity = API.GetPosition;
+GetPosition = API.GetPosition;
+
+---
+-- Setzt ein Entity auf eine neue Position
+--
+-- @param _Entity Entity (Skriptname oder ID)
+-- @param _Target Ziel (Skriptname, ID oder Position)
+-- @within Werkzeugkasten
+-- @usage
+-- API.SetPosition("Hans", "Horst");
+--
+function API.SetPosition(_Entity, _Target)
+    local ID = GetID(_Entity);
+    if not ID then
+        return;
+    end
+
+    local Target;
+    if type(_Target) ~= "table" then
+        local ID2 = GetID(_Target);
+        local x,y,z = Logic.EntityGetPos(ID2);
+        Target = {X= x, Y= y};
+    else
+        Target = _Target;
+    end
+
+    if Logic.IsLeader(ID) == 1 then
+        local Soldiers = {Logic.GetSoldiersAttachedToLeader(ID)};
+        for i= 2, Soldiers[1]+1 do
+            Logic.DEBUG_SetSettlerPosition(Soldiers[i], Target.X, Target.Y);
+        end
+    end
+    Logic.DEBUG_SetSettlerPosition(ID, Target.X, Target.Y);
+end
+API.RelocateEntity = API.SetPosition;
+SetPosition = API.SetPosition;
+
+---
+-- Prüft, ob eine Positionstabelle eine gültige Position enthält.
+--
+-- Eine Position ist Ungültig, wenn sie sich nicht auf der Welt befindet.
+-- Das ist der Fall bei negativen Werten oder Werten, welche die Größe
+-- der Welt übersteigen.
+--
+-- @param[type=table] _pos Positionstable {X= x, Y= y}
+-- @return[type=boolean] Position ist valide
+-- @within Werkzeugkasten
+--
+function API.IsValidPosition(_pos)
+    if type(_pos) == "table" then
+        if (_pos.X ~= nil and type(_pos.X) == "number") and (_pos.Y ~= nil and type(_pos.Y) == "number") then
+            local world = {Logic.WorldGetSize()};
+            if _pos.Z and _pos.Z < 0 then
+                return false;
+            end
+            if _pos.X < world[1] and _pos.X > 0 and _pos.Y < world[2] and _pos.Y > 0 then
+                return true;
+            end
+        end
+    end
+    return false;
+end
+
+-- -------------------------------------------------------------------------- --
+-- Math
+
+---
 -- Bestimmt die Distanz zwischen zwei Punkten. Es können Entity-IDs,
 -- Skriptnamen oder Positionstables angegeben werden.
 --
@@ -3971,16 +4129,16 @@ end
 -- @param _pos1 Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
 -- @param _pos2 Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
 -- @return[type=number] Entfernung zwischen den Punkten
--- @within Position
+-- @within Werkzeugkasten
 -- @usage
 -- local Distance = API.GetDistance("HQ1", Logic.GetKnightID(1))
 --
 function API.GetDistance( _pos1, _pos2 )
     if (type(_pos1) == "string") or (type(_pos1) == "number") then
-        _pos1 = GetPosition(_pos1);
+        _pos1 = API.GetPosition(_pos1);
     end
     if (type(_pos2) == "string") or (type(_pos2) == "number") then
-        _pos2 = GetPosition(_pos2);
+        _pos2 = API.GetPosition(_pos2);
     end
     if type(_pos1) ~= "table" or type(_pos2) ~= "table" then
         warn("API.GetDistance: Distance could not be calculated!");
@@ -3991,6 +4149,241 @@ function API.GetDistance( _pos1, _pos2 )
     return math.sqrt((xDistance^2) + (yDistance^2));
 end
 GetDistance = API.GetDistance;
+
+---
+-- Rotiert ein Entity, sodass es zum Ziel schaut.
+--
+-- @param _Entity      Entity (Skriptname oder ID)
+-- @param _Target      Ziel (Skriptname, ID oder Position)
+-- @param[type=number] _Offset Winkel Offset
+-- @within Werkzeugkasten
+-- @usage
+-- API.LookAt("Hakim", "Alandra")
+--
+function API.LookAt(_Entity, _Target, _Offset)
+    _Offset = _Offset or 0;
+    local ID1 = GetID(_Entity);
+    if ID1 == 0 then
+        return;
+    end
+    local x1,y1,z1 = Logic.EntityGetPos(ID1);
+    local ID2;
+    local x2, y2, z2;
+    if type(_Target) == "table" then
+        x2 = _Target.X;
+        y2 = _Target.Y;
+        z2 = _Target.Z;
+    else
+        ID2 = GetID(_Target);
+        if ID2 == 0 then
+            return;
+        end
+        x2,y2,z2 = Logic.EntityGetPos(ID2);
+    end
+
+    if not API.IsValidPosition({X= x1, Y= y1, Z= z1}) then
+        return;
+    end
+    if not API.IsValidPosition({X= x2, Y= y2, Z= z2}) then
+        return;
+    end
+    Angle = math.deg(math.atan2((y2 - y1), (x2 - x1))) + _Offset;
+    if Angle < 0 then
+        Angle = Angle + 360;
+    end
+
+    if Logic.IsLeader(ID1) == 1 then
+        local Soldiers = {Logic.GetSoldiersAttachedToLeader(ID1)};
+        for i= 2, Soldiers[1]+1 do
+            Logic.SetOrientation(Soldiers[i], Angle);
+        end
+    end
+    Logic.SetOrientation(ID1, Angle);
+end
+LookAt = API.LookAt;
+
+---
+-- Bestimmt den Winkel zwischen zwei Punkten. Es können Entity-IDs,
+-- Skriptnamen oder Positionstables angegeben werden.
+--
+-- @param _Pos1 Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
+-- @param _Pos2 Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
+-- @return[type=number] Winkel zwischen den Punkten
+-- @within Werkzeugkasten
+-- @usage
+-- local Angle = API.GetAngleBetween("HQ1", Logic.GetKnightID(1))
+--
+function API.GetAngleBetween(_Pos1, _Pos2)
+	local delta_X = 0;
+	local delta_Y = 0;
+	local alpha   = 0;
+	if type (_Pos1) == "string" or type (_Pos1) == "number" then
+		_Pos1 = API.GetPosition(GetID(_Pos1));
+	end
+	if type (_Pos2) == "string" or type (_Pos2) == "number" then
+		_Pos2 = API.GetPosition(GetID(_Pos2));
+	end
+	delta_X = _Pos1.X - _Pos2.X;
+	delta_Y = _Pos1.Y - _Pos2.Y;
+	if delta_X == 0 and delta_Y == 0 then
+		return 0;
+	end
+	alpha = math.deg(math.asin(math.abs(delta_X)/(math.sqrt((delta_X ^ 2)+delta_Y ^ 2))));
+	if delta_X >= 0 and delta_Y > 0 then
+		alpha = 270 - alpha ;
+	elseif delta_X < 0 and delta_Y > 0 then
+		alpha = 270 + alpha;
+	elseif delta_X < 0 and delta_Y <= 0 then
+		alpha = 90  - alpha;
+	elseif delta_X >= 0 and delta_Y <= 0 then
+		alpha = 90  + alpha;
+	end
+	return alpha;
+end
+
+---
+-- Bestimmt die Durchschnittsposition mehrerer Entities.
+--
+-- @param ... Positionen mit Komma getrennt
+-- @return[type=table] Durchschnittsposition aller Positionen
+-- @within Werkzeugkasten
+-- @usage
+-- local Center = API.GetGeometricFocus("Hakim", "Marcus", "Alandra");
+--
+function API.GetGeometricFocus(...)
+    local PositionData = {X= 0, Y= 0, Z= 0};
+    local ValidEntryCount = 0;
+    for i= 1, #arg do
+        local Position = API.GetPosition(arg[i]);
+        if API.IsValidPosition(Position) then
+            PositionData.X = PositionData.X + Position.X;
+            PositionData.Y = PositionData.Y + Position.Y;
+            PositionData.Z = PositionData.Z + (Position.Z or 0);
+            ValidEntryCount = ValidEntryCount +1;
+        end
+    end
+    return {
+        X= PositionData.X * (1/ValidEntryCount);
+        Y= PositionData.Y * (1/ValidEntryCount);
+        Z= PositionData.Z * (1/ValidEntryCount);
+    }
+end
+
+---
+-- Gib eine Position auf einer Linie im relativen Abstand zur ersten Position
+-- zurück.
+--
+-- @param               _Pos1       Erste Position
+-- @param               _Pos2       Zweite Position
+-- @param[type=number]  _Percentage Entfernung zu Erster Position
+-- @return[type=table] Position auf Linie
+-- @within Werkzeugkasten
+-- @usage
+-- local Position = API.GetLinePosition("HQ1", "HQ2", 0.75);
+--
+function API.GetLinePosition(_Pos1, _Pos2, _Percentage)
+    if _Percentage > 1 then
+        _Percentage = _Percentage / 100;
+    end
+
+    if not API.IsValidPosition(_Pos1) and not IsExisting(_Pos1) then
+        error("API.GetLinePosition: _Pos1 does not exist or is invalid position!");
+        return;
+    end
+    local Pos1 = _Pos1;
+    if type(Pos1) ~= "table" then
+        Pos1 = API.GetPosition(Pos1);
+    end
+
+    if not API.IsValidPosition(_Pos2) and not IsExisting(_Pos2) then
+        error("API.GetLinePosition: _Pos1 does not exist or is invalid position!");
+        return;
+    end
+    local Pos2 = _Pos2;
+    if type(Pos2) ~= "table" then
+        Pos2 = API.GetPosition(Pos2);
+    end
+
+	local dx = Pos2.X - Pos1.X;
+	local dy = Pos2.Y - Pos1.Y;
+    return {X= Pos1.X+(dx*_Percentage), Y= Pos1.Y+(dy*_Percentage)};
+end
+
+---
+-- Gib Positionen im gleichen Abstand auf der Linie zurück.
+--
+-- @param               _Pos1    Erste Position
+-- @param               _Pos2    Zweite Position
+-- @param[type=number]  _Periode Anzahl an Positionen
+-- @return[type=table] Positionen auf Linie
+-- @within Werkzeugkasten
+-- @usage
+-- local PositionList = API.GetLinePositions("HQ1", "HQ2", 6);
+--
+function API.GetLinePositions(_Pos1, _Pos2, _Periode)
+    local PositionList = {};
+    for i= 0, 100, (1/_Periode)*100 do
+        local Section = API.GetLinePosition(_Pos1, _Pos2, i);
+        table.insert(PositionList, Section);
+    end
+    return PositionList;
+end
+
+---
+-- Gibt eine Position auf einer Kreisbahn um einen Punkt zurück.
+--
+-- @param               _Target          Entity oder Position
+-- @param[type=number]  _Distance        Entfernung um das Zentrum
+-- @param[type=number]  _Angle           Winkel auf dem Kreis
+-- @return[type=table] Position auf Kreisbahn
+-- @within Werkzeugkasten
+-- @usage
+-- local Position = API.GetCirclePosition("HQ1", 3000, -45);
+--
+function API.GetCirclePosition(_Target, _Distance, _Angle)
+    if not API.IsValidPosition(_Target) and not IsExisting(_Target) then
+        error("API.GetCirclePosition: _Target does not exist or is invalid position!");
+        return;
+    end
+
+    local Position = _Target;
+    local Orientation = 0+ (_Angle or 0);
+    if type(_Target) ~= "table" then
+        local EntityID = GetID(_Target);
+        Orientation = Logic.GetEntityOrientation(EntityID)+(_Angle or 0);
+        Position = API.GetPosition(EntityID);
+    end
+
+    local Result = {
+        X= Position.X+_Distance * math.cos(math.rad(Orientation)),
+        Y= Position.Y+_Distance * math.sin(math.rad(Orientation)),
+        Z= Position.Z
+    };
+    return Result;
+end
+API.GetRelatiePos = API.GetCirclePosition;
+
+---
+-- Gibt Positionen im gleichen Abstand auf der Kreisbahn zurück.
+--
+-- @param               _Target          Entity oder Position
+-- @param[type=number]  _Distance        Entfernung um das Zentrum
+-- @param[type=number]  _Periode         Anzahl an Positionen
+-- @param[type=number]  _Offset          Start Offset
+-- @return[type=table] Positionend auf Kreisbahn
+-- @within Werkzeugkasten
+-- @usage
+-- local PositionList = API.GetCirclePositions("Position", 3000, 6, 45);
+--
+function API.GetCirclePositions(_Target, _Distance, _Periode, _Offset)
+    local Periode = API.Round(360 / _Periode, 0);
+    local PositionList = {};
+    for i= (Periode + _Offset), (360 + _Offset) do
+        local Section = API.GetCirclePosition(_Target, _Distance, i);
+        table.insert(PositionList, Section);
+    end
+    return PositionList;
+end
 
 -- -------------------------------------------------------------------------- --
 -- Group
@@ -4555,7 +4948,6 @@ end
 
 function Revision.Debug:OnSaveGameLoaded()
     if Revision.Environment == QSB.Environment.LOCAL then
-        self:InitalizeQuestTrace();
         self:InitalizeDebugWidgets();
         self:InitalizeQsbDebugHotkeys();
     end
@@ -4578,7 +4970,6 @@ function Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _Developing
         self.DevelopingCheats,
         self.DevelopingShell
     );
-    self:InitalizeQuestTrace();
 
     Logic.ExecuteInLuaLocalState(string.format(
         [[
@@ -4601,11 +4992,6 @@ function Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _Developing
         tostring(self.DevelopingCheats),
         tostring(self.DevelopingShell)
     ));
-end
-
-function Revision.Debug:InitalizeQuestTrace()
-    DEBUG_EnableQuestDebugKeys();
-    DEBUG_QuestTrace(self.TraceQuests == true);
 end
 
 function Revision.Debug:InitalizeDebugWidgets()
@@ -14004,7 +14390,7 @@ function ModuleEntitySurveillance.Global:OnGameStart()
     self:OverrideLogic();
 end
 
-function ModuleEntitySurveillance.Global:OnEvent(_ID, _Event, ...)
+function ModuleEntitySurveillance.Global:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     elseif _ID == QSB.ScriptEvents.SaveGameLoaded then
@@ -14352,11 +14738,9 @@ function ModuleEntitySurveillance.Local:OnGameStart()
     QSB.ScriptEvents.BuildingConstructed = API.RegisterScriptEvent("Event_BuildingConstructed");
     QSB.ScriptEvents.BuildingUpgradeCollapsed = API.RegisterScriptEvent("Event_BuildingUpgradeCollapsed");
     QSB.ScriptEvents.BuildingUpgraded = API.RegisterScriptEvent("Event_BuildingUpgraded");
-
-    self:OverrideAfterBuildingPlacement();
 end
 
-function ModuleEntitySurveillance.Local:OnEvent(_ID, _Event, ...)
+function ModuleEntitySurveillance.Local:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     end
@@ -19844,40 +20228,44 @@ function ModuleBuildingButtons.Local:BindButtons(_ID)
     local Name = Logic.GetEntityName(_ID);
     local Type = Logic.GetEntityType(_ID);
 
-    local Key;
-    if self.BuildingButtons.Bindings[Name] then
-        Key = Name;
+    local WidgetsForOverride = self:GetButtonsForOverwrite(_ID, 6);
+    local ButtonOverride = {};
+    -- Add buttons for named entity
+    if self.BuildingButtons.Bindings[Name] and #self.BuildingButtons.Bindings[Name] > 0 then
+        for i= 1, #self.BuildingButtons.Bindings[Name] do
+            table.insert(ButtonOverride, self.BuildingButtons.Bindings[Name][i]);
+        end
     end
-    -- TODO: Proper inclusion of categories
-    -- The problem is, that an entity might have more than one category. So this
-    -- makes direct mapping impossible...
-    if not Key and self.BuildingButtons.Bindings[Type] then
-        Key = Type;
+    -- Add buttons for named entity
+    if self.BuildingButtons.Bindings[Type] and #self.BuildingButtons.Bindings[Type] > 0 then
+        for i= 1, #self.BuildingButtons.Bindings[Type] do
+            table.insert(ButtonOverride, self.BuildingButtons.Bindings[Type][i]);
+        end
     end
-    if not Key and self.BuildingButtons.Bindings[0] then
-        Key = 0;
+    -- Add buttons for named entity
+    if self.BuildingButtons.Bindings[0] and #self.BuildingButtons.Bindings[0] > 0 then
+        for i= 1, #self.BuildingButtons.Bindings[0] do
+            table.insert(ButtonOverride, self.BuildingButtons.Bindings[0][i]);
+        end
     end
 
-    if Key then
-        local ButtonNames = self:GetButtonsForOverwrite(_ID, #self.BuildingButtons.Bindings[Key]);
-        local DefaultPositionIndex = 0;
-        for i= 1, #self.BuildingButtons.Bindings[Key] do
-            self.BuildingButtons.Configuration[ButtonNames[i]].Bind = self.BuildingButtons.Bindings[Key][i];
-            XGUIEng.ShowWidget("/InGame/Root/Normal/BuildingButtons/" ..ButtonNames[i], 1);
-            XGUIEng.DisableButton("/InGame/Root/Normal/BuildingButtons/" ..ButtonNames[i], 0);
-            local Position = self.BuildingButtons.Bindings[Key][i].Position;
-            if not Position[1] or not Position[2] then
-                local AnchorPosition = {12, 296};
-                Position[1] = AnchorPosition[1] + (64 * DefaultPositionIndex);
-                Position[2] = AnchorPosition[2];
-                DefaultPositionIndex = DefaultPositionIndex +1;
-            end
-            XGUIEng.SetWidgetLocalPosition(
-                "/InGame/Root/Normal/BuildingButtons/" ..ButtonNames[i],
-                Position[1],
-                Position[2]
-            );
+    -- Place first six buttons (if present)
+    for i= 1, #ButtonOverride do
+        if i > 6 then
+            break;
         end
+        local ButtonName = WidgetsForOverride[i];
+        self.BuildingButtons.Configuration[ButtonName].Bind = ButtonOverride[i];
+        XGUIEng.ShowWidget("/InGame/Root/Normal/BuildingButtons/" ..ButtonName, 1);
+        XGUIEng.DisableButton("/InGame/Root/Normal/BuildingButtons/" ..ButtonName, 0);
+        local X = ButtonOverride[i][1];
+        local Y = ButtonOverride[i][2];
+        if not X or not Y then
+            local AnchorPosition = {12, 296};
+            X = AnchorPosition[1] + (64 * (i-1));
+            Y = AnchorPosition[2];
+        end
+        XGUIEng.SetWidgetLocalPosition("/InGame/Root/Normal/BuildingButtons/" ..ButtonName, X, Y);
     end
 end
 
@@ -20198,7 +20586,7 @@ function ModuleNpcInteraction.Global:OnGameStart()
     end);
 end
 
-function ModuleNpcInteraction.Global:OnEvent(_ID, _Event, ...)
+function ModuleNpcInteraction.Global:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     elseif _ID == QSB.ScriptEvents.NpcInteraction then
@@ -20347,7 +20735,7 @@ function ModuleNpcInteraction.Global:RotateActorsToEachother(_PlayerID)
     local PlayerKnights = {};
     Logic.GetKnights(_PlayerID, PlayerKnights);
     for k, v in pairs(PlayerKnights) do
-        local Target = API.GetEntityMovementTarget(v);
+        local Target = self:GetEntityMovementTarget(v);
         local x, y, z = Logic.EntityGetPos(QSB.Npc.LastNpcEntityID);
         if math.floor(Target.X) == math.floor(x) and math.floor(Target.Y) == math.floor(y) then
             x, y, z = Logic.EntityGetPos(v);
@@ -20508,16 +20896,21 @@ function ModuleNpcInteraction.Global:ShowMarker(_ScriptName)
     end
 end
 
+function ModuleNpcInteraction.Global:GetEntityMovingTarget(_EntityID)
+    local x = API.GetFloat(_EntityID, QSB.ScriptingValue.Destination.X);
+    local y = API.GetFloat(_EntityID, QSB.ScriptingValue.Destination.Y);
+    return {X= x, Y= y};
+end
+
 function ModuleNpcInteraction.Global:InteractionTriggerController()
     for PlayerID = 1, 8, 1 do
         local PlayersKnights = {};
         Logic.GetKnights(PlayerID, PlayersKnights);
         for i= 1, #PlayersKnights, 1 do
             if Logic.GetCurrentTaskList(PlayersKnights[i]) == "TL_NPC_INTERACTION" then
-                local x1, y1 = Logic.EntityGetPos(PlayersKnights[i]);
                 for k, v in pairs(self.NPC) do
                     if v.Distance >= 350 then
-                        local Target = API.GetEntityMovementTarget(PlayersKnights[i]);
+                        local Target = self:GetEntityMovementTarget(PlayersKnights[i]);
                         local x2, y2 = Logic.EntityGetPos(GetID(k));
                         if math.floor(Target.X) == math.floor(x2) and math.floor(Target.Y) == math.floor(y2) then
                             if IsExisting(k) and IsNear(PlayersKnights[i], k, v.Distance) then
@@ -20557,7 +20950,7 @@ function ModuleNpcInteraction.Local:OnGameStart()
     self:OverrideQuestFunctions();
 end
 
-function ModuleNpcInteraction.Local:OnEvent(_ID, _Event, ...)
+function ModuleNpcInteraction.Local:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     elseif _ID == QSB.ScriptEvents.NpcInteraction then
@@ -21085,7 +21478,7 @@ function ModuleObjectInteraction.Global:OnGameStart()
     self:CreateDefaultObjectNames();
 end
 
-function ModuleObjectInteraction.Global:OnEvent(_ID, _Event, ...)
+function ModuleObjectInteraction.Global:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     elseif _ID == QSB.ScriptEvents.ObjectInteraction then
@@ -21430,7 +21823,7 @@ function ModuleObjectInteraction.Local:OnGameStart()
     self:OverrideGameFunctions();
 end
 
-function ModuleObjectInteraction.Local:OnEvent(_ID, _Event, _ScriptName, _KnightID, _PlayerID)
+function ModuleObjectInteraction.Local:OnEvent(_ID, _ScriptName, _KnightID, _PlayerID)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     elseif _ID == QSB.ScriptEvents.ObjectReset then
@@ -25281,6 +25674,765 @@ function API.AddDisableDecisionCondition(_Function)
         return;
     end
     table.insert(ModuleQuest.Global.ExternalDecisionConditions, _Function);
+end
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+ModuleLifestockBreeding = {
+    Properties = {
+        Name = "ModuleLifestockBreeding",
+    },
+
+    Global = {
+        AnimalChildren = {},
+        PastureRegister = {},
+
+        Cattle = {
+            RequiredAmount = 2,
+            QuantityBoost = 9,
+            AreaSize = 4500,
+            GrothTimer = 15,
+            FeedingTimer = 20,
+            BreedingTimer = 150,
+            BabySize = 0.45,
+            UseCalves = true,
+
+            Breeding = true,
+            MoneyCost = 300,
+        },
+        Sheep = {
+            RequiredAmount = 2,
+            QuantityBoost = 9,
+            AreaSize = 4500,
+            GrothTimer = 15,
+            FeedingTimer = 30,
+            BreedingTimer = 210,
+            BabySize = 0.45,
+            UseCalves = true,
+
+            Breeding = true,
+            MoneyCost = 450,
+        },
+    },
+    Local = {
+        Cattle = {
+            Breeding = true,
+            MoneyCost = 300,
+        },
+        Sheep = {
+            Breeding = true,
+            MoneyCost = 450,
+        },
+    },
+    Shared = {
+        Text = {
+            BreedingActive = {
+                Title = {
+                    de = "Zucht aktiv",
+                    en = "Breeding active",
+                    fr = "Élevage actif",
+                },
+                Text = {
+                    de = "- Klicken um Zucht zu stoppen",
+                    en = "- Click to stop breeding",
+                    fr = "- Cliquez pour arrêter l'élevage",
+                },
+                Disabled = {
+                    de = "Zucht ist gesperrt!",
+                    en = "Breeding is locked!",
+                    fr = "L'élevage est bloqué!",
+                },
+            },
+            BreedingInactive = {
+                Title = {
+                    de = "Zucht gestoppt",
+                    en = "Breeding stopped",
+                    fr = "Élevage stoppé",
+                },
+                Text = {
+                    de = "- Klicken um Zucht zu starten {cr}- Benötigt Platz {cr}- Benötigt Getreide",
+                    en = "- Click to allow breeding {cr}- Requires space {cr}- Requires grain",
+                    fr = "- Cliquez pour démarrer l'élevage {cr}- Nécessite de l'espace {cr}- Nécessite des céréales",
+                },
+                Disabled = {
+                    de = "Zucht ist gesperrt!",
+                    en = "Breeding is locked!",
+                    fr = "L'élevage est bloqué!",
+                },
+            },
+        },
+    }
+}
+
+-- Global ------------------------------------------------------------------- --
+
+function ModuleLifestockBreeding.Global:OnGameStart()
+    MerchantSystem.BasePricesOrigModuleLifestockBreeding                = {};
+    MerchantSystem.BasePricesOrigModuleLifestockBreeding[Goods.G_Sheep] = MerchantSystem.BasePrices[Goods.G_Sheep];
+    MerchantSystem.BasePricesOrigModuleLifestockBreeding[Goods.G_Cow]   = MerchantSystem.BasePrices[Goods.G_Cow];
+
+    MerchantSystem.BasePrices[Goods.G_Sheep] = ModuleLifestockBreeding.Global.Sheep.MoneyCost;
+    MerchantSystem.BasePrices[Goods.G_Cow]   = ModuleLifestockBreeding.Global.Cattle.MoneyCost;
+
+    QSB.ScriptEvents.AnimalBreed = API.RegisterScriptEvent("Event_AnimalBreed");
+
+    for i= 1, 8 do
+        self.PastureRegister[i] = {};
+    end
+
+    API.StartJob(function()
+        ModuleLifestockBreeding.Global:AnimalBreedController();
+    end);
+    API.StartJob(function()
+        ModuleLifestockBreeding.Global:AnimalGrouthController();
+    end);
+end
+
+function ModuleLifestockBreeding.Global:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    end
+end
+
+function ModuleLifestockBreeding.Global:SpawnCattle(_X, _Y, _PlayerID, _Shrink)
+    local ID = Logic.CreateEntity(Entities.A_X_Cow01, _X, _Y, 0, _PlayerID);
+    if _Shrink == true then
+        API.SetFloat(ID, QSB.ScriptingValue.Size, self.Cattle.BabySize);
+        table.insert(self.AnimalChildren, {ID, self.Cattle.GrothTimer});
+    end
+    API.SendScriptEvent(QSB.ScriptEvents.AnimalBreed, _PlayerID, ID);
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[API.SendScriptEvent(QSB.ScriptEvents.AnimalBreed, %d, %d)]],
+        _PlayerID, ID
+    ));
+end
+
+function ModuleLifestockBreeding.Global:SpawnSheep(_X, _Y, _PlayerID, _Shrink)
+    local Type = Entities.A_X_Sheep01;
+    if not Framework.IsNetworkGame() then
+        Type = Entities["A_X_Sheep0" ..math.random(1, 2)];
+    end
+    local ID = Logic.CreateEntity(Type, _X, _Y, 0, _PlayerID);
+    if _Shrink == true then
+        API.SetFloat(ID, QSB.ScriptingValue.Size, self.Sheep.BabySize);
+        table.insert(self.AnimalChildren, {ID, self.Sheep.GrothTimer});
+    end
+    API.SendScriptEvent(QSB.ScriptEvents.AnimalBreed, _PlayerID, ID);
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[API.SendScriptEvent(QSB.ScriptEvents.AnimalBreed, %d, %d)]],
+        _PlayerID, ID
+    ));
+end
+
+function ModuleLifestockBreeding.Global:CalculateCattleBreedingTimer(_Animals)
+    if self.Cattle.RequiredAmount <= _Animals then
+        local Time = self.Cattle.BreedingTimer - (_Animals * self.Cattle.QuantityBoost);
+        return (Time < 30 and 30) or Time;
+    end
+    return -1;
+end
+
+function ModuleLifestockBreeding.Global:CalculateSheepBreedingTimer(_Animals)
+    if self.Sheep.RequiredAmount <= _Animals then
+        local Time = self.Sheep.BreedingTimer - (_Animals * self.Sheep.QuantityBoost);
+        return (Time < 30 and 30) or Time;
+    end
+    return -1;
+end
+
+function ModuleLifestockBreeding.Global:IsCattleNeeded(_PastureID, _PlayerID)
+    if self:GetCattlePastureDelta(_PlayerID) < 1 then
+        local x,y,z = Logic.EntityGetPos(_PastureID);
+        local n1, ID1 = Logic.GetPlayerEntitiesInArea(_PlayerID, Entities.A_X_Cow01, x, y, 900, 16);
+        return n1 < 5;
+    end
+    return false;
+end
+
+function ModuleLifestockBreeding.Global:IsSheepNeeded(_PastureID, _PlayerID)
+    if self:GetSheepPastureDelta(_PlayerID) < 1 then
+        local x,y,z = Logic.EntityGetPos(_PastureID);
+        local n1, ID1 = Logic.GetPlayerEntitiesInArea(_PlayerID, Entities.A_X_Sheep01, x, y, 900, 16);
+        local n2, ID2 = Logic.GetPlayerEntitiesInArea(_PlayerID, Entities.A_X_Sheep02, x, y, 900, 16);
+        return n1+n2 < 5;
+    end
+    return false;
+end
+
+function ModuleLifestockBreeding.Global:GetCattlePastureDelta(_PlayerID)
+    local AmountOfCattle = {Logic.GetPlayerEntitiesInCategory(_PlayerID, EntityCategories.CattlePasture)};
+    local AmountOfPasture = Logic.GetNumberOfEntitiesOfTypeOfPlayer(_PlayerID, Entities.B_CattlePasture);
+    return #AmountOfCattle / (AmountOfPasture * 5);
+end
+
+function ModuleLifestockBreeding.Global:GetSheepPastureDelta(_PlayerID)
+    local AmountOfSheep = {Logic.GetPlayerEntitiesInCategory(_PlayerID, EntityCategories.SheepPasture)};
+    local AmountOfPasture = Logic.GetNumberOfEntitiesOfTypeOfPlayer(_PlayerID, Entities.B_SheepPasture);
+    return #AmountOfSheep / (AmountOfPasture * 5);
+end
+
+function ModuleLifestockBreeding.Global:CountCattleNearby(_Pasture)
+    local PastureID = GetID(_Pasture)
+    local PlayerID  = Logic.EntityGetPlayer(PastureID);
+    local x, y, z   = Logic.EntityGetPos(PastureID);
+    local AreaSize  = self.Cattle.AreaSize;
+    local Cattle    = {Logic.GetPlayerEntitiesInArea(PlayerID, Entities.A_X_Cow01, x, y, AreaSize, 16)};
+    table.remove(Cattle, 1);
+    return #Cattle;
+end
+
+function ModuleLifestockBreeding.Global:CountSheepsNearby(_Pasture)
+    local PastureID = GetID(_Pasture)
+    local PlayerID  = Logic.EntityGetPlayer(PastureID);
+    local x, y, z   = Logic.EntityGetPos(PastureID);
+    local AreaSize  = self.Sheep.AreaSize;
+    local Sheeps1   = {Logic.GetPlayerEntitiesInArea(PlayerID, Entities.A_X_Sheep01, x, y, AreaSize, 16)};
+    local Sheeps2   = {Logic.GetPlayerEntitiesInArea(PlayerID, Entities.A_X_Sheep02, x, y, AreaSize, 16)};
+    table.remove(Sheeps1, 1);
+    table.remove(Sheeps2, 1);
+    return #Sheeps1 + #Sheeps2;
+end
+
+function ModuleLifestockBreeding.Global:AnimalGrouthController()
+    for k, v in pairs(self.AnimalChildren) do
+        if not IsExisting(v[1]) then
+            self.AnimalChildren[k] = nil;
+        else
+            self.AnimalChildren[k][2] = v[2] -1;
+            if v[2] < 0 then
+                local IsCow = Logic.GetEntityType(v[1]) == Entities.A_X_Cow01;
+                local GrothTimer = (IsCow and self.Cattle.GrothTimer) or self.Sheep.GrothTimer;
+                self.AnimalChildren[k][2] = GrothTimer;
+                local Scale = API.GetFloat(v[1], QSB.ScriptingValue.Size);
+                API.SetFloat(v[1], QSB.ScriptingValue.Size, math.min(1, Scale + 0.05))
+                if Scale + 0.05 >= 1 then
+                    self.AnimalChildren[k] = nil;
+                end
+            end
+        end
+    end
+end
+
+function ModuleLifestockBreeding.Global:AnimalBreedController()
+    if self.Cattle.Breeding then
+        local CattlePasture = Logic.GetEntitiesOfType(Entities.B_CattlePasture);
+        for k, v in pairs(CattlePasture) do
+            local PlayerID = Logic.EntityGetPlayer(v);
+            if not self.PastureRegister[PlayerID][v] then
+                self.PastureRegister[PlayerID][v] = {0, 0};
+            end
+            self:CalculateCattlePastureFeeding(PlayerID, v);
+            self:CattlePastureSpawnAnimal(PlayerID, v);
+        end
+    end
+
+    if self.Sheep.Breeding then
+        local SheepPasture = Logic.GetEntitiesOfType(Entities.B_SheepPasture);
+        for k, v in pairs(SheepPasture) do
+            local PlayerID = Logic.EntityGetPlayer(v);
+            if not self.PastureRegister[PlayerID][v] then
+                self.PastureRegister[PlayerID][v] = {0, 0};
+            end
+            self:CalculateSheepPastureFeeding(PlayerID, v);
+            self:SheepPastureSpawnAnimal(PlayerID, v);
+        end
+    end
+end
+
+function ModuleLifestockBreeding.Global:CalculateCattlePastureFeeding(_PlayerID, _PastureID)
+    if self:IsCattleNeeded(_PastureID, _PlayerID) and Logic.IsBuildingStopped(_PastureID) == false then
+        self.PastureRegister[_PlayerID][_PastureID][1] = self.PastureRegister[_PlayerID][_PastureID][1] +1;
+        if self.PastureRegister[_PlayerID][_PastureID][1] > 0 then
+            self.PastureRegister[_PlayerID][_PastureID][2] = self.PastureRegister[_PlayerID][_PastureID][2] +1;
+            if self.PastureRegister[_PlayerID][_PastureID][2] >= self.Cattle.FeedingTimer then
+                self.PastureRegister[_PlayerID][_PastureID][2] = 0;
+                if GetPlayerResources(Goods.G_Grain, _PlayerID) > 0 then
+                    AddGood(Goods.G_Grain, -1, _PlayerID);
+                else
+                    self.PastureRegister[_PlayerID][_PastureID][1] = math.max(
+                        self.PastureRegister[_PlayerID][_PastureID][1] - self.Cattle.FeedingTimer,
+                        0
+                    );
+                end
+            end
+        else
+            self.PastureRegister[_PlayerID][_PastureID][2] = 0;
+        end
+    end
+end
+
+function ModuleLifestockBreeding.Global:CalculateSheepPastureFeeding(_PlayerID, _PastureID)
+    if self:IsSheepNeeded(_PastureID, _PlayerID) and Logic.IsBuildingStopped(_PastureID) == false then
+        self.PastureRegister[_PlayerID][_PastureID][1] = self.PastureRegister[_PlayerID][_PastureID][1] +1;
+        if self.PastureRegister[_PlayerID][_PastureID][1] > 0 then
+            self.PastureRegister[_PlayerID][_PastureID][2] = self.PastureRegister[_PlayerID][_PastureID][2] +1;
+            if self.PastureRegister[_PlayerID][_PastureID][2] >= self.Sheep.FeedingTimer then
+                self.PastureRegister[_PlayerID][_PastureID][2] = 0;
+                if GetPlayerResources(Goods.G_Grain, _PlayerID) > 0 then
+                    AddGood(Goods.G_Grain, -1, _PlayerID);
+                else
+                    self.PastureRegister[_PlayerID][_PastureID][1] = math.max(
+                        self.PastureRegister[_PlayerID][_PastureID][1] - self.Sheep.FeedingTimer,
+                        0
+                    );
+                end
+            end
+        else
+            self.PastureRegister[_PlayerID][_PastureID][2] = 0;
+        end
+    end
+end
+
+function ModuleLifestockBreeding.Global:CattlePastureSpawnAnimal(_PlayerID, _PastureID)
+    local CattleNearby = self:CountCattleNearby(_PastureID);
+    local TimeTillNext = self:CalculateCattleBreedingTimer(CattleNearby);
+    if TimeTillNext > -1 and self.PastureRegister[_PlayerID][_PastureID][1] >= TimeTillNext then
+        if self:IsCattleNeeded(_PastureID, _PlayerID) then
+            local x, y = Logic.GetBuildingApproachPosition(_PastureID);
+            self:SpawnCattle(x, y, _PlayerID, self.Cattle.UseCalves);
+            self.PastureRegister[_PlayerID][_PastureID] = nil;
+        end
+    end
+end
+
+function ModuleLifestockBreeding.Global:SheepPastureSpawnAnimal(_PlayerID, _PastureID)
+    local SheepNearby = self:CountSheepsNearby(_PastureID);
+    local TimeTillNext = self:CalculateSheepBreedingTimer(SheepNearby);
+    if TimeTillNext > -1 and self.PastureRegister[_PlayerID][_PastureID][1] >= TimeTillNext then
+        if self:IsSheepNeeded(_PastureID, _PlayerID) then
+            local x, y = Logic.GetBuildingApproachPosition(_PastureID);
+            self:SpawnSheep(x, y, _PlayerID, self.Sheep.UseCalves);
+            self.PastureRegister[_PlayerID][_PastureID] = nil;
+        end
+    end
+end
+
+-- Local -------------------------------------------------------------------- --
+
+function ModuleLifestockBreeding.Local:OnGameStart()
+    MerchantSystem.BasePricesOrigModuleLifestockBreeding                = {};
+    MerchantSystem.BasePricesOrigModuleLifestockBreeding[Goods.G_Sheep] = MerchantSystem.BasePrices[Goods.G_Sheep];
+    MerchantSystem.BasePricesOrigModuleLifestockBreeding[Goods.G_Cow]   = MerchantSystem.BasePrices[Goods.G_Cow];
+
+    MerchantSystem.BasePrices[Goods.G_Sheep] = ModuleLifestockBreeding.Local.Sheep.MoneyCost;
+    MerchantSystem.BasePrices[Goods.G_Cow]   = ModuleLifestockBreeding.Local.Cattle.MoneyCost;
+
+    QSB.ScriptEvents.AnimalBreed = API.RegisterScriptEvent("Event_AnimalBreed");
+
+    self:OverrideHouseMenuProductionButton();
+    self:InitBuyCattleButton();
+    self:InitBuySheepButton();
+end
+
+function ModuleLifestockBreeding.Local:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    end
+end
+
+function ModuleLifestockBreeding.Local:ToggleBreedingState(_BarrackID)
+    local BuildingEntityType = Logic.GetEntityType(_BarrackID);
+    if BuildingEntityType == Entities.B_CattlePasture then
+        GUI.SetStoppedState(_BarrackID, not Logic.IsBuildingStopped(_BarrackID));
+    elseif BuildingEntityType == Entities.B_SheepPasture then
+        GUI.SetStoppedState(_BarrackID, not Logic.IsBuildingStopped(_BarrackID));
+    end
+end
+
+function ModuleLifestockBreeding.Local:OverrideHouseMenuProductionButton()
+    HouseMenuStopProductionClicked_Orig_Stockbreeding = HouseMenuStopProductionClicked;
+    HouseMenuStopProductionClicked = function()
+        HouseMenuStopProductionClicked_Orig_Stockbreeding();
+        local WidgetName = HouseMenu.Widget.CurrentBuilding;
+        local EntityType = Entities[WidgetName];
+        local PlayerID = GUI.GetPlayerID();
+        local Bool = HouseMenu.StopProductionBool;
+
+        if EntityType == Entities.B_CattleFarm then
+            local Buildings = GetPlayerEntities(PlayerID, Entities.B_CattlePasture);
+            for i=1, #Buildings, 1 do
+                GUI.SetStoppedState(Buildings[i], Bool);
+            end
+        elseif EntityType == Entities.B_SheepFarm then
+            local Buildings = GetPlayerEntities(PlayerID, Entities.B_SheepPasture);
+            for i=1, #Buildings, 1 do
+                GUI.SetStoppedState(Buildings[i], Bool);
+            end
+        end
+    end
+end
+
+function ModuleLifestockBreeding.Local:InitBuyCattleButton()
+    local Position = {XGUIEng.GetWidgetLocalPosition("/InGame/Root/Normal/BuildingButtons/BuyCatapultCart")};
+    API.AddBuildingButtonByTypeAtPosition(
+        Entities.B_CattlePasture,
+        Position[1], Position[2],
+        function(_WidgetID, _EntityID)
+            ModuleLifestockBreeding.Local:ToggleBreedingState(_EntityID);
+        end,
+        function(_WidgetID, _EntityID)
+            local Description = API.Localize(ModuleLifestockBreeding.Shared.Text.BreedingActive);
+            if Logic.IsBuildingStopped(_EntityID) then
+                Description = API.Localize(ModuleLifestockBreeding.Shared.Text.BreedingInactive);
+            end
+            API.SetTooltipCosts(Description.Title, Description.Text, Description.Disabled, {Goods.G_Grain, 1}, false);
+        end,
+        function(_WidgetID, _EntityID)
+            local Icon = {4, 13};
+            if Logic.IsBuildingStopped(_EntityID) then
+                Icon = {4, 12};
+            end
+            SetIcon(_WidgetID, Icon);
+            local DisableState = (ModuleLifestockBreeding.Local.Cattle.Breeding and 0) or 1;
+            XGUIEng.DisableButton(_WidgetID, DisableState);
+        end
+    );
+end
+
+function ModuleLifestockBreeding.Local:InitBuySheepButton()
+    local Position = {XGUIEng.GetWidgetLocalPosition("/InGame/Root/Normal/BuildingButtons/BuyCatapultCart")};
+    API.AddBuildingButtonByTypeAtPosition(
+        Entities.B_SheepPasture,
+        Position[1], Position[2],
+        function(_WidgetID, _EntityID)
+            ModuleLifestockBreeding.Local:ToggleBreedingState(_EntityID);
+        end,
+        function(_WidgetID, _EntityID)
+            local Description = API.Localize(ModuleLifestockBreeding.Shared.Text.BreedingActive);
+            if Logic.IsBuildingStopped(_EntityID) then
+                Description = API.Localize(ModuleLifestockBreeding.Shared.Text.BreedingInactive);
+            end
+            API.SetTooltipCosts(Description.Title, Description.Text, Description.Disabled, {Goods.G_Grain, 1}, false);
+        end,
+        function(_WidgetID, _EntityID)
+            local Icon = {4, 13};
+            if Logic.IsBuildingStopped(_EntityID) then
+                Icon = {4, 12};
+            end
+            SetIcon(_WidgetID, Icon);
+            local DisableState = (ModuleLifestockBreeding.Local.Sheep.Breeding and 0) or 1;
+            XGUIEng.DisableButton(_WidgetID, DisableState);
+        end
+    );
+end
+
+-- -------------------------------------------------------------------------- --
+
+Revision:RegisterModule(ModuleLifestockBreeding);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Ermöglicht die Aufzucht von Schafe und Kühe durch den Spieler.
+-- 
+-- Verschiedene Kenngrößen können angepasst werden.
+--
+-- Es wird ein Button an Kuh- und Schafställe angebracht. Damit kann die
+-- Zucht individuell angehalten oder fortgesetzt werden. Dieser Button
+-- belegt einen der 6 möglichen zusätzlichen Buttons bei den Ställen.
+--
+-- Wird im Produktionsmenü die Produktion von Kuh- oder Schaffarmen gestoppt,
+-- werden jeweils alle Kuh- oder Schafställe ebenfalls gestoppt. Wird die
+-- Produktion fortgeführt, wird auch die Zucht fortgeführt.
+--
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
+-- <li><a href="QSB_1_GUI.api.html">(1) Interface</a></li>
+-- <li><a href="QSB_2_BuildingButtons.api.html">(1) Gebäudeschalter</a></li>
+-- </ul>
+--
+-- @within Beschreibung
+-- @set sort=true
+--
+
+---
+-- Events, auf die reagiert werden kann.
+--
+-- @field AnimalBreed Ein Nutztier wurde erzeugt. (Parameter: PlayerID, EntityID)
+--
+-- @within Event
+--
+QSB.ScriptEvents = QSB.ScriptEvents or {};
+
+---
+-- Erlaube oder verbiete dem Spieler Kühe zu züchten.
+--
+-- Die Zucht wird immer synchron für alle Spieler erlaubt oder verboten.
+--
+-- @param[type=boolean] _Flag Kuhzucht aktiv/inaktiv
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- -- Es können keine Kühe gezüchtet werden
+-- API.UseBreedCattle(false);
+--
+function API.ActivateCattleBreeding(_Flag)
+    if GUI then
+        return;
+    end
+
+    ModuleLifestockBreeding.Global.Sheep.Breeding = _Flag == true;
+    Logic.ExecuteInLuaLocalState("ModuleLifestockBreeding.Local.Sheep.Breeding = " ..tostring(_Flag == true));
+    if _Flag ~= true then
+        local Price = MerchantSystem.BasePricesOrigModuleLifestockBreeding[Goods.G_Sheep];
+        MerchantSystem.BasePrices[Goods.G_Sheep] = Price;
+        Logic.ExecuteInLuaLocalState("MerchantSystem.BasePrices[Goods.G_Sheep] = " ..Price);
+    else
+        local Price = ModuleLifestockBreeding.Global.Sheep.MoneyCost;
+        MerchantSystem.BasePrices[Goods.G_Sheep] = Price;
+        Logic.ExecuteInLuaLocalState("MerchantSystem.BasePrices[Goods.G_Sheep] = " ..Price);
+    end
+end
+
+---
+-- Erlaube oder verbiete dem Spieler Schafe zu züchten.
+--
+-- Die Zucht wird immer synchron für alle Spieler erlaubt oder verboten.
+--
+-- @param[type=boolean] _Flag Schafzucht aktiv/inaktiv
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- -- Schafsaufzucht ist erlaubt
+-- API.UseBreedSheeps(true);
+--
+function API.ActivateSheepBreeding(_Flag)
+    if GUI then
+        return;
+    end
+
+    ModuleLifestockBreeding.Global.Cattle.Breeding = _Flag == true;
+    Logic.ExecuteInLuaLocalState("ModuleLifestockBreeding.Local.Cattle.Breeding = " ..tostring(_Flag == true));
+    if _Flag ~= true then
+        local Price = MerchantSystem.BasePricesOrigModuleLifestockBreeding[Goods.G_Cow];
+        MerchantSystem.BasePrices[Goods.G_Cow] = Price;
+        Logic.ExecuteInLuaLocalState("MerchantSystem.BasePrices[Goods.G_Cow] = " ..Price);
+    else
+        local Price = ModuleLifestockBreeding.Global.Cattle.MoneyCost;
+        MerchantSystem.BasePrices[Goods.G_Cow] = Price;
+        Logic.ExecuteInLuaLocalState("MerchantSystem.BasePrices[Goods.G_Cow] = " ..Price);
+    end
+end
+
+---
+-- Konfiguriert die Zucht von Kühen.
+--
+-- Die Konfiguration erfolgt immer synchron für alle Spieler.
+--
+-- Mögliche Optionen:
+-- <table border="1">
+-- <tr>
+-- <td><b>Option</b></td>
+-- <td><b>Datentyp</b></td>
+-- <td><b>Beschreibung</b></td>
+-- </tr>
+-- <tr>
+-- <td>RequiredAmount</td>
+-- <td>number</td>
+-- <td>Mindestanzahl an Tieren, die sich im Gebiet befinden müssen.
+-- (Default: 2)</td>
+-- </tr>
+-- <tr>
+-- <td>QuantityBoost</td>
+-- <td>number</td>
+-- <td>Menge an Sekunden, die jedes Tier im Gebiet die Zuchtauer verkürzt.
+-- (Default: 9)</td>
+-- </tr>
+-- <tr>
+-- <td>AreaSize</td>
+-- <td>number</td>
+-- <td>Größe des Gebietes, in dem Tiere für die Zucht vorhanden sein müssen.
+-- (Default: 4500)</td>
+-- </tr>
+-- <tr>
+-- <td>UseCalves</td>
+-- <td>boolean</td>
+-- <td>Gezüchtete Tiere erscheinen zuerst als Kälber und wachsen. Dies ist rein
+-- kosmetisch und hat keinen Einfluss auf die Produktion. (Default: true)</td>
+-- </tr>
+-- <tr>
+-- <td>CalvesSize</td>
+-- <td>number</td>
+-- <td>Bestimmt die initiale Größe der Kälber. Werden Kälber nicht benutzt, wird
+-- diese Option ignoriert. (Default: 0.45)</td>
+-- </tr>
+-- <tr>
+-- <td>FeedingTimer</td>
+-- <td>number</td>
+-- <td>Bestimmt die Zeit in Sekunden zwischen den Fütterungsperioden. Am Ende
+-- jeder Periode wird pro züchtendem Gatter 1 Getreide abgezogen, wenn das
+-- Gebäude nicht pausiert ist. (Default: 25)</td>
+-- </tr>
+-- <tr>
+-- <td>BreedingTimer</td>
+-- <td>number</td>
+-- <td>Bestimmt die Zeit in Sekunden, bis ein neues Tier erscheint. Wenn für
+-- eine Fütterung kein Getreide da ist, wird der Zähler zur letzten Fütterung
+-- zurückgesetzt. (Default: 150)</td>
+-- </tr>
+-- <tr>
+-- <td>GrothTimer</td>
+-- <td>number</td>
+-- <td>Bestimmt die Zeit in Sekunden zwischen den Wachstumsschüben eines
+-- Kalbs. Jeder Wachstumsschub ist +0.05 Gößenänderung. (Default: 15)</td>
+-- </tr>
+-- </table>
+-- 
+-- @param[type=table] _Data Konfiguration der Zucht
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.ConfigureCattleBreeding{
+--     -- Es werden keine Tiere benötigt
+--     RequiredAmount = 0,
+--     -- Mindestzeit sind 3 Minuten
+--     BreedingTimer = 3*60
+-- }
+--
+function API.ConfigureCattleBreeding(_Data)
+    if _Data.CalvesSize ~= nil then
+        ModuleLifestockBreeding.Global.Cattle.CalvesSize = _Data.CalvesSize;
+    end
+    if _Data.RequiredAmount ~= nil then
+        ModuleLifestockBreeding.Global.Cattle.RequiredAmount = _Data.RequiredAmount;
+    end
+    if _Data.QuantityBoost ~= nil then
+        ModuleLifestockBreeding.Global.Cattle.QuantityBoost = _Data.QuantityBoost;
+    end
+    if _Data.AreaSize ~= nil then
+        ModuleLifestockBreeding.Global.Cattle.AreaSize = _Data.AreaSize;
+    end
+    if _Data.UseCalves ~= nil then
+        ModuleLifestockBreeding.Global.Cattle.UseCalves = _Data.UseCalves;
+    end
+    if _Data.FeedingTimer ~= nil then
+        ModuleLifestockBreeding.Global.Cattle.FeedingTimer = _Data.FeedingTimer;
+    end
+    if _Data.BreedingTimer ~= nil then
+        ModuleLifestockBreeding.Global.Cattle.BreedingTimer = _Data.BreedingTimer;
+    end
+    if _Data.GrothTimer ~= nil then
+        ModuleLifestockBreeding.Global.Cattle.GrothTimer = _Data.GrothTimer;
+    end
+end
+
+---
+-- Konfiguriert die Zucht von Schafen.
+--
+-- Die Konfiguration erfolgt immer synchron für alle Spieler.
+--
+-- Mögliche Optionen:
+-- <table border="1">
+-- <tr>
+-- <td><b>Option</b></td>
+-- <td><b>Datentyp</b></td>
+-- <td><b>Beschreibung</b></td>
+-- </tr>
+-- <tr>
+-- <td>RequiredAmount</td>
+-- <td>number</td>
+-- <td>Mindestanzahl an Tieren, die sich im Gebiet befinden müssen.
+-- (Default: 2)</td>
+-- </tr>
+-- <tr>
+-- <td>QuantityBoost</td>
+-- <td>number</td>
+-- <td>Menge an Sekunden, die jedes Tier im Gebiet die Zuchtauer verkürzt.
+-- (Default: 9)</td>
+-- </tr>
+-- <tr>
+-- <td>AreaSize</td>
+-- <td>number</td>
+-- <td>Größe des Gebietes, in dem Tiere für die Zucht vorhanden sein müssen.
+-- (Default: 4500)</td>
+-- </tr>
+-- <tr>
+-- <td>UseCalves</td>
+-- <td>boolean</td>
+-- <td>Gezüchtete Tiere erscheinen zuerst als Kälber und wachsen. Dies ist rein
+-- kosmetisch und hat keinen Einfluss auf die Produktion. (Default: true)</td>
+-- </tr>
+-- <tr>
+-- <td>CalvesSize</td>
+-- <td>number</td>
+-- <td>Bestimmt die initiale Größe der Kälber. Werden Kälber nicht benutzt, wird
+-- diese Option ignoriert. (Default: 0.45)</td>
+-- </tr>
+-- <tr>
+-- <td>FeedingTimer</td>
+-- <td>number</td>
+-- <td>Bestimmt die Zeit in Sekunden zwischen den Fütterungsperioden. Am Ende
+-- jeder Periode wird pro züchtendem Gatter 1 Getreide abgezogen, wenn das
+-- Gebäude nicht pausiert ist. (Default: 30)</td>
+-- </tr>
+-- <tr>
+-- <td>BreedingTimer</td>
+-- <td>number</td>
+-- <td>Bestimmt die Zeit in Sekunden, bis ein neues Tier erscheint. Wenn für
+-- eine Fütterung kein Getreide da ist, wird der Zähler zur letzten Fütterung
+-- zurückgesetzt. (Default: 120)</td>
+-- </tr>
+-- <tr>
+-- <td>GrothTimer</td>
+-- <td>number</td>
+-- <td>Bestimmt die Zeit in Sekunden zwischen den Wachstumsschüben eines
+-- Kalbs. Jeder Wachstumsschub ist +0.05 Gößenänderung. (Default: 15)</td>
+-- </tr>
+-- </table>
+-- 
+-- @param[type=table] _Data Konfiguration der Zucht
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.ConfigureSheepBreeding{
+--     -- Es werden keine Tiere benötigt
+--     RequiredAmount = 0,
+--     -- Mindestzeit sind 3 Minuten
+--     BreedingTimer = 3*60
+-- }
+--
+function API.ConfigureSheepBreeding(_Data)
+    if _Data.CalvesSize ~= nil then
+        ModuleLifestockBreeding.Global.Sheep.CalvesSize = _Data.CalvesSize;
+    end
+    if _Data.RequiredAmount ~= nil then
+        ModuleLifestockBreeding.Global.Sheep.RequiredAmount = _Data.RequiredAmount;
+    end
+    if _Data.QuantityBoost ~= nil then
+        ModuleLifestockBreeding.Global.Sheep.QuantityBoost = _Data.QuantityBoost;
+    end
+    if _Data.AreaSize ~= nil then
+        ModuleLifestockBreeding.Global.Sheep.AreaSize = _Data.AreaSize;
+    end
+    if _Data.UseCalves ~= nil then
+        ModuleLifestockBreeding.Global.Sheep.UseCalves = _Data.UseCalves;
+    end
+    if _Data.FeedingTimer ~= nil then
+        ModuleLifestockBreeding.Global.Sheep.FeedingTimer = _Data.FeedingTimer;
+    end
+    if _Data.BreedingTimer ~= nil then
+        ModuleLifestockBreeding.Global.Cattle.BreedingTimer = _Data.BreedingTimer;
+    end
+    if _Data.GrothTimer ~= nil then
+        ModuleLifestockBreeding.Global.Sheep.GrothTimer = _Data.GrothTimer;
+    end
 end
 
 --[[

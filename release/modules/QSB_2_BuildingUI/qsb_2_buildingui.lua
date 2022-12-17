@@ -628,40 +628,44 @@ function ModuleBuildingButtons.Local:BindButtons(_ID)
     local Name = Logic.GetEntityName(_ID);
     local Type = Logic.GetEntityType(_ID);
 
-    local Key;
-    if self.BuildingButtons.Bindings[Name] then
-        Key = Name;
+    local WidgetsForOverride = self:GetButtonsForOverwrite(_ID, 6);
+    local ButtonOverride = {};
+    -- Add buttons for named entity
+    if self.BuildingButtons.Bindings[Name] and #self.BuildingButtons.Bindings[Name] > 0 then
+        for i= 1, #self.BuildingButtons.Bindings[Name] do
+            table.insert(ButtonOverride, self.BuildingButtons.Bindings[Name][i]);
+        end
     end
-    -- TODO: Proper inclusion of categories
-    -- The problem is, that an entity might have more than one category. So this
-    -- makes direct mapping impossible...
-    if not Key and self.BuildingButtons.Bindings[Type] then
-        Key = Type;
+    -- Add buttons for named entity
+    if self.BuildingButtons.Bindings[Type] and #self.BuildingButtons.Bindings[Type] > 0 then
+        for i= 1, #self.BuildingButtons.Bindings[Type] do
+            table.insert(ButtonOverride, self.BuildingButtons.Bindings[Type][i]);
+        end
     end
-    if not Key and self.BuildingButtons.Bindings[0] then
-        Key = 0;
+    -- Add buttons for named entity
+    if self.BuildingButtons.Bindings[0] and #self.BuildingButtons.Bindings[0] > 0 then
+        for i= 1, #self.BuildingButtons.Bindings[0] do
+            table.insert(ButtonOverride, self.BuildingButtons.Bindings[0][i]);
+        end
     end
 
-    if Key then
-        local ButtonNames = self:GetButtonsForOverwrite(_ID, #self.BuildingButtons.Bindings[Key]);
-        local DefaultPositionIndex = 0;
-        for i= 1, #self.BuildingButtons.Bindings[Key] do
-            self.BuildingButtons.Configuration[ButtonNames[i]].Bind = self.BuildingButtons.Bindings[Key][i];
-            XGUIEng.ShowWidget("/InGame/Root/Normal/BuildingButtons/" ..ButtonNames[i], 1);
-            XGUIEng.DisableButton("/InGame/Root/Normal/BuildingButtons/" ..ButtonNames[i], 0);
-            local Position = self.BuildingButtons.Bindings[Key][i].Position;
-            if not Position[1] or not Position[2] then
-                local AnchorPosition = {12, 296};
-                Position[1] = AnchorPosition[1] + (64 * DefaultPositionIndex);
-                Position[2] = AnchorPosition[2];
-                DefaultPositionIndex = DefaultPositionIndex +1;
-            end
-            XGUIEng.SetWidgetLocalPosition(
-                "/InGame/Root/Normal/BuildingButtons/" ..ButtonNames[i],
-                Position[1],
-                Position[2]
-            );
+    -- Place first six buttons (if present)
+    for i= 1, #ButtonOverride do
+        if i > 6 then
+            break;
         end
+        local ButtonName = WidgetsForOverride[i];
+        self.BuildingButtons.Configuration[ButtonName].Bind = ButtonOverride[i];
+        XGUIEng.ShowWidget("/InGame/Root/Normal/BuildingButtons/" ..ButtonName, 1);
+        XGUIEng.DisableButton("/InGame/Root/Normal/BuildingButtons/" ..ButtonName, 0);
+        local X = ButtonOverride[i][1];
+        local Y = ButtonOverride[i][2];
+        if not X or not Y then
+            local AnchorPosition = {12, 296};
+            X = AnchorPosition[1] + (64 * (i-1));
+            Y = AnchorPosition[2];
+        end
+        XGUIEng.SetWidgetLocalPosition("/InGame/Root/Normal/BuildingButtons/" ..ButtonName, X, Y);
     end
 end
 

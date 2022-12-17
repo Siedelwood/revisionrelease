@@ -88,7 +88,7 @@ function ModuleEntitySurveillance.Global:OnGameStart()
     self:OverrideLogic();
 end
 
-function ModuleEntitySurveillance.Global:OnEvent(_ID, _Event, ...)
+function ModuleEntitySurveillance.Global:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     elseif _ID == QSB.ScriptEvents.SaveGameLoaded then
@@ -436,11 +436,9 @@ function ModuleEntitySurveillance.Local:OnGameStart()
     QSB.ScriptEvents.BuildingConstructed = API.RegisterScriptEvent("Event_BuildingConstructed");
     QSB.ScriptEvents.BuildingUpgradeCollapsed = API.RegisterScriptEvent("Event_BuildingUpgradeCollapsed");
     QSB.ScriptEvents.BuildingUpgraded = API.RegisterScriptEvent("Event_BuildingUpgraded");
-
-    self:OverrideAfterBuildingPlacement();
 end
 
-function ModuleEntitySurveillance.Local:OnEvent(_ID, _Event, ...)
+function ModuleEntitySurveillance.Local:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     end

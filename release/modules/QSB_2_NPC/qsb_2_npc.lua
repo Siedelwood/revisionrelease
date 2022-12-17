@@ -53,7 +53,7 @@ function ModuleNpcInteraction.Global:OnGameStart()
     end);
 end
 
-function ModuleNpcInteraction.Global:OnEvent(_ID, _Event, ...)
+function ModuleNpcInteraction.Global:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     elseif _ID == QSB.ScriptEvents.NpcInteraction then
@@ -202,7 +202,7 @@ function ModuleNpcInteraction.Global:RotateActorsToEachother(_PlayerID)
     local PlayerKnights = {};
     Logic.GetKnights(_PlayerID, PlayerKnights);
     for k, v in pairs(PlayerKnights) do
-        local Target = API.GetEntityMovementTarget(v);
+        local Target = self:GetEntityMovementTarget(v);
         local x, y, z = Logic.EntityGetPos(QSB.Npc.LastNpcEntityID);
         if math.floor(Target.X) == math.floor(x) and math.floor(Target.Y) == math.floor(y) then
             x, y, z = Logic.EntityGetPos(v);
@@ -363,16 +363,21 @@ function ModuleNpcInteraction.Global:ShowMarker(_ScriptName)
     end
 end
 
+function ModuleNpcInteraction.Global:GetEntityMovingTarget(_EntityID)
+    local x = API.GetFloat(_EntityID, QSB.ScriptingValue.Destination.X);
+    local y = API.GetFloat(_EntityID, QSB.ScriptingValue.Destination.Y);
+    return {X= x, Y= y};
+end
+
 function ModuleNpcInteraction.Global:InteractionTriggerController()
     for PlayerID = 1, 8, 1 do
         local PlayersKnights = {};
         Logic.GetKnights(PlayerID, PlayersKnights);
         for i= 1, #PlayersKnights, 1 do
             if Logic.GetCurrentTaskList(PlayersKnights[i]) == "TL_NPC_INTERACTION" then
-                local x1, y1 = Logic.EntityGetPos(PlayersKnights[i]);
                 for k, v in pairs(self.NPC) do
                     if v.Distance >= 350 then
-                        local Target = API.GetEntityMovementTarget(PlayersKnights[i]);
+                        local Target = self:GetEntityMovementTarget(PlayersKnights[i]);
                         local x2, y2 = Logic.EntityGetPos(GetID(k));
                         if math.floor(Target.X) == math.floor(x2) and math.floor(Target.Y) == math.floor(y2) then
                             if IsExisting(k) and IsNear(PlayersKnights[i], k, v.Distance) then
@@ -412,7 +417,7 @@ function ModuleNpcInteraction.Local:OnGameStart()
     self:OverrideQuestFunctions();
 end
 
-function ModuleNpcInteraction.Local:OnEvent(_ID, _Event, ...)
+function ModuleNpcInteraction.Local:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     elseif _ID == QSB.ScriptEvents.NpcInteraction then

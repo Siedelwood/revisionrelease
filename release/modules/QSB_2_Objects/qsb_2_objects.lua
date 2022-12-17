@@ -48,7 +48,7 @@ function ModuleObjectInteraction.Global:OnGameStart()
     self:CreateDefaultObjectNames();
 end
 
-function ModuleObjectInteraction.Global:OnEvent(_ID, _Event, ...)
+function ModuleObjectInteraction.Global:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     elseif _ID == QSB.ScriptEvents.ObjectInteraction then
@@ -393,7 +393,7 @@ function ModuleObjectInteraction.Local:OnGameStart()
     self:OverrideGameFunctions();
 end
 
-function ModuleObjectInteraction.Local:OnEvent(_ID, _Event, _ScriptName, _KnightID, _PlayerID)
+function ModuleObjectInteraction.Local:OnEvent(_ID, _ScriptName, _KnightID, _PlayerID)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     elseif _ID == QSB.ScriptEvents.ObjectReset then
