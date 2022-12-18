@@ -2893,7 +2893,7 @@ function API.Message(_Text, _Sound)
         ));
         return;
     end
-    _Text = ModuleRequester:ConvertPlaceholders(API.Localize(_Text));
+    _Text = Revision.Text:ConvertPlaceholders(API.Localize(_Text));
     if _Sound then
         _Sound = _Sound:gsub("/", "\\");
     end
