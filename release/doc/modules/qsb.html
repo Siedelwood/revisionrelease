@@ -37,18 +37,19 @@
 <li><a href="#Fields">Fields</a></li>
 <li><a href="#Event">Event</a></li>
 <li><a href="#Goal">Goal</a></li>
-<li><a href="#Werkzeugkasten">Werkzeugkasten</a></li>
+<li><a href="#Reprisal">Reprisal</a></li>
+<li><a href="#Reward">Reward</a></li>
+<li><a href="#Trigger">Trigger</a></li>
+<li><a href="#System">System</a></li>
 <li><a href="#Multiplayer">Multiplayer</a></li>
 <li><a href="#Job">Job</a></li>
 <li><a href="#Spielstand">Spielstand</a></li>
-<li><a href="#Chat">Chat</a></li>
 <li><a href="#Text">Text</a></li>
+<li><a href="#Entity">Entity</a></li>
+<li><a href="#Position">Position</a></li>
+<li><a href="#Math">Math</a></li>
 <li><a href="#Quest">Quest</a></li>
-<li><a href="#Debug">Debug</a></li>
 <li><a href="#ScriptingValue">ScriptingValue</a></li>
-<li><a href="#Reward">Reward</a></li>
-<li><a href="#Reprisal">Reprisal</a></li>
-<li><a href="#Trigger">Trigger</a></li>
 </ul>
 
 
@@ -56,6 +57,7 @@
 <ul class="nowrap">
   <li><a href="../modules/modules.qsb_1_entity.qsb_1_entity.html">(1) Entitätensteuerung</a></li>
   <li><a href="../modules/modules.qsb_1_gui.qsb_1_gui.html">(1) Benutzerschnittstelle</a></li>
+  <li><a href="../modules/modules.qsb_1_movement.qsb_1_movement.html">(1) Bewegung</a></li>
   <li><a href="../modules/modules.qsb_1_requester.qsb_1_requester.html">(1) Dialogfenster</a></li>
   <li><a href="../modules/modules.qsb_1_sound.qsb_1_sound.html">(1) Sound</a></li>
   <li><a href="../modules/modules.qsb_1_trade.qsb_1_trade.html">(1) Handelserweiterung</a></li>
@@ -65,7 +67,7 @@
   <li><a href="../modules/modules.qsb_2_promotion.qsb_2_promotion.html">(2) Aufstiegsbedingungen</a></li>
   <li><a href="../modules/modules.qsb_2_quest.qsb_2_quest.html">(2) Aufträge</a></li>
   <li><a href="../modules/modules.qsb_3_lifestock.qsb_3_lifestock.html">(3) Viehzucht</a></li>
-  <li><a href="../modules/modules.qsb_4_typewriter.qsb_4_typewriter.html">(4) Schreibmaschinentext</a></li>
+  <li><a href="../modules/modules.qsb_3_newbehavior.qsb_3_newbehavior.html">(3) Neue Behavior</a></li>
   <li><a href="../modules/modules.qsb_5_weather.qsb_5_weather.html">(5) Wetter</a></li>
   <li><strong>(0) Basismodul</strong></li>
 </ul>
@@ -636,360 +638,84 @@
  Territorium befinden.</td>
 	</tr>
 </table>
-<h2><a href="#Werkzeugkasten">Werkzeugkasten</a></h2>
+<h2><a href="#Reprisal">Reprisal</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#API.ChangeEntityHealth">API.ChangeEntityHealth (_Entity, _Health, _Relative)</a></td>
-	<td class="summary">Setzt die Gesundheit des Entity.</td>
+	<td class="name" nowrap><a href="#Reprisal_CustomVariables">Reprisal_CustomVariables (_Name, _Operator, _Value)</a></td>
+	<td class="summary">Ändert den Wert einer benutzerdefinierten Variable.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.CountSoldiersOfGroup">API.CountSoldiersOfGroup (_Entity)</a></td>
-	<td class="summary">Gibt die Mänge an Soldaten zurück, die dem Entity unterstehen</td>
+	<td class="name" nowrap><a href="#Reprisal_Defeat">Reprisal_Defeat ()</a></td>
+	<td class="summary">Der Spieler verliert das Spiel.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.CreateEntityName">API.CreateEntityName (_EntityID)</a></td>
-	<td class="summary">Gibt dem Entity einen eindeutigen Skriptnamen und gibt ihn zurück.</td>
+	<td class="name" nowrap><a href="#Reprisal_DestroyEffect">Reprisal_DestroyEffect (_EffectName)</a></td>
+	<td class="summary">Zerstört einen über ein Behavior erzeugten Effekt.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.GetAngleBetween">API.GetAngleBetween (_Pos1, _Pos2)</a></td>
-	<td class="summary">Bestimmt den Winkel zwischen zwei Punkten.</td>
+	<td class="name" nowrap><a href="#Reprisal_DestroyEntity">Reprisal_DestroyEntity (_ScriptName)</a></td>
+	<td class="summary">Ein benanntes Entity wird entfernt.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.GetCirclePosition">API.GetCirclePosition (_Target, _Distance, _Angle)</a></td>
-	<td class="summary">Gibt eine Position auf einer Kreisbahn um einen Punkt zurück.</td>
+	<td class="name" nowrap><a href="#Reprisal_Diplomacy">Reprisal_Diplomacy (_Party1, _Party2, _State)</a></td>
+	<td class="summary">Änder den Diplomatiestatus zwischen zwei Spielern.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.GetCirclePositions">API.GetCirclePositions (_Target, _Distance, _Periode, _Offset)</a></td>
-	<td class="summary">Gibt Positionen im gleichen Abstand auf der Kreisbahn zurück.</td>
+	<td class="name" nowrap><a href="#Reprisal_DiplomacyDecrease">Reprisal_DiplomacyDecrease ()</a></td>
+	<td class="summary">Der diplomatische Status zwischen Sender und Empfänger verschlechtert sich
+ um eine Stufe.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.GetClosestToTarget">API.GetClosestToTarget (_Target, _List)</a></td>
-	<td class="summary">Gibt das Entity aus der Liste zurück, welches dem Ziel am nähsten ist.</td>
+	<td class="name" nowrap><a href="#Reprisal_FakeDefeat">Reprisal_FakeDefeat ()</a></td>
+	<td class="summary">Zeigt die Niederlagedekoration am Quest an.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.GetDistance">API.GetDistance (_pos1, _pos2)</a></td>
-	<td class="summary">Bestimmt die Distanz zwischen zwei Punkten.</td>
+	<td class="name" nowrap><a href="#Reprisal_MapScriptFunction">Reprisal_MapScriptFunction (_Function)</a></td>
+	<td class="summary">Führt eine Funktion im Skript als Reprisal aus.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.GetEntityCategoyList">API.GetEntityCategoyList (_Entity)</a></td>
-	<td class="summary">Gibt alle Kategorien zurück, zu denen das Entity gehört.</td>
+	<td class="name" nowrap><a href="#Reprisal_ObjectActivate">Reprisal_ObjectActivate (_ScriptName, _State)</a></td>
+	<td class="summary">Aktiviert ein interaktives Objekt.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.GetEntityHealth">API.GetEntityHealth (_Entity)</a></td>
-	<td class="summary">Gibt die relative Gesundheit des Entity zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetEntityOrientation">API.GetEntityOrientation (_Entity)</a></td>
-	<td class="summary">Gibt die Ausrichtung des Entity zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetEntityTaskList">API.GetEntityTaskList (_Entity)</a></td>
-	<td class="summary">Gibt die aktuelle Tasklist des Entity zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetEntityType">API.GetEntityType (_Entity)</a></td>
-	<td class="summary">Gibt den Typen des Entity zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetEntityTypeCategoyList">API.GetEntityTypeCategoyList (_Type)</a></td>
-	<td class="summary">Gibt alle Kategorien zurück, zu denen der Entity-Typ gehört.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetEntityTypeName">API.GetEntityTypeName (_Entity)</a></td>
-	<td class="summary">Gibt den Typnamen des Entity zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetGeometricFocus">API.GetGeometricFocus (...)</a></td>
-	<td class="summary">Bestimmt die Durchschnittsposition mehrerer Entities.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetGroupLeader">API.GetGroupLeader (_Entity)</a></td>
-	<td class="summary">Gibt den Leader des Soldaten zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetGroupSoldiers">API.GetGroupSoldiers (_Entity)</a></td>
-	<td class="summary">Gibt die IDs aller Soldaten zurück, die zum Battalion gehören.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetLinePosition">API.GetLinePosition (_Pos1, _Pos2, _Percentage)</a></td>
-	<td class="summary">Gib eine Position auf einer Linie im relativen Abstand zur ersten Position
- zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetLinePositions">API.GetLinePositions (_Pos1, _Pos2, _Periode)</a></td>
-	<td class="summary">Gib Positionen im gleichen Abstand auf der Linie zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetPosition">API.GetPosition (_Entity)</a></td>
-	<td class="summary">Lokalisiert ein Entity auf der Map.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetResourceAmount">API.GetResourceAmount (_Entity)</a></td>
-	<td class="summary">Gibt die Menge an Rohstoffen des Entity zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GroupHeal">API.GroupHeal (_Entity, _Amount)</a></td>
-	<td class="summary">Heilt das Entity um die angegebene Menge an Gesundheit.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GroupHurt">API.GroupHurt (_Entity, _Damage, _Attacker)</a></td>
-	<td class="summary">Verwundet ein Entity oder ein Battallion um die angegebene
- Menge an Schaden.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.InteractiveObjectActivate">API.InteractiveObjectActivate (_ScriptName, _State)</a></td>
-	<td class="summary">Aktiviert ein Interaktives Objekt.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.InteractiveObjectDeactivate">API.InteractiveObjectDeactivate (_ScriptName)</a></td>
+	<td class="name" nowrap><a href="#Reprisal_ObjectDeactivate">Reprisal_ObjectDeactivate (_ScriptName)</a></td>
 	<td class="summary">Deaktiviert ein interaktives Objekt.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.IsEntityInAtLeastOneCategory">API.IsEntityInAtLeastOneCategory (_Entity, ...)</a></td>
-	<td class="summary">Prüft, ob das Entity mindestens eine der Kategorien hat.</td>
+	<td class="name" nowrap><a href="#Reprisal_QuestActivate">Reprisal_QuestActivate (_QuestName)</a></td>
+	<td class="summary">Triggert einen Quest.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.IsValidPosition">API.IsValidPosition (_pos)</a></td>
-	<td class="summary">Prüft, ob eine Positionstabelle eine gültige Position enthält.</td>
+	<td class="name" nowrap><a href="#Reprisal_QuestFailure">Reprisal_QuestFailure (_QuestName)</a></td>
+	<td class="summary">Lässt einen Quest fehlschlagen.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.LookAt">API.LookAt (_Entity, _Target, _Offset)</a></td>
-	<td class="summary">Rotiert ein Entity, sodass es zum Ziel schaut.</td>
+	<td class="name" nowrap><a href="#Reprisal_QuestForceInterrupt">Reprisal_QuestForceInterrupt (_QuestName, _EndetQuests)</a></td>
+	<td class="summary">Unterbricht einen Quest, selbst wenn dieser noch nicht ausgelöst wurde.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.ReplaceEntity">API.ReplaceEntity (_Entity, _Type, _NewOwner)</a></td>
-	<td class="summary">Ersetzt ein Entity mit einem neuen eines anderen Typs.</td>
+	<td class="name" nowrap><a href="#Reprisal_QuestInterrupt">Reprisal_QuestInterrupt (_QuestName)</a></td>
+	<td class="summary">Unterbricht einen Quest.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.RestartMap">API.RestartMap ()</a></td>
-	<td class="summary">Startet die Map sofort neu.</td>
+	<td class="name" nowrap><a href="#Reprisal_QuestRestart">Reprisal_QuestRestart (_QuestName)</a></td>
+	<td class="summary">Startet einen Quest neu.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.Round">API.Round (_Value, _DecimalDigits)</a></td>
-	<td class="summary">Rundet eine Dezimalzahl kaufmännisch ab.</td>
+	<td class="name" nowrap><a href="#Reprisal_QuestSuccess">Reprisal_QuestSuccess (_QuestName)</a></td>
+	<td class="summary">Wertet einen Quest als erfolgreich.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.SendCart">API.SendCart (_Position, _PlayerID, _GoodType, _Amount, _CartOverlay, _IgnoreReservation, _Overtake)</a></td>
-	<td class="summary">Sendet einen Handelskarren zu dem Spieler.</td>
+	<td class="name" nowrap><a href="#Reprisal_ReplaceEntity">Reprisal_ReplaceEntity (_Entity, _Type, _Owner)</a></td>
+	<td class="summary">Ein Entity wird durch ein neues anderen Typs ersetzt.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.SetEntityModel">API.SetEntityModel (_Entity, _NewModel, _AnimSet)</a></td>
-	<td class="summary">Weist dem Entity ein Neues Model zu.</td>
+	<td class="name" nowrap><a href="#Reprisal_Technology">Reprisal_Technology (_PlayerID, _Lock, _Technology)</a></td>
+	<td class="summary">Erlaubt oder verbietet einem Spieler ein Recht.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#API.SetEntityOrientation">API.SetEntityOrientation (_Entity, _Orientation)</a></td>
-	<td class="summary">Setzt die Ausrichtung des Entity.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.SetEntityTaskList">API.SetEntityTaskList (_Entity, _NewTask)</a></td>
-	<td class="summary">Setzt die aktuelle Tasklist des Entity.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.SetPosition">API.SetPosition (_Entity, _Target)</a></td>
-	<td class="summary">Setzt ein Entity auf eine neue Position</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.SetResourceAmount">API.SetResourceAmount (_Entity, _StartAmount, _RefillAmount)</a></td>
-	<td class="summary">Setzt die Menge an Rohstoffen und die durchschnittliche Auffüllmenge
- in einer Mine.</td>
-	</tr>
-</table>
-<h2><a href="#Multiplayer">Multiplayer</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#API.GetActivePlayers">API.GetActivePlayers ()</a></td>
-	<td class="summary">Gibt eine Liste aller Spieler im Spiel zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetDelayedPlayers">API.GetDelayedPlayers ()</a></td>
-	<td class="summary">Gibt alle Spieler zurück, auf die gerade gewartet wird.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetPlayerSlotID">API.GetPlayerSlotID (_PlayerID)</a></td>
-	<td class="summary">Gibt den Slot zurück, den der Spieler einnimmt.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetSlotPlayerID">API.GetSlotPlayerID (_SlotID)</a></td>
-	<td class="summary">Gibt den Spieler zurück, welcher den Slot okkupiert.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.IsHistoryEditionNetworkGame">API.IsHistoryEditionNetworkGame ()</a></td>
-	<td class="summary">Prüft, ob das laufende Spiel eine Multiplayerpartie in der History Edition
- ist.</td>
-	</tr>
-</table>
-<h2><a href="#Job">Job</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#API.EndJob">API.EndJob (_JobID)</a></td>
-	<td class="summary">Beendet den Job mit der übergebenen ID endgültig.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.JobIsRunning">API.JobIsRunning (_JobID)</a></td>
-	<td class="summary">Gibt zurück, ob der Job mit der übergebenen ID aktiv ist.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.RealTimeGetSecondsPassedSinceGameStart">API.RealTimeGetSecondsPassedSinceGameStart ()</a></td>
-	<td class="summary">Gibt die real vergangene Zeit seit dem Spielstart in Sekunden zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ResumeJob">API.ResumeJob (_JobID)</a></td>
-	<td class="summary">Aktiviert einen pausierten Job.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.StartDelay">API.StartDelay (_Waittime, _Function, ...)</a></td>
-	<td class="summary">Wartet die angebene Zeit in Sekunden und führt anschließend die Funktion aus.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.StartHiResDelay">API.StartHiResDelay (_Waittime, _Function, ...)</a></td>
-	<td class="summary">Wartet die angebene Zeit in Turns und führt anschließend die Funktion aus.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.StartHiResJob">API.StartHiResJob (_Function, ...)</a></td>
-	<td class="summary">Führt eine Funktion ein mal pro Turn aus.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.StartJob">API.StartJob (_Function, ...)</a></td>
-	<td class="summary">Führt eine Funktion ein mal pro Sekunde aus.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.StartJobByEventType">API.StartJobByEventType (_EventType, _Function, ...)</a></td>
-	<td class="summary">Erzeugt einen neuen Event-Job.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.StartRealTimeDelay">API.StartRealTimeDelay (_Waittime, _Function, ...)</a></td>
-	<td class="summary">Wartet die angebene Zeit in realen Sekunden und führt anschließend die
- Funktion aus.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.YieldJob">API.YieldJob (_JobID)</a></td>
-	<td class="summary">Pausiert einen aktivien Job.</td>
-	</tr>
-</table>
-<h2><a href="#Spielstand">Spielstand</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#API.DisableAutoSave">API.DisableAutoSave (_Flag)</a></td>
-	<td class="summary">Deaktiviert das automatische Speichern der History Edition.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.DisableLoading">API.DisableLoading (_Flag)</a></td>
-	<td class="summary">Deaktiviert das Laden von Spielständen.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.DisableSaving">API.DisableSaving (_Flag)</a></td>
-	<td class="summary">Deaktiviert das Speichern des Spiels.</td>
-	</tr>
-</table>
-<h2><a href="#Chat">Chat</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#API.ShowTextInput">API.ShowTextInput (_PlayerID, _AllowDebug)</a></td>
-	<td class="summary">Offnet das Chatfenster für eine Eingabe.</td>
-	</tr>
-</table>
-<h2><a href="#Text">Text</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#API.AddEntityTypePlaceholder">API.AddEntityTypePlaceholder (_Type, _Replacement)</a></td>
-	<td class="summary">Fügt einen Platzhalter für einen Entity-Typ hinzu.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.AddNamePlaceholder">API.AddNamePlaceholder (_Name, _Replacement)</a></td>
-	<td class="summary">Fügt einen Platzhalter für den angegebenen Namen hinzu.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ClearNotes">API.ClearNotes ()</a></td>
-	<td class="summary">Löscht alle Nachrichten im Debug Window.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ConvertPlaceholders">API.ConvertPlaceholders (_Message)</a></td>
-	<td class="summary">Ersetzt alle Platzhalter im Text oder in der Table.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.Localize">API.Localize (_Text)</a></td>
-	<td class="summary">Ermittelt den lokalisierten Text anhand der eingestellten Sprache der QSB.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.Message">API.Message (_Text, _Sound)</a></td>
-	<td class="summary">Schreibt eine Nachricht unten in das Nachrichtenfenster.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.Note">API.Note (_Text)</a></td>
-	<td class="summary">Schreibt eine Nachricht in das Debug Window.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.StaticNote">API.StaticNote (_Text)</a></td>
-	<td class="summary">Schreibt eine Nachricht in das Debug Window.</td>
-	</tr>
-</table>
-<h2><a href="#Quest">Quest</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#API.FailQuest">API.FailQuest (_QuestName, _NoMessage)</a></td>
-	<td class="summary">Lässt den Quest fehlschlagen.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetQuestID">API.GetQuestID (_Name)</a></td>
-	<td class="summary">Gibt die ID des Quests mit dem angegebenen Namen zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.IsValidQuest">API.IsValidQuest (_QuestID)</a></td>
-	<td class="summary">Prüft, ob zu der angegebenen ID ein Quest existiert.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.IsValidQuestName">API.IsValidQuestName (_Name)</a></td>
-	<td class="summary">Prüft den angegebenen Questnamen auf verbotene Zeichen.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.RestartQuest">API.RestartQuest (_QuestName, _NoMessage)</a></td>
-	<td class="summary">Startet den Quest neu.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.StartQuest">API.StartQuest (_QuestName, _NoMessage)</a></td>
-	<td class="summary">Startet den Quest sofort, sofern er existiert.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.StopQuest">API.StopQuest (_QuestName, _NoMessage)</a></td>
-	<td class="summary">Unterbricht den Quest.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.WinQuest">API.WinQuest (_QuestName, _NoMessage)</a></td>
-	<td class="summary">Gewinnt den Quest.</td>
-	</tr>
-</table>
-<h2><a href="#Debug">Debug</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#API.ActivateDebugMode">API.ActivateDebugMode (_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)</a></td>
-	<td class="summary">Aktiviert oder deaktiviert Optionen des Debug Mode.</td>
-	</tr>
-</table>
-<h2><a href="#ScriptingValue">ScriptingValue</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#API.ConvertFloatToInteger">API.ConvertFloatToInteger (_Value)</a></td>
-	<td class="summary">Konvertirert den Wert in eine Gleitkommazahl.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ConvertIntegerToFloat">API.ConvertIntegerToFloat (_Value)</a></td>
-	<td class="summary">Konvertirert den Wert in eine Ganzzahl.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetFloat">API.GetFloat (_Entity, _SV)</a></td>
-	<td class="summary">Gibt den Wert auf dem übergebenen Index für das Entity zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.GetInteger">API.GetInteger (_Entity, _SV)</a></td>
-	<td class="summary">Gibt den Wert auf dem übergebenen Index für das Entity zurück.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.SetFloat">API.SetFloat (_Entity, _SV, _Value)</a></td>
-	<td class="summary">Setzt den Wert auf dem übergebenen Index für das Entity.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.SetInteger">API.SetInteger (_Entity, _SV, _Value)</a></td>
-	<td class="summary">Setzt den Wert auf dem übergebenen Index für das Entity.</td>
+	<td class="name" nowrap><a href="#Reprisal_Technology">Reprisal_Technology (_PlayerID, _Lock, _Technology)</a></td>
+	<td class="summary">Erlaubt oder verbietet einem Spieler ein Recht.</td>
 	</tr>
 </table>
 <h2><a href="#Reward">Reward</a></h2>
@@ -1169,86 +895,6 @@
 	<td class="summary">Der Spieler gewinnt das Spiel.</td>
 	</tr>
 </table>
-<h2><a href="#Reprisal">Reprisal</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_CustomVariables">Reprisal_CustomVariables (_Name, _Operator, _Value)</a></td>
-	<td class="summary">Ändert den Wert einer benutzerdefinierten Variable.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_Defeat">Reprisal_Defeat ()</a></td>
-	<td class="summary">Der Spieler verliert das Spiel.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_DestroyEffect">Reprisal_DestroyEffect (_EffectName)</a></td>
-	<td class="summary">Zerstört einen über ein Behavior erzeugten Effekt.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_DestroyEntity">Reprisal_DestroyEntity (_ScriptName)</a></td>
-	<td class="summary">Ein benanntes Entity wird entfernt.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_Diplomacy">Reprisal_Diplomacy (_Party1, _Party2, _State)</a></td>
-	<td class="summary">Änder den Diplomatiestatus zwischen zwei Spielern.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_DiplomacyDecrease">Reprisal_DiplomacyDecrease ()</a></td>
-	<td class="summary">Der diplomatische Status zwischen Sender und Empfänger verschlechtert sich
- um eine Stufe.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_FakeDefeat">Reprisal_FakeDefeat ()</a></td>
-	<td class="summary">Zeigt die Niederlagedekoration am Quest an.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_MapScriptFunction">Reprisal_MapScriptFunction (_Function)</a></td>
-	<td class="summary">Führt eine Funktion im Skript als Reprisal aus.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_ObjectActivate">Reprisal_ObjectActivate (_ScriptName, _State)</a></td>
-	<td class="summary">Aktiviert ein interaktives Objekt.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_ObjectDeactivate">Reprisal_ObjectDeactivate (_ScriptName)</a></td>
-	<td class="summary">Deaktiviert ein interaktives Objekt.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_QuestActivate">Reprisal_QuestActivate (_QuestName)</a></td>
-	<td class="summary">Triggert einen Quest.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_QuestFailure">Reprisal_QuestFailure (_QuestName)</a></td>
-	<td class="summary">Lässt einen Quest fehlschlagen.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_QuestForceInterrupt">Reprisal_QuestForceInterrupt (_QuestName, _EndetQuests)</a></td>
-	<td class="summary">Unterbricht einen Quest, selbst wenn dieser noch nicht ausgelöst wurde.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_QuestInterrupt">Reprisal_QuestInterrupt (_QuestName)</a></td>
-	<td class="summary">Unterbricht einen Quest.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_QuestRestart">Reprisal_QuestRestart (_QuestName)</a></td>
-	<td class="summary">Startet einen Quest neu.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_QuestSuccess">Reprisal_QuestSuccess (_QuestName)</a></td>
-	<td class="summary">Wertet einen Quest als erfolgreich.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_ReplaceEntity">Reprisal_ReplaceEntity (_Entity, _Type, _Owner)</a></td>
-	<td class="summary">Ein Entity wird durch ein neues anderen Typs ersetzt.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_Technology">Reprisal_Technology (_PlayerID, _Lock, _Technology)</a></td>
-	<td class="summary">Erlaubt oder verbietet einem Spieler ein Recht.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Reprisal_Technology">Reprisal_Technology (_PlayerID, _Lock, _Technology)</a></td>
-	<td class="summary">Erlaubt oder verbietet einem Spieler ein Recht.</td>
-	</tr>
-</table>
 <h2><a href="#Trigger">Trigger</a></h2>
 <table class="function_list">
 	<tr>
@@ -1345,6 +991,309 @@
 	<tr>
 	<td class="name" nowrap><a href="#Trigger_Time">Trigger_Time (_Time)</a></td>
 	<td class="summary">Startet den Quest sobald der Timer abgelaufen ist.</td>
+	</tr>
+</table>
+<h2><a href="#System">System</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.ActivateDebugMode">API.ActivateDebugMode (_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)</a></td>
+	<td class="summary">Aktiviert oder deaktiviert Optionen des Debug Mode.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.CreateEntityName">API.CreateEntityName (_EntityID)</a></td>
+	<td class="summary">Gibt dem Entity einen eindeutigen Skriptnamen und gibt ihn zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.IsHistoryEditionNetworkGame">API.IsHistoryEditionNetworkGame ()</a></td>
+	<td class="summary">Prüft, ob das laufende Spiel eine Multiplayerpartie in der History Edition
+ ist.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.RestartMap">API.RestartMap ()</a></td>
+	<td class="summary">Startet die Map sofort neu.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.SendCart">API.SendCart (_Position, _PlayerID, _GoodType, _Amount, _CartOverlay, _IgnoreReservation, _Overtake)</a></td>
+	<td class="summary">Sendet einen Handelskarren zu dem Spieler.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.ShowTextInput">API.ShowTextInput (_PlayerID, _AllowDebug)</a></td>
+	<td class="summary">Offnet das Chatfenster für eine Eingabe.</td>
+	</tr>
+</table>
+<h2><a href="#Multiplayer">Multiplayer</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.GetActivePlayers">API.GetActivePlayers ()</a></td>
+	<td class="summary">Gibt eine Liste aller Spieler im Spiel zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetDelayedPlayers">API.GetDelayedPlayers ()</a></td>
+	<td class="summary">Gibt alle Spieler zurück, auf die gerade gewartet wird.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetPlayerSlotID">API.GetPlayerSlotID (_PlayerID)</a></td>
+	<td class="summary">Gibt den Slot zurück, den der Spieler einnimmt.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetSlotPlayerID">API.GetSlotPlayerID (_SlotID)</a></td>
+	<td class="summary">Gibt den Spieler zurück, welcher den Slot okkupiert.</td>
+	</tr>
+</table>
+<h2><a href="#Job">Job</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.EndJob">API.EndJob (_JobID)</a></td>
+	<td class="summary">Beendet den Job mit der übergebenen ID endgültig.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.JobIsRunning">API.JobIsRunning (_JobID)</a></td>
+	<td class="summary">Gibt zurück, ob der Job mit der übergebenen ID aktiv ist.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.RealTimeGetSecondsPassedSinceGameStart">API.RealTimeGetSecondsPassedSinceGameStart ()</a></td>
+	<td class="summary">Gibt die real vergangene Zeit seit dem Spielstart in Sekunden zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.ResumeJob">API.ResumeJob (_JobID)</a></td>
+	<td class="summary">Aktiviert einen pausierten Job.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.StartDelay">API.StartDelay (_Waittime, _Function, ...)</a></td>
+	<td class="summary">Wartet die angebene Zeit in Sekunden und führt anschließend die Funktion aus.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.StartHiResDelay">API.StartHiResDelay (_Waittime, _Function, ...)</a></td>
+	<td class="summary">Wartet die angebene Zeit in Turns und führt anschließend die Funktion aus.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.StartHiResJob">API.StartHiResJob (_Function, ...)</a></td>
+	<td class="summary">Führt eine Funktion ein mal pro Turn aus.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.StartJob">API.StartJob (_Function, ...)</a></td>
+	<td class="summary">Führt eine Funktion ein mal pro Sekunde aus.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.StartJobByEventType">API.StartJobByEventType (_EventType, _Function, ...)</a></td>
+	<td class="summary">Erzeugt einen neuen Event-Job.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.StartRealTimeDelay">API.StartRealTimeDelay (_Waittime, _Function, ...)</a></td>
+	<td class="summary">Wartet die angebene Zeit in realen Sekunden und führt anschließend die
+ Funktion aus.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.YieldJob">API.YieldJob (_JobID)</a></td>
+	<td class="summary">Pausiert einen aktivien Job.</td>
+	</tr>
+</table>
+<h2><a href="#Spielstand">Spielstand</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.DisableAutoSave">API.DisableAutoSave (_Flag)</a></td>
+	<td class="summary">Deaktiviert das automatische Speichern der History Edition.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.DisableLoading">API.DisableLoading (_Flag)</a></td>
+	<td class="summary">Deaktiviert das Laden von Spielständen.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.DisableSaving">API.DisableSaving (_Flag)</a></td>
+	<td class="summary">Deaktiviert das Speichern des Spiels.</td>
+	</tr>
+</table>
+<h2><a href="#Text">Text</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.AddEntityTypePlaceholder">API.AddEntityTypePlaceholder (_Type, _Replacement)</a></td>
+	<td class="summary">Fügt einen Platzhalter für einen Entity-Typ hinzu.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.AddNamePlaceholder">API.AddNamePlaceholder (_Name, _Replacement)</a></td>
+	<td class="summary">Fügt einen Platzhalter für den angegebenen Namen hinzu.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.ClearNotes">API.ClearNotes ()</a></td>
+	<td class="summary">Löscht alle Nachrichten im Debug Window.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.ConvertPlaceholders">API.ConvertPlaceholders (_Message)</a></td>
+	<td class="summary">Ersetzt alle Platzhalter im Text oder in der Table.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.Localize">API.Localize (_Text)</a></td>
+	<td class="summary">Ermittelt den lokalisierten Text anhand der eingestellten Sprache der QSB.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.Message">API.Message (_Text, _Sound)</a></td>
+	<td class="summary">Schreibt eine Nachricht unten in das Nachrichtenfenster.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.Note">API.Note (_Text)</a></td>
+	<td class="summary">Schreibt eine Nachricht in das Debug Window.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.StaticNote">API.StaticNote (_Text)</a></td>
+	<td class="summary">Schreibt eine Nachricht in das Debug Window.</td>
+	</tr>
+</table>
+<h2><a href="#Entity">Entity</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.ChangeEntityHealth">API.ChangeEntityHealth (_Entity, _Health, _Relative)</a></td>
+	<td class="summary">Setzt die Gesundheit des Entity.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetEntityHealth">API.GetEntityHealth (_Entity)</a></td>
+	<td class="summary">Gibt die relative Gesundheit des Entity zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetGroupLeader">API.GetGroupLeader (_Entity)</a></td>
+	<td class="summary">Gibt den Leader des Soldaten zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GroupHeal">API.GroupHeal (_Entity, _Amount)</a></td>
+	<td class="summary">Heilt das Entity um die angegebene Menge an Gesundheit.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GroupHurt">API.GroupHurt (_Entity, _Damage, _Attacker)</a></td>
+	<td class="summary">Verwundet ein Entity oder ein Battallion um die angegebene
+ Menge an Schaden.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.InteractiveObjectActivate">API.InteractiveObjectActivate (_ScriptName, _State)</a></td>
+	<td class="summary">Aktiviert ein Interaktives Objekt.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.InteractiveObjectDeactivate">API.InteractiveObjectDeactivate (_ScriptName)</a></td>
+	<td class="summary">Deaktiviert ein interaktives Objekt.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.ReplaceEntity">API.ReplaceEntity (_Entity, _Type, _NewOwner)</a></td>
+	<td class="summary">Ersetzt ein Entity mit einem neuen eines anderen Typs.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.SetResourceAmount">API.SetResourceAmount (_Entity, _StartAmount, _RefillAmount)</a></td>
+	<td class="summary">Setzt die Menge an Rohstoffen und die durchschnittliche Auffüllmenge
+ in einer Mine.</td>
+	</tr>
+</table>
+<h2><a href="#Position">Position</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.GetClosestToTarget">API.GetClosestToTarget (_Target, _List)</a></td>
+	<td class="summary">Gibt das Entity aus der Liste zurück, welches dem Ziel am nähsten ist.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetPosition">API.GetPosition (_Entity)</a></td>
+	<td class="summary">Lokalisiert ein Entity auf der Map.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.IsValidPosition">API.IsValidPosition (_pos)</a></td>
+	<td class="summary">Prüft, ob eine Positionstabelle eine gültige Position enthält.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.SetPosition">API.SetPosition (_Entity, _Target)</a></td>
+	<td class="summary">Setzt ein Entity auf eine neue Position</td>
+	</tr>
+</table>
+<h2><a href="#Math">Math</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.GetAngleBetween">API.GetAngleBetween (_Pos1, _Pos2)</a></td>
+	<td class="summary">Bestimmt den Winkel zwischen zwei Punkten.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetCirclePosition">API.GetCirclePosition (_Target, _Distance, _Angle)</a></td>
+	<td class="summary">Gibt eine Position auf einer Kreisbahn um einen Punkt zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetCirclePositions">API.GetCirclePositions (_Target, _Distance, _Periode, _Offset)</a></td>
+	<td class="summary">Gibt Positionen im gleichen Abstand auf der Kreisbahn zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetDistance">API.GetDistance (_pos1, _pos2)</a></td>
+	<td class="summary">Bestimmt die Distanz zwischen zwei Punkten.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetGeometricFocus">API.GetGeometricFocus (...)</a></td>
+	<td class="summary">Bestimmt die Durchschnittsposition mehrerer Entities.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetLinePosition">API.GetLinePosition (_Pos1, _Pos2, _Percentage)</a></td>
+	<td class="summary">Gib eine Position auf einer Linie im relativen Abstand zur ersten Position
+ zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetLinePositions">API.GetLinePositions (_Pos1, _Pos2, _Periode)</a></td>
+	<td class="summary">Gib Positionen im gleichen Abstand auf der Linie zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.LookAt">API.LookAt (_Entity, _Target, _Offset)</a></td>
+	<td class="summary">Rotiert ein Entity, sodass es zum Ziel schaut.</td>
+	</tr>
+</table>
+<h2><a href="#Quest">Quest</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.FailQuest">API.FailQuest (_QuestName, _NoMessage)</a></td>
+	<td class="summary">Lässt den Quest fehlschlagen.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetQuestID">API.GetQuestID (_Name)</a></td>
+	<td class="summary">Gibt die ID des Quests mit dem angegebenen Namen zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.IsValidQuest">API.IsValidQuest (_QuestID)</a></td>
+	<td class="summary">Prüft, ob zu der angegebenen ID ein Quest existiert.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.IsValidQuestName">API.IsValidQuestName (_Name)</a></td>
+	<td class="summary">Prüft den angegebenen Questnamen auf verbotene Zeichen.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.RestartQuest">API.RestartQuest (_QuestName, _NoMessage)</a></td>
+	<td class="summary">Startet den Quest neu.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.StartQuest">API.StartQuest (_QuestName, _NoMessage)</a></td>
+	<td class="summary">Startet den Quest sofort, sofern er existiert.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.StopQuest">API.StopQuest (_QuestName, _NoMessage)</a></td>
+	<td class="summary">Unterbricht den Quest.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.WinQuest">API.WinQuest (_QuestName, _NoMessage)</a></td>
+	<td class="summary">Gewinnt den Quest.</td>
+	</tr>
+</table>
+<h2><a href="#ScriptingValue">ScriptingValue</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.ConvertFloatToInteger">API.ConvertFloatToInteger (_Value)</a></td>
+	<td class="summary">Konvertirert den Wert in eine Gleitkommazahl.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.ConvertIntegerToFloat">API.ConvertIntegerToFloat (_Value)</a></td>
+	<td class="summary">Konvertirert den Wert in eine Ganzzahl.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetFloat">API.GetFloat (_Entity, _SV)</a></td>
+	<td class="summary">Gibt den Wert auf dem übergebenen Index für das Entity zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetInteger">API.GetInteger (_Entity, _SV)</a></td>
+	<td class="summary">Gibt den Wert auf dem übergebenen Index für das Entity zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.SetFloat">API.SetFloat (_Entity, _SV, _Value)</a></td>
+	<td class="summary">Setzt den Wert auf dem übergebenen Index für das Entity.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.SetInteger">API.SetInteger (_Entity, _SV, _Value)</a></td>
+	<td class="summary">Setzt den Wert auf dem übergebenen Index für das Entity.</td>
 	</tr>
 </table>
 
@@ -2613,31 +2562,40 @@
 
 </dd>
 </dl>
-    <h2 class="section-header "><a name="Werkzeugkasten"></a>Werkzeugkasten</h2>
+    <h2 class="section-header "><a name="Reprisal"></a>Reprisal</h2>
 
     <dl class="function">
     <dt>
-    <a name = "API.ChangeEntityHealth"></a>
-    <strong>API.ChangeEntityHealth (_Entity, _Health, _Relative)</strong>
+    <a name = "Reprisal_CustomVariables"></a>
+    <strong>Reprisal_CustomVariables (_Name, _Operator, _Value)</strong>
     </dt>
     <dd>
-    Setzt die Gesundheit des Entity.  Optional kann die Gesundheit relativ zur
- maximalen Gesundheit geändert werden.
+    Ändert den Wert einer benutzerdefinierten Variable.
+<p> Benutzerdefinierte Variablen können ausschließlich Zahlen sein. Nutze
+ dieses Behavior bevor die Variable in einem Goal oder Trigger abgefragt
+ wird, um sie zu initialisieren!
+<p> <p>Operatoren</p>
+ <ul>
+ <li>= - Variablenwert wird auf den Wert gesetzt</li>
+ <li>- - Variablenwert mit Wert Subtrahieren</li>
+ <li>+ - Variablenwert mit Wert addieren</li>
+ <li>* - Variablenwert mit Wert multiplizieren</li>
+ <li>/ - Variablenwert mit Wert dividieren</li>
+ <li>^ - Variablenwert mit Wert potenzieren</li>
+ </ul>
 
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">_Entity</span>
-           Entity (Scriptname oder ID)
+        <li><span class="parameter">_Name</span>
+             Name der Variable
         </li>
-        <li><span class="parameter">_Health</span>
-            <span class="types"><span class="type">number</span></span>
-           Neue aktuelle Gesundheit
+        <li><span class="parameter">_Operator</span>
+         Rechen- oder Zuweisungsoperator
         </li>
-        <li><span class="parameter">_Relative</span>
-            <span class="types"><span class="type">boolean</span></span>
-         (Optional) Relativ zur maximalen Gesundheit
+        <li><span class="parameter">_Value</span>
+            Wert oder andere Custom Variable
         </li>
     </ul>
 
@@ -2647,663 +2605,31 @@
 
 </dd>
     <dt>
-    <a name = "API.CountSoldiersOfGroup"></a>
-    <strong>API.CountSoldiersOfGroup (_Entity)</strong>
+    <a name = "Reprisal_Defeat"></a>
+    <strong>Reprisal_Defeat ()</strong>
     </dt>
     <dd>
-    Gibt die Mänge an Soldaten zurück, die dem Entity unterstehen
+    Der Spieler verliert das Spiel.
 
 
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-         Entity (Skriptname oder ID)
-        </li>
-    </ul>
 
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Menge an Soldaten
-    </ol>
 
 
 
 
 </dd>
     <dt>
-    <a name = "API.CreateEntityName"></a>
-    <strong>API.CreateEntityName (_EntityID)</strong>
+    <a name = "Reprisal_DestroyEffect"></a>
+    <strong>Reprisal_DestroyEffect (_EffectName)</strong>
     </dt>
     <dd>
-    Gibt dem Entity einen eindeutigen Skriptnamen und gibt ihn zurück.
- Hat das Entity einen Namen, bleibt dieser unverändert und wird
- zurückgegeben.
+    Zerstört einen über ein Behavior erzeugten Effekt.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">_EntityID</span>
-            <span class="types"><span class="type">number</span></span>
-         Entity ID
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-        Skriptname
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetAngleBetween"></a>
-    <strong>API.GetAngleBetween (_Pos1, _Pos2)</strong>
-    </dt>
-    <dd>
-    Bestimmt den Winkel zwischen zwei Punkten.  Es können Entity-IDs,
- Skriptnamen oder Positionstables angegeben werden.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Pos1</span>
-         Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
-        </li>
-        <li><span class="parameter">_Pos2</span>
-         Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Winkel zwischen den Punkten
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Angle = API.GetAngleBetween(<span class="string">"HQ1"</span>, Logic.GetKnightID(<span class="number">1</span>))</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.GetCirclePosition"></a>
-    <strong>API.GetCirclePosition (_Target, _Distance, _Angle)</strong>
-    </dt>
-    <dd>
-    Gibt eine Position auf einer Kreisbahn um einen Punkt zurück.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Target</span>
-                  Entity oder Position
-        </li>
-        <li><span class="parameter">_Distance</span>
-            <span class="types"><span class="type">number</span></span>
-                Entfernung um das Zentrum
-        </li>
-        <li><span class="parameter">_Angle</span>
-            <span class="types"><span class="type">number</span></span>
-                   Winkel auf dem Kreis
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-        Position auf Kreisbahn
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Position = API.GetCirclePosition(<span class="string">"HQ1"</span>, <span class="number">3000</span>, -<span class="number">45</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.GetCirclePositions"></a>
-    <strong>API.GetCirclePositions (_Target, _Distance, _Periode, _Offset)</strong>
-    </dt>
-    <dd>
-    Gibt Positionen im gleichen Abstand auf der Kreisbahn zurück.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Target</span>
-                  Entity oder Position
-        </li>
-        <li><span class="parameter">_Distance</span>
-            <span class="types"><span class="type">number</span></span>
-                Entfernung um das Zentrum
-        </li>
-        <li><span class="parameter">_Periode</span>
-            <span class="types"><span class="type">number</span></span>
-                 Anzahl an Positionen
-        </li>
-        <li><span class="parameter">_Offset</span>
-            <span class="types"><span class="type">number</span></span>
-                  Start Offset
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-        Positionend auf Kreisbahn
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> PositionList = API.GetCirclePositions(<span class="string">"Position"</span>, <span class="number">3000</span>, <span class="number">6</span>, <span class="number">45</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.GetClosestToTarget"></a>
-    <strong>API.GetClosestToTarget (_Target, _List)</strong>
-    </dt>
-    <dd>
-    Gibt das Entity aus der Liste zurück, welches dem Ziel am nähsten ist.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Target</span>
-         Entity oder Position
-        </li>
-        <li><span class="parameter">_List</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-           Liste von Entities oder Positionen
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-        Nähste Entity oder Position
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Clostest = API.GetClosestToTarget(<span class="string">"HQ1"</span>, {<span class="string">"Marcus"</span>, <span class="string">"Alandra"</span>, <span class="string">"Hakim"</span>});</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.GetDistance"></a>
-    <strong>API.GetDistance (_pos1, _pos2)</strong>
-    </dt>
-    <dd>
-    Bestimmt die Distanz zwischen zwei Punkten.  Es können Entity-IDs,
- Skriptnamen oder Positionstables angegeben werden.
-<p> Wenn die Distanz nicht bestimmt werden kann, wird -1 zurückgegeben.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_pos1</span>
-         Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
-        </li>
-        <li><span class="parameter">_pos2</span>
-         Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Entfernung zwischen den Punkten
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Distance = API.GetDistance(<span class="string">"HQ1"</span>, Logic.GetKnightID(<span class="number">1</span>))</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.GetEntityCategoyList"></a>
-    <strong>API.GetEntityCategoyList (_Entity)</strong>
-    </dt>
-    <dd>
-    Gibt alle Kategorien zurück, zu denen das Entity gehört.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-         Entity (Skriptname oder ID)
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-        Kategorien des Entity
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetEntityHealth"></a>
-    <strong>API.GetEntityHealth (_Entity)</strong>
-    </dt>
-    <dd>
-    Gibt die relative Gesundheit des Entity zurück.
-<p> <b>Hinweis</b>: Der Wert wird als Prozentwert zurückgegeben. Das bedeutet,
- der Wert liegt zwischen 0 und 100.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-         Entity (Scriptname oder ID)
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Aktuelle Gesundheit
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetEntityOrientation"></a>
-    <strong>API.GetEntityOrientation (_Entity)</strong>
-    </dt>
-    <dd>
-    Gibt die Ausrichtung des Entity zurück.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-          Entity (Scriptname oder ID)
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Ausrichtung in Grad
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetEntityTaskList"></a>
-    <strong>API.GetEntityTaskList (_Entity)</strong>
-    </dt>
-    <dd>
-    Gibt die aktuelle Tasklist des Entity zurück.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-         Entity (Scriptname oder ID)
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Tasklist
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetEntityType"></a>
-    <strong>API.GetEntityType (_Entity)</strong>
-    </dt>
-    <dd>
-    Gibt den Typen des Entity zurück.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-         Entity (Scriptname oder ID)
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Typ des Entity
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetEntityTypeCategoyList"></a>
-    <strong>API.GetEntityTypeCategoyList (_Type)</strong>
-    </dt>
-    <dd>
-    Gibt alle Kategorien zurück, zu denen der Entity-Typ gehört.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Type</span>
-         Typ des Entity
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-        Kategorien des Entity
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetEntityTypeName"></a>
-    <strong>API.GetEntityTypeName (_Entity)</strong>
-    </dt>
-    <dd>
-    Gibt den Typnamen des Entity zurück.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-         Entity (Scriptname oder ID)
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-        Typname des Entity
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetGeometricFocus"></a>
-    <strong>API.GetGeometricFocus (...)</strong>
-    </dt>
-    <dd>
-    Bestimmt die Durchschnittsposition mehrerer Entities.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">...</span>
-         Positionen mit Komma getrennt
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-        Durchschnittsposition aller Positionen
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Center = API.GetGeometricFocus(<span class="string">"Hakim"</span>, <span class="string">"Marcus"</span>, <span class="string">"Alandra"</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.GetGroupLeader"></a>
-    <strong>API.GetGroupLeader (_Entity)</strong>
-    </dt>
-    <dd>
-    Gibt den Leader des Soldaten zurück.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-         Entity (Skriptname oder ID)
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Menge an Soldaten
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetGroupSoldiers"></a>
-    <strong>API.GetGroupSoldiers (_Entity)</strong>
-    </dt>
-    <dd>
-    Gibt die IDs aller Soldaten zurück, die zum Battalion gehören.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-         Entity (Skriptname oder ID)
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-        Liste aller Soldaten
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetLinePosition"></a>
-    <strong>API.GetLinePosition (_Pos1, _Pos2, _Percentage)</strong>
-    </dt>
-    <dd>
-    Gib eine Position auf einer Linie im relativen Abstand zur ersten Position
- zurück.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Pos1</span>
-               Erste Position
-        </li>
-        <li><span class="parameter">_Pos2</span>
-               Zweite Position
-        </li>
-        <li><span class="parameter">_Percentage</span>
-            <span class="types"><span class="type">number</span></span>
-         Entfernung zu Erster Position
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-        Position auf Linie
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Position = API.GetLinePosition(<span class="string">"HQ1"</span>, <span class="string">"HQ2"</span>, <span class="number">0.75</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.GetLinePositions"></a>
-    <strong>API.GetLinePositions (_Pos1, _Pos2, _Periode)</strong>
-    </dt>
-    <dd>
-    Gib Positionen im gleichen Abstand auf der Linie zurück.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Pos1</span>
-            Erste Position
-        </li>
-        <li><span class="parameter">_Pos2</span>
-            Zweite Position
-        </li>
-        <li><span class="parameter">_Periode</span>
-            <span class="types"><span class="type">number</span></span>
-         Anzahl an Positionen
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-        Positionen auf Linie
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> PositionList = API.GetLinePositions(<span class="string">"HQ1"</span>, <span class="string">"HQ2"</span>, <span class="number">6</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.GetPosition"></a>
-    <strong>API.GetPosition (_Entity)</strong>
-    </dt>
-    <dd>
-    Lokalisiert ein Entity auf der Map.  Es können sowohl Skriptnamen als auch
- IDs verwendet werden. Wenn das Entity nicht gefunden wird, wird eine
- Tabelle mit XYZ = 0 zurückgegeben.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-         Entity (Skriptname oder ID)
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-        Positionstabelle {X= x, Y= y, Z= z}
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Position = API.GetPosition(<span class="string">"Hans"</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.GetResourceAmount"></a>
-    <strong>API.GetResourceAmount (_Entity)</strong>
-    </dt>
-    <dd>
-    Gibt die Menge an Rohstoffen des Entity zurück.  Optional kann
- eine neue Menge gesetzt werden.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-          Entity (Scriptname oder ID)
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Menge an Rohstoffen
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GroupHeal"></a>
-    <strong>API.GroupHeal (_Entity, _Amount)</strong>
-    </dt>
-    <dd>
-    Heilt das Entity um die angegebene Menge an Gesundheit.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-           Entity (Scriptname oder ID)
-        </li>
-        <li><span class="parameter">_Amount</span>
-            <span class="types"><span class="type">number</span></span>
-           Geheilte Gesundheit
+        <li><span class="parameter">_EffectName</span>
+         Name des Effekts
         </li>
     </ul>
 
@@ -3313,53 +2639,20 @@
 
 </dd>
     <dt>
-    <a name = "API.GroupHurt"></a>
-    <strong>API.GroupHurt (_Entity, _Damage, _Attacker)</strong>
+    <a name = "Reprisal_DestroyEntity"></a>
+    <strong>Reprisal_DestroyEntity (_ScriptName)</strong>
     </dt>
     <dd>
-    Verwundet ein Entity oder ein Battallion um die angegebene
- Menge an Schaden.  Bei einem Battalion wird der Schaden solange
- auf Soldaten aufgeteilt, bis er komplett verrechnet wurde.
+    Ein benanntes Entity wird entfernt.
+<p> <b>Hinweis</b>: Das Entity wird durch ein XD_ScriptEntity ersetzt. Es
+ behält Name, Besitzer und Ausrichtung.
 
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-           Entity (Scriptname oder ID)
-        </li>
-        <li><span class="parameter">_Damage</span>
-            <span class="types"><span class="type">number</span></span>
-           Schaden
-        </li>
-        <li><span class="parameter">_Attacker</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Angreifer
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.InteractiveObjectActivate"></a>
-    <strong>API.InteractiveObjectActivate (_ScriptName, _State)</strong>
-    </dt>
-    <dd>
-    Aktiviert ein Interaktives Objekt.
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">_ScriptName</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Skriptname des Objektes
-        </li>
-        <li><span class="parameter">_State</span>
-            <span class="types"><span class="type">number</span></span>
-              State des Objektes
+         Skriptname des Entity
         </li>
     </ul>
 
@@ -3369,8 +2662,124 @@
 
 </dd>
     <dt>
-    <a name = "API.InteractiveObjectDeactivate"></a>
-    <strong>API.InteractiveObjectDeactivate (_ScriptName)</strong>
+    <a name = "Reprisal_Diplomacy"></a>
+    <strong>Reprisal_Diplomacy (_Party1, _Party2, _State)</strong>
+    </dt>
+    <dd>
+    Änder den Diplomatiestatus zwischen zwei Spielern.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Party1</span>
+           ID der ersten Partei
+        </li>
+        <li><span class="parameter">_Party2</span>
+           ID der zweiten Partei
+        </li>
+        <li><span class="parameter">_State</span>
+            Neuer Diplomatiestatus
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Reprisal_DiplomacyDecrease"></a>
+    <strong>Reprisal_DiplomacyDecrease ()</strong>
+    </dt>
+    <dd>
+    Der diplomatische Status zwischen Sender und Empfänger verschlechtert sich
+ um eine Stufe.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Reprisal_FakeDefeat"></a>
+    <strong>Reprisal_FakeDefeat ()</strong>
+    </dt>
+    <dd>
+    Zeigt die Niederlagedekoration am Quest an.
+<p> Es handelt sich dabei um reine Optik! Der Spieler wird nicht verlieren.
+
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Reprisal_MapScriptFunction"></a>
+    <strong>Reprisal_MapScriptFunction (_Function)</strong>
+    </dt>
+    <dd>
+    Führt eine Funktion im Skript als Reprisal aus.
+<p> Wird ein Funktionsname als String übergeben, wird die Funktion mit den
+ Daten des Behavors und des zugehörigen Quest aufgerufen (Standard).
+<p> Wird eine Funktionsreferenz angegeben, wird die Funktion zusammen mit allen
+ optionalen Parametern aufgerufen, als sei es ein gewöhnlicher Aufruf im
+ Skript.
+ <pre> Reprisal_MapScriptFunction(ReplaceEntity, "block", Entities.XD_ScriptEntity);
+ -- entspricht: ReplaceEntity("block", Entities.XD_ScriptEntity);</pre>
+ <b>Achtung:</b> Nicht über den Assistenten verfügbar!
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Function</span>
+         Name der Funktion oder Funktionsreferenz
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Reprisal_ObjectActivate"></a>
+    <strong>Reprisal_ObjectActivate (_ScriptName, _State)</strong>
+    </dt>
+    <dd>
+    Aktiviert ein interaktives Objekt.
+<p> Der Status bestimmt, wie das Objekt aktiviert wird.
+ <ul>
+ <li>0: Kann nur mit Helden aktiviert werden</li>
+ <li>1: Kann immer aktiviert werden</li>
+ <li>2: Kann niemals aktiviert werden</li>
+ </ul>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_ScriptName</span>
+         Skriptname des interaktiven Objektes
+        </li>
+        <li><span class="parameter">_State</span>
+              Status des Objektes
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Reprisal_ObjectDeactivate"></a>
+    <strong>Reprisal_ObjectDeactivate (_ScriptName)</strong>
     </dt>
     <dd>
     Deaktiviert ein interaktives Objekt.
@@ -3379,8 +2788,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">_ScriptName</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Scriptname des Objektes
+         Skriptname des interaktiven Objektes
         </li>
     </ul>
 
@@ -3390,269 +2798,149 @@
 
 </dd>
     <dt>
-    <a name = "API.IsEntityInAtLeastOneCategory"></a>
-    <strong>API.IsEntityInAtLeastOneCategory (_Entity, ...)</strong>
+    <a name = "Reprisal_QuestActivate"></a>
+    <strong>Reprisal_QuestActivate (_QuestName)</strong>
     </dt>
     <dd>
-    Prüft, ob das Entity mindestens eine der Kategorien hat.
+    Triggert einen Quest.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_QuestName</span>
+         Name des Quest
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Reprisal_QuestFailure"></a>
+    <strong>Reprisal_QuestFailure (_QuestName)</strong>
+    </dt>
+    <dd>
+    Lässt einen Quest fehlschlagen.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_QuestName</span>
+         Name des Quest
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Reprisal_QuestForceInterrupt"></a>
+    <strong>Reprisal_QuestForceInterrupt (_QuestName, _EndetQuests)</strong>
+    </dt>
+    <dd>
+    Unterbricht einen Quest, selbst wenn dieser noch nicht ausgelöst wurde.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_QuestName</span>
+           Name des Quest
+        </li>
+        <li><span class="parameter">_EndetQuests</span>
+         Bereits beendete unterbrechen
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Reprisal_QuestInterrupt"></a>
+    <strong>Reprisal_QuestInterrupt (_QuestName)</strong>
+    </dt>
+    <dd>
+    Unterbricht einen Quest.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_QuestName</span>
+         Name des Quest
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Reprisal_QuestRestart"></a>
+    <strong>Reprisal_QuestRestart (_QuestName)</strong>
+    </dt>
+    <dd>
+    Startet einen Quest neu.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_QuestName</span>
+         Name des Quest
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Reprisal_QuestSuccess"></a>
+    <strong>Reprisal_QuestSuccess (_QuestName)</strong>
+    </dt>
+    <dd>
+    Wertet einen Quest als erfolgreich.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_QuestName</span>
+         Name des Quest
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Reprisal_ReplaceEntity"></a>
+    <strong>Reprisal_ReplaceEntity (_Entity, _Type, _Owner)</strong>
+    </dt>
+    <dd>
+    Ein Entity wird durch ein neues anderen Typs ersetzt.
+<p> Das neue Entity übernimmt Skriptname, Besitzer  und Ausrichtung des
+ alten Entity.
+
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">_Entity</span>
-         Entity (Skriptname oder ID)
-        </li>
-        <li><span class="parameter">...</span>
-            <span class="types"><span class="type">number</span></span>
-             Liste mit Kategorien
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">boolean</span></span>
-        Entity hat Kategorie
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.IsValidPosition"></a>
-    <strong>API.IsValidPosition (_pos)</strong>
-    </dt>
-    <dd>
-    Prüft, ob eine Positionstabelle eine gültige Position enthält.
-<p> Eine Position ist Ungültig, wenn sie sich nicht auf der Welt befindet.
- Das ist der Fall bei negativen Werten oder Werten, welche die Größe
- der Welt übersteigen.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_pos</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-         Positionstable {X= x, Y= y}
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">boolean</span></span>
-        Position ist valide
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.LookAt"></a>
-    <strong>API.LookAt (_Entity, _Target, _Offset)</strong>
-    </dt>
-    <dd>
-    Rotiert ein Entity, sodass es zum Ziel schaut.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-              Entity (Skriptname oder ID)
-        </li>
-        <li><span class="parameter">_Target</span>
-              Ziel (Skriptname, ID oder Position)
-        </li>
-        <li><span class="parameter">_Offset</span>
-            <span class="types"><span class="type">number</span></span>
-         Winkel Offset
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.LookAt(<span class="string">"Hakim"</span>, <span class="string">"Alandra"</span>)</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.ReplaceEntity"></a>
-    <strong>API.ReplaceEntity (_Entity, _Type, _NewOwner)</strong>
-    </dt>
-    <dd>
-    Ersetzt ein Entity mit einem neuen eines anderen Typs.  Skriptname,
- Rotation, Position und Besitzer werden übernommen.
-<p> Für Siedler wird automatisch die Tasklist TL_NPC_IDLE gesetzt, damit
- sie nicht versteinert in der Landschaft rumstehen.
-<p> <b>Hinweis</b>: Die Entity-ID ändert sich und beim Ersetzen von
- Spezialgebäuden kann eine Niederlage erfolgen.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-              Entity (Skriptname oder ID)
+         Skriptname oder ID des Entity
         </li>
         <li><span class="parameter">_Type</span>
-            <span class="types"><span class="type">number</span></span>
-             Neuer Typ
+           Neuer Typ des Entity
         </li>
-        <li><span class="parameter">_NewOwner</span>
-            <span class="types"><span class="type">number</span></span>
-         (optional) Neuer Besitzer
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Entity-ID des Entity
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.ReplaceEntity(<span class="string">"Stein"</span>, Entities.XD_ScriptEntity)</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.RestartMap"></a>
-    <strong>API.RestartMap ()</strong>
-    </dt>
-    <dd>
-    Startet die Map sofort neu.
-<p> <b>Achtung</b>: Die Funktion Framework.RestartMap kann nicht mehr verwendet
- werden, da es sonst zu Fehlern mit dem Ladebildschirm kommt!
-
-
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.Round"></a>
-    <strong>API.Round (_Value, _DecimalDigits)</strong>
-    </dt>
-    <dd>
-    Rundet eine Dezimalzahl kaufmännisch ab.
-<p> Zusätzlich können die Dezimalstellen beschränkt werden. Alle überschüssigen
- Dezimalstellen werden abgeschnitten.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Value</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-                 Zu rundender Wert
-        </li>
-        <li><span class="parameter">_DecimalDigits</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Maximale Dezimalstellen
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Abgerundete Zahl
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.SendCart"></a>
-    <strong>API.SendCart (_Position, _PlayerID, _GoodType, _Amount, _CartOverlay, _IgnoreReservation, _Overtake)</strong>
-    </dt>
-    <dd>
-    Sendet einen Handelskarren zu dem Spieler.  Startet der Karren von einem
- Gebäude, wird immer die Position des Eingangs genommen.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Position</span>
-                                Position (Skriptname oder Entity-ID)
-        </li>
-        <li><span class="parameter">_PlayerID</span>
-            <span class="types"><span class="type">number</span></span>
-                   Zielspieler
-        </li>
-        <li><span class="parameter">_GoodType</span>
-            <span class="types"><span class="type">number</span></span>
-                   Warentyp
-        </li>
-        <li><span class="parameter">_Amount</span>
-            <span class="types"><span class="type">number</span></span>
-                     Warenmenge
-        </li>
-        <li><span class="parameter">_CartOverlay</span>
-            <span class="types"><span class="type">number</span></span>
-                (optional) Overlay für Goldkarren
-        </li>
-        <li><span class="parameter">_IgnoreReservation</span>
-            <span class="types"><span class="type">boolean</span></span>
-         (optional) Marktplatzreservation ignorieren
-        </li>
-        <li><span class="parameter">_Overtake</span>
-            <span class="types"><span class="type">boolean</span></span>
-                  (optional) Mit Position austauschen
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Entity-ID des erzeugten Wagens
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="comment">-- API-Call
-</span>API.SendCart(Logic.GetStoreHouse(<span class="number">1</span>), <span class="number">2</span>, Goods.G_Grain, <span class="number">45</span>)</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.SetEntityModel"></a>
-    <strong>API.SetEntityModel (_Entity, _NewModel, _AnimSet)</strong>
-    </dt>
-    <dd>
-    Weist dem Entity ein Neues Model zu.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-          Entity (Scriptname oder ID)
-        </li>
-        <li><span class="parameter">_NewModel</span>
-            <span class="types"><span class="type">number</span></span>
-         Neues Model
-        </li>
-        <li><span class="parameter">_AnimSet</span>
-            <span class="types"><span class="type">number</span></span>
-          (optional) Animation Set
+        <li><span class="parameter">_Owner</span>
+          Besitzer des Entity
         </li>
     </ul>
 
@@ -3662,678 +2950,23 @@
 
 </dd>
     <dt>
-    <a name = "API.SetEntityOrientation"></a>
-    <strong>API.SetEntityOrientation (_Entity, _Orientation)</strong>
+    <a name = "Reprisal_Technology"></a>
+    <strong>Reprisal_Technology (_PlayerID, _Lock, _Technology)</strong>
     </dt>
     <dd>
-    Setzt die Ausrichtung des Entity.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-          Entity (Scriptname oder ID)
-        </li>
-        <li><span class="parameter">_Orientation</span>
-            <span class="types"><span class="type">number</span></span>
-         Neue Ausrichtung
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.SetEntityTaskList"></a>
-    <strong>API.SetEntityTaskList (_Entity, _NewTask)</strong>
-    </dt>
-    <dd>
-    Setzt die aktuelle Tasklist des Entity.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-          Entity (Scriptname oder ID)
-        </li>
-        <li><span class="parameter">_NewTask</span>
-            <span class="types"><span class="type">number</span></span>
-         Neuer Task
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.SetPosition"></a>
-    <strong>API.SetPosition (_Entity, _Target)</strong>
-    </dt>
-    <dd>
-    Setzt ein Entity auf eine neue Position
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-         Entity (Skriptname oder ID)
-        </li>
-        <li><span class="parameter">_Target</span>
-         Ziel (Skriptname, ID oder Position)
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.SetPosition(<span class="string">"Hans"</span>, <span class="string">"Horst"</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.SetResourceAmount"></a>
-    <strong>API.SetResourceAmount (_Entity, _StartAmount, _RefillAmount)</strong>
-    </dt>
-    <dd>
-    Setzt die Menge an Rohstoffen und die durchschnittliche Auffüllmenge
- in einer Mine.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-               Rohstoffvorkommen (Skriptname oder ID)
-        </li>
-        <li><span class="parameter">_StartAmount</span>
-            <span class="types"><span class="type">number</span></span>
-          Menge an Rohstoffen
-        </li>
-        <li><span class="parameter">_RefillAmount</span>
-            <span class="types"><span class="type">number</span></span>
-         Minimale Nachfüllmenge (> 0)
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.SetResourceAmount(<span class="string">"mine1"</span>, <span class="number">250</span>, <span class="number">150</span>);</pre>
-    </ul>
-
-</dd>
-</dl>
-    <h2 class="section-header "><a name="Multiplayer"></a>Multiplayer</h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "API.GetActivePlayers"></a>
-    <strong>API.GetActivePlayers ()</strong>
-    </dt>
-    <dd>
-    Gibt eine Liste aller Spieler im Spiel zurück.
-<p> <h5>Multiplayer</h5>
- Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
-
-
-
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-        Liste der aktiven Spieler
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetDelayedPlayers"></a>
-    <strong>API.GetDelayedPlayers ()</strong>
-    </dt>
-    <dd>
-    Gibt alle Spieler zurück, auf die gerade gewartet wird.
-<p> <h5>Multiplayer</h5>
- Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
-
-
-
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-        Liste der aktiven Spieler
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetPlayerSlotID"></a>
-    <strong>API.GetPlayerSlotID (_PlayerID)</strong>
-    </dt>
-    <dd>
-    Gibt den Slot zurück, den der Spieler einnimmt.  Hat der Spieler keinen
- Slot okkupiert oder ist nicht menschlich, wird -1 zurückgegeben.
-<p> <h5>Multiplayer</h5>
- Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
-
+    Erlaubt oder verbietet einem Spieler ein Recht.
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">_PlayerID</span>
-
+           ID des Spielers
         </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-        <li>
-           <span class="types"><span class="type">number</span></span>
-        ID des Player</li>
-        <li>
-           <span class="types"><span class="type">number</span></span>
-        Slot ID des Player</li>
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetSlotPlayerID"></a>
-    <strong>API.GetSlotPlayerID (_SlotID)</strong>
-    </dt>
-    <dd>
-    Gibt den Spieler zurück, welcher den Slot okkupiert.  Hat der Slot keinen
- Spieler oder ist der Spieler nicht menschlich, wird -1 zurückgegeben.
-<p> <h5>Multiplayer</h5>
- Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_SlotID</span>
-
+        <li><span class="parameter">_Lock</span>
+               Sperren/Entsperren
         </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-        <li>
-           <span class="types"><span class="type">number</span></span>
-        Slot ID des Player</li>
-        <li>
-           <span class="types"><span class="type">number</span></span>
-        ID des Player</li>
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.IsHistoryEditionNetworkGame"></a>
-    <strong>API.IsHistoryEditionNetworkGame ()</strong>
-    </dt>
-    <dd>
-    Prüft, ob das laufende Spiel eine Multiplayerpartie in der History Edition
- ist.
-<p> <b>Hinweis</b>: Es ist unmöglich, dass Original und History Edition in einer
- Partie aufeinander treffen, da die alten Server längst abgeschaltet und die
- Option zum LAN-Spiel in der HE nicht verfügbar ist.
-
-
-
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">boolean</span></span>
-        Spiel ist History Edition
-    </ol>
-
-
-
-
-</dd>
-</dl>
-    <h2 class="section-header "><a name="Job"></a>Job</h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "API.EndJob"></a>
-    <strong>API.EndJob (_JobID)</strong>
-    </dt>
-    <dd>
-    Beendet den Job mit der übergebenen ID endgültig.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_JobID</span>
-            <span class="types"><span class="type">number</span></span>
-         ID des Jobs
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.EndJob(AnyJobID);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.JobIsRunning"></a>
-    <strong>API.JobIsRunning (_JobID)</strong>
-    </dt>
-    <dd>
-    Gibt zurück, ob der Job mit der übergebenen ID aktiv ist.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_JobID</span>
-            <span class="types"><span class="type">number</span></span>
-         ID des Jobs
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">boolean</span></span>
-        Job ist aktiv
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">if</span> API.JobIsRunning(AnyJobID) <span class="keyword">then</span>
-    <span class="comment">-- Mach was
-</span><span class="keyword">end</span>;</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.RealTimeGetSecondsPassedSinceGameStart"></a>
-    <strong>API.RealTimeGetSecondsPassedSinceGameStart ()</strong>
-    </dt>
-    <dd>
-    Gibt die real vergangene Zeit seit dem Spielstart in Sekunden zurück.
-
-
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Vergangene reale Zeit
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> RealTime = API.RealTimeGetSecondsPassedSinceGameStart();</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.ResumeJob"></a>
-    <strong>API.ResumeJob (_JobID)</strong>
-    </dt>
-    <dd>
-    Aktiviert einen pausierten Job.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_JobID</span>
-            <span class="types"><span class="type">number</span></span>
-         ID des Jobs
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.ResumeJob(AnyJobID);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.StartDelay"></a>
-    <strong>API.StartDelay (_Waittime, _Function, ...)</strong>
-    </dt>
-    <dd>
-    Wartet die angebene Zeit in Sekunden und führt anschließend die Funktion aus.
-<p> Die Funktion kann als Referenz, Inline oder als String übergeben werden.
-<p> <b>Achtung</b>: Die Ausführung erfolgt asynchron. Das bedeutet, dass das
- Skript weiterläuft.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Waittime</span>
-            <span class="types"><span class="type">number</span></span>
-           Wartezeit in Sekunden
-        </li>
-        <li><span class="parameter">_Function</span>
-            <span class="types"><span class="type">function</span></span>
-         Callback-Funktion
-        </li>
-        <li><span class="parameter">...</span>
-         Liste der Argumente
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        ID der Verzögerung
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.StartDelay(
-    <span class="number">30</span>,
-    <span class="keyword">function</span>()
-        Logic.DEBUG_AddNote(<span class="string">"Zeit abgelaufen!"</span>);
-    <span class="keyword">end</span>
-)</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.StartHiResDelay"></a>
-    <strong>API.StartHiResDelay (_Waittime, _Function, ...)</strong>
-    </dt>
-    <dd>
-    Wartet die angebene Zeit in Turns und führt anschließend die Funktion aus.
-<p> Die Funktion kann als Referenz, Inline oder als String übergeben werden.
-<p> <b>Achtung</b>: Die Ausführung erfolgt asynchron. Das bedeutet, dass das
- Skript weiterläuft.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Waittime</span>
-            <span class="types"><span class="type">number</span></span>
-           Wartezeit in Turns
-        </li>
-        <li><span class="parameter">_Function</span>
-            <span class="types"><span class="type">function</span></span>
-         Callback-Funktion
-        </li>
-        <li><span class="parameter">...</span>
-         Liste der Argumente
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        ID der Verzögerung
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.StartHiResDelay(
-    <span class="number">30</span>,
-    <span class="keyword">function</span>()
-        Logic.DEBUG_AddNote(<span class="string">"Zeit abgelaufen!"</span>);
-    <span class="keyword">end</span>
-)</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.StartHiResJob"></a>
-    <strong>API.StartHiResJob (_Function, ...)</strong>
-    </dt>
-    <dd>
-    Führt eine Funktion ein mal pro Turn aus.  Ein Turn entspricht einer 1/10
- Sekunde in der Spielzeit. Die weiteren Argumente werden an die Funktion
- übergeben.
-<p> Die Funktion kann als Referenz, Inline oder als String übergeben werden.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Function</span>
-         Funktion (Funktionsreferenz oder String)
-        </li>
-        <li><span class="parameter">...</span>
-               Liste von Argumenten
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Job ID
-    </ol>
-
-
-    <h3>Verwandte Themen:</h3>
-    <ul>
-         <a href="../modules/qsb.html#API.StartJob">API.StartJob</a>
-    </ul>
-
-
-</dd>
-    <dt>
-    <a name = "API.StartJob"></a>
-    <strong>API.StartJob (_Function, ...)</strong>
-    </dt>
-    <dd>
-    Führt eine Funktion ein mal pro Sekunde aus.  Die weiteren Argumente werden an
- die Funktion übergeben.
-<p> Die Funktion kann als Referenz, Inline oder als String übergeben werden.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Function</span>
-         Funktion (Funktionsreferenz oder String)
-        </li>
-        <li><span class="parameter">...</span>
-               Liste von Argumenten
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Job ID
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="comment">-- Führt eine Funktion nach 15 Sekunden aus.
-</span>API.StartJob(<span class="keyword">function</span>(_Time, _EntityType)
-    <span class="keyword">if</span> Logic.GetTime() &gt; _Time + <span class="number">15</span> <span class="keyword">then</span>
-        MachWas(_EntityType);
-        <span class="keyword">return</span> <span class="keyword">true</span>;
-    <span class="keyword">end</span>
-<span class="keyword">end</span>, Logic.GetTime(), Entities.U_KnightHealing)
-
-<span class="comment">-- Startet einen Job
-</span>StartSimpleJob(<span class="string">"MeinJob"</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.StartJobByEventType"></a>
-    <strong>API.StartJobByEventType (_EventType, _Function, ...)</strong>
-    </dt>
-    <dd>
-    Erzeugt einen neuen Event-Job.
-<p> <b>Hinweis</b>: Nur wenn ein Event Job mit dieser Funktion gestartet wird,
- können ResumeJob und YieldJob auf den Job angewendet werden.
-<p> <b>Hinweis</b>: Events.LOGIC_EVENT_ENTITY_CREATED funktioniert nicht!
-<p> <b>Hinweis</b>: Wird ein Table als Argument an den Job übergeben, wird eine
- Kopie angelegt um Speicherprobleme zu verhindern. Es handelt sich also um
- eine neue Table und keine Referenz!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_EventType</span>
-            <span class="types"><span class="type">number</span></span>
-         Event-Typ
-        </li>
-        <li><span class="parameter">_Function</span>
-              Funktion (Funktionsreferenz oder String)
-        </li>
-        <li><span class="parameter">...</span>
-                    Optionale Argumente des Job
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        ID des Jobs
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.StartJobByEventType(
-    Events.LOGIC_EVENT_EVERY_SECOND,
-    FunctionRefToCall
-);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.StartRealTimeDelay"></a>
-    <strong>API.StartRealTimeDelay (_Waittime, _Function, ...)</strong>
-    </dt>
-    <dd>
-    Wartet die angebene Zeit in realen Sekunden und führt anschließend die
- Funktion aus.
-<p> Die Funktion kann als Referenz, Inline oder als String übergeben werden.
-<p> <b>Achtung</b>: Die Ausführung erfolgt asynchron. Das bedeutet, dass das
- Skript weiterläuft.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Waittime</span>
-            <span class="types"><span class="type">number</span></span>
-           Wartezeit in realen Sekunden
-        </li>
-        <li><span class="parameter">_Function</span>
-            <span class="types"><span class="type">function</span></span>
-         Callback-Funktion
-        </li>
-        <li><span class="parameter">...</span>
-         Liste der Argumente
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        ID der Verzögerung
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.StartRealTimeDelay(
-    <span class="number">30</span>,
-    <span class="keyword">function</span>()
-        Logic.DEBUG_AddNote(<span class="string">"Zeit abgelaufen!"</span>);
-    <span class="keyword">end</span>
-)</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.YieldJob"></a>
-    <strong>API.YieldJob (_JobID)</strong>
-    </dt>
-    <dd>
-    Pausiert einen aktivien Job.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_JobID</span>
-            <span class="types"><span class="type">number</span></span>
-         ID des Jobs
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.YieldJob(AnyJobID);</pre>
-    </ul>
-
-</dd>
-</dl>
-    <h2 class="section-header "><a name="Spielstand"></a>Spielstand</h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "API.DisableAutoSave"></a>
-    <strong>API.DisableAutoSave (_Flag)</strong>
-    </dt>
-    <dd>
-    Deaktiviert das automatische Speichern der History Edition.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Flag</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Auto-Speichern ist deaktiviert
+        <li><span class="parameter">_Technology</span>
+         Name des Rechts
         </li>
     </ul>
 
@@ -4343,861 +2976,29 @@
 
 </dd>
     <dt>
-    <a name = "API.DisableLoading"></a>
-    <strong>API.DisableLoading (_Flag)</strong>
+    <a name = "Reprisal_Technology"></a>
+    <strong>Reprisal_Technology (_PlayerID, _Lock, _Technology)</strong>
     </dt>
     <dd>
-    Deaktiviert das Laden von Spielständen.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Flag</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Laden ist deaktiviert
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.DisableSaving"></a>
-    <strong>API.DisableSaving (_Flag)</strong>
-    </dt>
-    <dd>
-    Deaktiviert das Speichern des Spiels.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Flag</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Speichern ist deaktiviert
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-</dl>
-    <h2 class="section-header "><a name="Chat"></a>Chat</h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "API.ShowTextInput"></a>
-    <strong>API.ShowTextInput (_PlayerID, _AllowDebug)</strong>
-    </dt>
-    <dd>
-    Offnet das Chatfenster für eine Eingabe.
-<p> <b>Hinweis</b>: Im Multiplayer kann der Chat nicht über Skript gesteuert
- werden.
-
+    Erlaubt oder verbietet einem Spieler ein Recht.
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">_PlayerID</span>
-            <span class="types"><span class="type">number</span></span>
-           Spieler für den der Chat geöffnet wird
+           ID des Spielers
         </li>
-        <li><span class="parameter">_AllowDebug</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Debug Eingaben werden bearbeitet
+        <li><span class="parameter">_Lock</span>
+               Sperren/Entsperren
         </li>
-    </ul>
-
-
-
-
-
-</dd>
-</dl>
-    <h2 class="section-header "><a name="Text"></a>Text</h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "API.AddEntityTypePlaceholder"></a>
-    <strong>API.AddEntityTypePlaceholder (_Type, _Replacement)</strong>
-    </dt>
-    <dd>
-    Fügt einen Platzhalter für einen Entity-Typ hinzu.
-<p> Innerhalb des Textes wird der Plathalter wie folgt geschrieben:
- <pre>{t:ENTITY_TYP}</pre>
- ENTITY_TYP muss mit einem Entity-Typ ersetzt werden. Der Typ wird ohne
- Entities. davor geschrieben.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Type</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-                Typname, der ersetzt werden soll
-        </li>
-        <li><span class="parameter">_Replacement</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Wert, der ersetzt wird
+        <li><span class="parameter">_Technology</span>
+         Name des Rechts
         </li>
     </ul>
 
 
 
 
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.AddNamePlaceholder(<span class="string">"U_KnightHealing"</span>, <span class="string">"Arroganze Ziege"</span>);
-API.AddNamePlaceholder(<span class="string">"B_Castle_SE"</span>, {de = <span class="string">"Festung des Bösen"</span>, en = <span class="string">"Fortress of Evil"</span>});</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.AddNamePlaceholder"></a>
-    <strong>API.AddNamePlaceholder (_Name, _Replacement)</strong>
-    </dt>
-    <dd>
-    Fügt einen Platzhalter für den angegebenen Namen hinzu.
-<p> Innerhalb des Textes wird der Plathalter wie folgt geschrieben:
- <pre>{n:SOME_NAME}</pre>
- SOME_NAME muss mit dem Namen ersetzt werden.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Name</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-                Name, der ersetzt werden soll
-        </li>
-        <li><span class="parameter">_Replacement</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Wert, der ersetzt wird
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, <span class="string">"Horst"</span>);
-API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span class="string">"Kuchen"</span>, en = <span class="string">"Cake"</span>});</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.ClearNotes"></a>
-    <strong>API.ClearNotes ()</strong>
-    </dt>
-    <dd>
-    Löscht alle Nachrichten im Debug Window.
-
-
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.ClearNotes();</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.ConvertPlaceholders"></a>
-    <strong>API.ConvertPlaceholders (_Message)</strong>
-    </dt>
-    <dd>
-    Ersetzt alle Platzhalter im Text oder in der Table.
-<p> Mögliche Platzhalter:
- <ul>
- <li>{n:xyz} - Ersetzt einen Skriptnamen mit dem zuvor gesetzten Wert.</li>
- <li>{t:xyz} - Ersetzt einen Typen mit dem zuvor gesetzten Wert.</li>
- <li>{v:xyz} - Ersetzt mit dem Inhalt der angegebenen Variable. Der Wert muss
- in der Umgebung vorhanden sein, in der er ersetzt wird.</li>
- </ul>
-<p> Außerdem werden einige Standardfarben ersetzt.
- <pre>{COLOR}</pre>
- Ersetze {COLOR} in deinen Texten mit einer der gelisteten Farben.
-<p> <table border="1">
- <tr><th><b>Platzhalter</b></th><th><b>Farbe</b></th><th><b>RGBA</b></th></tr>
-<p> <tr><td>red</td>     <td>Rot</td>           <td>255,80,80,255</td></tr>
- <tr><td>blue</td>    <td>Blau</td>          <td>104,104,232,255</td></tr>
- <tr><td>yellow</td>  <td>Gelp</td>          <td>255,255,80,255</td></tr>
- <tr><td>green</td>   <td>Grün</td>          <td>80,180,0,255</td></tr>
- <tr><td>white</td>   <td>Weiß</td>          <td>255,255,255,255</td></tr>
- <tr><td>black</td>   <td>Schwarz</td>       <td>0,0,0,255</td></tr>
- <tr><td>grey</td>    <td>Grau</td>          <td>140,140,140,255</td></tr>
- <tr><td>azure</td>   <td>Azurblau</td>      <td>255,176,30,255</td></tr>
- <tr><td>orange</td>  <td>Orange</td>        <td>255,176,30,255</td></tr>
- <tr><td>amber</td>   <td>Bernstein</td>     <td>224,197,117,255</td></tr>
- <tr><td>violet</td>  <td>Violett</td>       <td>180,100,190,255</td></tr>
- <tr><td>pink</td>    <td>Rosa</td>          <td>255,170,200,255</td></tr>
- <tr><td>scarlet</td> <td>Scharlachrot</td>  <td>190,0,0,255</td></tr>
- <tr><td>magenta</td> <td>Magenta</td>       <td>190,0,89,255</td></tr>
- <tr><td>olive</td>   <td>Olivgrün</td>      <td>74,120,0,255</td></tr>
- <tr><td>sky</td>     <td>Himmelsblau</td>   <td>145,170,210,255</td></tr>
- <tr><td>tooltip</td> <td>Tooltip-Blau</td>  <td>51,51,120,255</td></tr>
- <tr><td>lucid</td>   <td>Transparent</td>   <td>0,0,0,0</td></tr>
- <tr><td>none</td>    <td>Standardfarbe</td> <td>(Abhängig vom Widget)</td></tr>
- </table>
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Message</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Text
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-        Ersetzter Text
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <li><pre class="example"><span class="comment">-- Beispiel #1: Vordefinierte Farbe austauschen
-</span><span class="keyword">local</span> Replaced = API.ConvertPlaceholders(<span class="string">"{scarlet}Dieser Text ist jetzt rot!"</span>);</pre></li>
-        <li><pre class="example"><span class="comment">-- Beispiel #2: Skriptnamen austauschen
-</span><span class="keyword">local</span> Replaced = API.ConvertPlaceholders(<span class="string">"{n:placeholder2} wurde ersetzt!"</span>);</pre></li>
-        <li><pre class="example"><span class="comment">-- Beispiel #3: Typen austauschen
-</span><span class="keyword">local</span> Replaced = API.ConvertPlaceholders(<span class="string">"{t:U_KnightHealing} wurde ersetzt!"</span>);</pre></li>
-        <li><pre class="example"><span class="comment">-- Beispiel #4: Variable austauschen
-</span><span class="keyword">local</span> Replaced = API.ConvertPlaceholders(<span class="string">"{v:MyVariable.1.MyValue} wurde ersetzt!"</span>);</pre></li>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.Localize"></a>
-    <strong>API.Localize (_Text)</strong>
-    </dt>
-    <dd>
-    Ermittelt den lokalisierten Text anhand der eingestellten Sprache der QSB.
-<p> Wird ein normaler String übergeben, wird dieser sofort zurückgegeben.
- Bei einem Table mit einem passenden Sprach-Key (de, en, fr, ...) wird die
- entsprechende Sprache zurückgegeben. Sollte ein Nested Table übergeben
- werden, werden alle Texte innerhalb des Tables rekursiv übersetzt als Table
- zurückgegeben. Alle anderen Werte sind nicht in der Rückgabe enthalten.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Text</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-         Table mit Übersetzungen
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-        Übersetzten Text oder Table mit Texten
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <li><pre class="example"><span class="comment">-- Beispiel #1: Table lokalisieren
-</span><span class="keyword">local</span> Text = API.Localize({de = <span class="string">"Deutsch"</span>, en = <span class="string">"English"</span>});
-<span class="comment">-- Rückgabe: "Deutsch"</span></pre></li>
-        <li><pre class="example"><span class="comment">-- Beispiel #2: Mehrstufige (Nested) Tables
-</span><span class="comment">-- (Nested Tables sind in dem Fall mit Vorsicht zu genießen!)
-</span>API.Localize{{de = <span class="string">"Deutsch"</span>, en = <span class="string">"English"</span>}, {{<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>, de = <span class="string">"A"</span>, en = <span class="string">"B"</span>}}}
-<span class="comment">-- Rückgabe: {"Deutsch", {"A"}}</span></pre></li>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.Message"></a>
-    <strong>API.Message (_Text, _Sound)</strong>
-    </dt>
-    <dd>
-    Schreibt eine Nachricht unten in das Nachrichtenfenster.  Die Nachricht
- verschwindet nach einigen Sekunden.
-
- <i>Platzhalter werden automatisch im aufrufenden Environment ersetzt.</i><br>
- <i>Multilinguale Texte werden automatisch im aufrufenden Environment übersetzt.</i>
-<p> <b>Hinweis:</b> Texte werden automatisch lokalisiert und Platzhalter ersetzt.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Text</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-          Anzeigetext
-        </li>
-        <li><span class="parameter">_Sound</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         (Optional) Soundeffekt der Nachricht
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <li><pre class="example"><span class="comment">-- Beispiel #1: Einfache Nachricht
-</span>API.Message(<span class="string">"Das ist eine Nachricht!"</span>);</pre></li>
-        <li><pre class="example"><span class="comment">-- Beispiel #2: Nachricht und Ton
-</span>API.Message(<span class="string">"Das ist eine WERTVOLLE Nachricht!"</span>, <span class="string">"ui/menu_left_gold_pay"</span>);</pre></li>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.Note"></a>
-    <strong>API.Note (_Text)</strong>
-    </dt>
-    <dd>
-    Schreibt eine Nachricht in das Debug Window.  Der Text erscheint links am
- Bildschirm und ist nicht statisch.
-
- <i>Platzhalter werden automatisch im aufrufenden Environment ersetzt.</i><br>
- <i>Multilinguale Texte werden automatisch im aufrufenden Environment übersetzt.</i>
-<p> <b>Hinweis:</b> Texte werden automatisch lokalisiert und Platzhalter ersetzt.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Text</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Anzeigetext
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.Note(<span class="string">"Das ist eine flüchtige Information!"</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.StaticNote"></a>
-    <strong>API.StaticNote (_Text)</strong>
-    </dt>
-    <dd>
-    Schreibt eine Nachricht in das Debug Window.  Der Text erscheint links am
- Bildschirm und verbleibt dauerhaft am Bildschirm.
-
- <i>Platzhalter werden automatisch im aufrufenden Environment ersetzt.</i><br>
- <i>Multilinguale Texte werden automatisch im aufrufenden Environment übersetzt.</i>
-<p> <b>Hinweis:</b> Texte werden automatisch lokalisiert und Platzhalter ersetzt.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Text</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Anzeigetext
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.StaticNote(<span class="string">"Das ist eine dauerhafte Information!"</span>);</pre>
-    </ul>
-
-</dd>
-</dl>
-    <h2 class="section-header "><a name="Quest"></a>Quest</h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "API.FailQuest"></a>
-    <strong>API.FailQuest (_QuestName, _NoMessage)</strong>
-    </dt>
-    <dd>
-    Lässt den Quest fehlschlagen.
-<p> Der Status wird auf Over und das Resultat auf Failure gesetzt.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_QuestName</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Name des Quest
-        </li>
-        <li><span class="parameter">_NoMessage</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Meldung nicht anzeigen
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.GetQuestID"></a>
-    <strong>API.GetQuestID (_Name)</strong>
-    </dt>
-    <dd>
-    Gibt die ID des Quests mit dem angegebenen Namen zurück.  Existiert der
- Quest nicht, wird nil zurückgegeben.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Name</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Name des Quest
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        ID des Quest
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.IsValidQuest"></a>
-    <strong>API.IsValidQuest (_QuestID)</strong>
-    </dt>
-    <dd>
-    Prüft, ob zu der angegebenen ID ein Quest existiert.  Wird ein Questname
- angegeben wird dessen Quest-ID ermittelt und geprüft.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_QuestID</span>
-            <span class="types"><span class="type">number</span></span>
-         ID oder Name des Quest
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">boolean</span></span>
-        Quest existiert
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.IsValidQuestName"></a>
-    <strong>API.IsValidQuestName (_Name)</strong>
-    </dt>
-    <dd>
-    Prüft den angegebenen Questnamen auf verbotene Zeichen.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Name</span>
-            <span class="types"><span class="type">number</span></span>
-         Name des Quest
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">boolean</span></span>
-        Name ist gültig
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.RestartQuest"></a>
-    <strong>API.RestartQuest (_QuestName, _NoMessage)</strong>
-    </dt>
-    <dd>
-    Startet den Quest neu.
-<p> Der Quest muss beendet sein um ihn wieder neu zu starten. Wird ein Quest
- neu gestartet, müssen auch alle Trigger wieder neu ausgelöst werden, außer
- der Quest wird manuell getriggert.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_QuestName</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Name des Quest
-        </li>
-        <li><span class="parameter">_NoMessage</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Meldung nicht anzeigen
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.StartQuest"></a>
-    <strong>API.StartQuest (_QuestName, _NoMessage)</strong>
-    </dt>
-    <dd>
-    Startet den Quest sofort, sofern er existiert.
-<p> Dabei ist es unerheblich, ob die Bedingungen zum Start erfüllt sind.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_QuestName</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Name des Quest
-        </li>
-        <li><span class="parameter">_NoMessage</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Meldung nicht anzeigen
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.StopQuest"></a>
-    <strong>API.StopQuest (_QuestName, _NoMessage)</strong>
-    </dt>
-    <dd>
-    Unterbricht den Quest.
-<p> Der Status wird auf Over und das Resultat auf Interrupt gesetzt. Sind Marker
- gesetzt, werden diese entfernt.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_QuestName</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Name des Quest
-        </li>
-        <li><span class="parameter">_NoMessage</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Meldung nicht anzeigen
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.WinQuest"></a>
-    <strong>API.WinQuest (_QuestName, _NoMessage)</strong>
-    </dt>
-    <dd>
-    Gewinnt den Quest.
-<p> Der Status wird auf Over und das Resultat auf Success gesetzt.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_QuestName</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Name des Quest
-        </li>
-        <li><span class="parameter">_NoMessage</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Meldung nicht anzeigen
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-</dl>
-    <h2 class="section-header "><a name="Debug"></a>Debug</h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "API.ActivateDebugMode"></a>
-    <strong>API.ActivateDebugMode (_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)</strong>
-    </dt>
-    <dd>
-    Aktiviert oder deaktiviert Optionen des Debug Mode.
-<p> <b>Hinweis:</b> Du kannst alle Optionen unbegrenzt oft beliebig ein-
- und ausschalten.
-<p> <ul>
- <li><u>Prüfung zum Spielbeginn</u>: <br>
- Quests werden auf konsistenz geprüft, bevor sie starten. </li>
- <li><u>Questverfolgung</u>: <br>
- Jede Statusänderung an einem Quest löst eine Nachricht auf dem Bildschirm
- aus, die die Änderung wiedergibt. </li>
- <li><u>Eintwickler Cheaks</u>: <br>
- Aktivier die Entwickler Cheats. </li>
- <li><u>Debug Chat-Eingabe</u>: <br>
- Die Chat-Eingabe kann zur Eingabe von Befehlen genutzt werden. </li>
- </ul>
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_CheckAtRun</span>
-            <span class="types"><span class="type">boolean</span></span>
-               Custom Behavior prüfen an/aus
-        </li>
-        <li><span class="parameter">_TraceQuests</span>
-            <span class="types"><span class="type">boolean</span></span>
-              Quest Trace an/aus
-        </li>
-        <li><span class="parameter">_DevelopingCheats</span>
-            <span class="types"><span class="type">boolean</span></span>
-         Cheats an/aus
-        </li>
-        <li><span class="parameter">_DevelopingShell</span>
-            <span class="types"><span class="type">boolean</span></span>
-          Eingabeaufforderung an/aus
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-</dl>
-    <h2 class="section-header "><a name="ScriptingValue"></a>ScriptingValue</h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "API.ConvertFloatToInteger"></a>
-    <strong>API.ConvertFloatToInteger (_Value)</strong>
-    </dt>
-    <dd>
-    Konvertirert den Wert in eine Gleitkommazahl.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Value</span>
-            <span class="types"><span class="type">number</span></span>
-         Gleitkommazahl
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Konvertierte Ganzzahl
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Converted = API.ConvertFloatToInteger(Value)</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.ConvertIntegerToFloat"></a>
-    <strong>API.ConvertIntegerToFloat (_Value)</strong>
-    </dt>
-    <dd>
-    Konvertirert den Wert in eine Ganzzahl.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Value</span>
-            <span class="types"><span class="type">number</span></span>
-         Gleitkommazahl
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Konvertierte Ganzzahl
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Converted = API.ConvertIntegerToFloat(Value)</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.GetFloat"></a>
-    <strong>API.GetFloat (_Entity, _SV)</strong>
-    </dt>
-    <dd>
-    Gibt den Wert auf dem übergebenen Index für das Entity zurück.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-            <span class="types"><span class="type">number</span></span>
-         Entity
-        </li>
-        <li><span class="parameter">_SV</span>
-            <span class="types"><span class="type">number</span></span>
-             Typ der Scripting Value
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Ermittelter Wert
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> Size = API.GetFloat(<span class="string">"HansWurst"</span>, QSB.ScriptingValue.Size);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.GetInteger"></a>
-    <strong>API.GetInteger (_Entity, _SV)</strong>
-    </dt>
-    <dd>
-    Gibt den Wert auf dem übergebenen Index für das Entity zurück.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-            <span class="types"><span class="type">number</span></span>
-         Entity
-        </li>
-        <li><span class="parameter">_SV</span>
-            <span class="types"><span class="type">number</span></span>
-             Typ der Scripting Value
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        Ermittelter Wert
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> PlayerID = API.GetInteger(<span class="string">"HansWurst"</span>, QSB.ScriptingValue.Player);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.SetFloat"></a>
-    <strong>API.SetFloat (_Entity, _SV, _Value)</strong>
-    </dt>
-    <dd>
-    Setzt den Wert auf dem übergebenen Index für das Entity.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-            <span class="types"><span class="type">number</span></span>
-         Entity
-        </li>
-        <li><span class="parameter">_SV</span>
-            <span class="types"><span class="type">number</span></span>
-             Typ der Scripting Value
-        </li>
-        <li><span class="parameter">_Value</span>
-            <span class="types"><span class="type">number</span></span>
-          Zu setzender Wert
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.SetFloat(<span class="string">"HansWurst"</span>, QSB.ScriptingValue.Size, <span class="number">1.5</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.SetInteger"></a>
-    <strong>API.SetInteger (_Entity, _SV, _Value)</strong>
-    </dt>
-    <dd>
-    Setzt den Wert auf dem übergebenen Index für das Entity.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-            <span class="types"><span class="type">number</span></span>
-         Entity
-        </li>
-        <li><span class="parameter">_SV</span>
-            <span class="types"><span class="type">number</span></span>
-             Typ der Scripting Value
-        </li>
-        <li><span class="parameter">_Value</span>
-            <span class="types"><span class="type">number</span></span>
-          Zu setzender Wert
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.SetInteger(<span class="string">"HansWurst"</span>, QSB.ScriptingValue.Player, <span class="number">2</span>);</pre>
-    </ul>
 
 </dd>
 </dl>
@@ -6456,446 +4257,6 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 </dd>
 </dl>
-    <h2 class="section-header "><a name="Reprisal"></a>Reprisal</h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "Reprisal_CustomVariables"></a>
-    <strong>Reprisal_CustomVariables (_Name, _Operator, _Value)</strong>
-    </dt>
-    <dd>
-    Ändert den Wert einer benutzerdefinierten Variable.
-<p> Benutzerdefinierte Variablen können ausschließlich Zahlen sein. Nutze
- dieses Behavior bevor die Variable in einem Goal oder Trigger abgefragt
- wird, um sie zu initialisieren!
-<p> <p>Operatoren</p>
- <ul>
- <li>= - Variablenwert wird auf den Wert gesetzt</li>
- <li>- - Variablenwert mit Wert Subtrahieren</li>
- <li>+ - Variablenwert mit Wert addieren</li>
- <li>* - Variablenwert mit Wert multiplizieren</li>
- <li>/ - Variablenwert mit Wert dividieren</li>
- <li>^ - Variablenwert mit Wert potenzieren</li>
- </ul>
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Name</span>
-             Name der Variable
-        </li>
-        <li><span class="parameter">_Operator</span>
-         Rechen- oder Zuweisungsoperator
-        </li>
-        <li><span class="parameter">_Value</span>
-            Wert oder andere Custom Variable
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_Defeat"></a>
-    <strong>Reprisal_Defeat ()</strong>
-    </dt>
-    <dd>
-    Der Spieler verliert das Spiel.
-
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_DestroyEffect"></a>
-    <strong>Reprisal_DestroyEffect (_EffectName)</strong>
-    </dt>
-    <dd>
-    Zerstört einen über ein Behavior erzeugten Effekt.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_EffectName</span>
-         Name des Effekts
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_DestroyEntity"></a>
-    <strong>Reprisal_DestroyEntity (_ScriptName)</strong>
-    </dt>
-    <dd>
-    Ein benanntes Entity wird entfernt.
-<p> <b>Hinweis</b>: Das Entity wird durch ein XD_ScriptEntity ersetzt. Es
- behält Name, Besitzer und Ausrichtung.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_ScriptName</span>
-         Skriptname des Entity
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_Diplomacy"></a>
-    <strong>Reprisal_Diplomacy (_Party1, _Party2, _State)</strong>
-    </dt>
-    <dd>
-    Änder den Diplomatiestatus zwischen zwei Spielern.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Party1</span>
-           ID der ersten Partei
-        </li>
-        <li><span class="parameter">_Party2</span>
-           ID der zweiten Partei
-        </li>
-        <li><span class="parameter">_State</span>
-            Neuer Diplomatiestatus
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_DiplomacyDecrease"></a>
-    <strong>Reprisal_DiplomacyDecrease ()</strong>
-    </dt>
-    <dd>
-    Der diplomatische Status zwischen Sender und Empfänger verschlechtert sich
- um eine Stufe.
-
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_FakeDefeat"></a>
-    <strong>Reprisal_FakeDefeat ()</strong>
-    </dt>
-    <dd>
-    Zeigt die Niederlagedekoration am Quest an.
-<p> Es handelt sich dabei um reine Optik! Der Spieler wird nicht verlieren.
-
-
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_MapScriptFunction"></a>
-    <strong>Reprisal_MapScriptFunction (_Function)</strong>
-    </dt>
-    <dd>
-    Führt eine Funktion im Skript als Reprisal aus.
-<p> Wird ein Funktionsname als String übergeben, wird die Funktion mit den
- Daten des Behavors und des zugehörigen Quest aufgerufen (Standard).
-<p> Wird eine Funktionsreferenz angegeben, wird die Funktion zusammen mit allen
- optionalen Parametern aufgerufen, als sei es ein gewöhnlicher Aufruf im
- Skript.
- <pre> Reprisal_MapScriptFunction(ReplaceEntity, "block", Entities.XD_ScriptEntity);
- -- entspricht: ReplaceEntity("block", Entities.XD_ScriptEntity);</pre>
- <b>Achtung:</b> Nicht über den Assistenten verfügbar!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Function</span>
-         Name der Funktion oder Funktionsreferenz
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_ObjectActivate"></a>
-    <strong>Reprisal_ObjectActivate (_ScriptName, _State)</strong>
-    </dt>
-    <dd>
-    Aktiviert ein interaktives Objekt.
-<p> Der Status bestimmt, wie das Objekt aktiviert wird.
- <ul>
- <li>0: Kann nur mit Helden aktiviert werden</li>
- <li>1: Kann immer aktiviert werden</li>
- <li>2: Kann niemals aktiviert werden</li>
- </ul>
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_ScriptName</span>
-         Skriptname des interaktiven Objektes
-        </li>
-        <li><span class="parameter">_State</span>
-              Status des Objektes
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_ObjectDeactivate"></a>
-    <strong>Reprisal_ObjectDeactivate (_ScriptName)</strong>
-    </dt>
-    <dd>
-    Deaktiviert ein interaktives Objekt.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_ScriptName</span>
-         Skriptname des interaktiven Objektes
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_QuestActivate"></a>
-    <strong>Reprisal_QuestActivate (_QuestName)</strong>
-    </dt>
-    <dd>
-    Triggert einen Quest.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_QuestName</span>
-         Name des Quest
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_QuestFailure"></a>
-    <strong>Reprisal_QuestFailure (_QuestName)</strong>
-    </dt>
-    <dd>
-    Lässt einen Quest fehlschlagen.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_QuestName</span>
-         Name des Quest
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_QuestForceInterrupt"></a>
-    <strong>Reprisal_QuestForceInterrupt (_QuestName, _EndetQuests)</strong>
-    </dt>
-    <dd>
-    Unterbricht einen Quest, selbst wenn dieser noch nicht ausgelöst wurde.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_QuestName</span>
-           Name des Quest
-        </li>
-        <li><span class="parameter">_EndetQuests</span>
-         Bereits beendete unterbrechen
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_QuestInterrupt"></a>
-    <strong>Reprisal_QuestInterrupt (_QuestName)</strong>
-    </dt>
-    <dd>
-    Unterbricht einen Quest.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_QuestName</span>
-         Name des Quest
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_QuestRestart"></a>
-    <strong>Reprisal_QuestRestart (_QuestName)</strong>
-    </dt>
-    <dd>
-    Startet einen Quest neu.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_QuestName</span>
-         Name des Quest
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_QuestSuccess"></a>
-    <strong>Reprisal_QuestSuccess (_QuestName)</strong>
-    </dt>
-    <dd>
-    Wertet einen Quest als erfolgreich.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_QuestName</span>
-         Name des Quest
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_ReplaceEntity"></a>
-    <strong>Reprisal_ReplaceEntity (_Entity, _Type, _Owner)</strong>
-    </dt>
-    <dd>
-    Ein Entity wird durch ein neues anderen Typs ersetzt.
-<p> Das neue Entity übernimmt Skriptname, Besitzer  und Ausrichtung des
- alten Entity.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_Entity</span>
-         Skriptname oder ID des Entity
-        </li>
-        <li><span class="parameter">_Type</span>
-           Neuer Typ des Entity
-        </li>
-        <li><span class="parameter">_Owner</span>
-          Besitzer des Entity
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_Technology"></a>
-    <strong>Reprisal_Technology (_PlayerID, _Lock, _Technology)</strong>
-    </dt>
-    <dd>
-    Erlaubt oder verbietet einem Spieler ein Recht.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-           ID des Spielers
-        </li>
-        <li><span class="parameter">_Lock</span>
-               Sperren/Entsperren
-        </li>
-        <li><span class="parameter">_Technology</span>
-         Name des Rechts
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Reprisal_Technology"></a>
-    <strong>Reprisal_Technology (_PlayerID, _Lock, _Technology)</strong>
-    </dt>
-    <dd>
-    Erlaubt oder verbietet einem Spieler ein Recht.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-           ID des Spielers
-        </li>
-        <li><span class="parameter">_Lock</span>
-               Sperren/Entsperren
-        </li>
-        <li><span class="parameter">_Technology</span>
-         Name des Rechts
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-</dl>
     <h2 class="section-header "><a name="Trigger"></a>Trigger</h2>
 
     <dl class="function">
@@ -7429,13 +4790,2229 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 
 </dd>
 </dl>
+    <h2 class="section-header "><a name="System"></a>System</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.ActivateDebugMode"></a>
+    <strong>API.ActivateDebugMode (_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)</strong>
+    </dt>
+    <dd>
+    Aktiviert oder deaktiviert Optionen des Debug Mode.
+<p> <b>Hinweis:</b> Du kannst alle Optionen unbegrenzt oft beliebig ein-
+ und ausschalten.
+<p> <ul>
+ <li><u>Prüfung zum Spielbeginn</u>: <br>
+ Quests werden auf konsistenz geprüft, bevor sie starten. </li>
+ <li><u>Questverfolgung</u>: <br>
+ Jede Statusänderung an einem Quest löst eine Nachricht auf dem Bildschirm
+ aus, die die Änderung wiedergibt. </li>
+ <li><u>Eintwickler Cheaks</u>: <br>
+ Aktivier die Entwickler Cheats. </li>
+ <li><u>Debug Chat-Eingabe</u>: <br>
+ Die Chat-Eingabe kann zur Eingabe von Befehlen genutzt werden. </li>
+ </ul>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_CheckAtRun</span>
+            <span class="types"><span class="type">boolean</span></span>
+               Custom Behavior prüfen an/aus
+        </li>
+        <li><span class="parameter">_TraceQuests</span>
+            <span class="types"><span class="type">boolean</span></span>
+              Quest Trace an/aus
+        </li>
+        <li><span class="parameter">_DevelopingCheats</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Cheats an/aus
+        </li>
+        <li><span class="parameter">_DevelopingShell</span>
+            <span class="types"><span class="type">boolean</span></span>
+          Eingabeaufforderung an/aus
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.CreateEntityName"></a>
+    <strong>API.CreateEntityName (_EntityID)</strong>
+    </dt>
+    <dd>
+    Gibt dem Entity einen eindeutigen Skriptnamen und gibt ihn zurück.
+ Hat das Entity einen Namen, bleibt dieser unverändert und wird
+ zurückgegeben.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_EntityID</span>
+            <span class="types"><span class="type">number</span></span>
+         Entity ID
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+        Skriptname
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.IsHistoryEditionNetworkGame"></a>
+    <strong>API.IsHistoryEditionNetworkGame ()</strong>
+    </dt>
+    <dd>
+    Prüft, ob das laufende Spiel eine Multiplayerpartie in der History Edition
+ ist.
+<p> <b>Hinweis</b>: Es ist unmöglich, dass Original und History Edition in einer
+ Partie aufeinander treffen, da die alten Server längst abgeschaltet und die
+ Option zum LAN-Spiel in der HE nicht verfügbar ist.
+
+
+
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Spiel ist History Edition
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.RestartMap"></a>
+    <strong>API.RestartMap ()</strong>
+    </dt>
+    <dd>
+    Startet die Map sofort neu.
+<p> <b>Achtung</b>: Die Funktion Framework.RestartMap kann nicht mehr verwendet
+ werden, da es sonst zu Fehlern mit dem Ladebildschirm kommt!
+
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.SendCart"></a>
+    <strong>API.SendCart (_Position, _PlayerID, _GoodType, _Amount, _CartOverlay, _IgnoreReservation, _Overtake)</strong>
+    </dt>
+    <dd>
+    Sendet einen Handelskarren zu dem Spieler.  Startet der Karren von einem
+ Gebäude, wird immer die Position des Eingangs genommen.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Position</span>
+                                Position (Skriptname oder Entity-ID)
+        </li>
+        <li><span class="parameter">_PlayerID</span>
+            <span class="types"><span class="type">number</span></span>
+                   Zielspieler
+        </li>
+        <li><span class="parameter">_GoodType</span>
+            <span class="types"><span class="type">number</span></span>
+                   Warentyp
+        </li>
+        <li><span class="parameter">_Amount</span>
+            <span class="types"><span class="type">number</span></span>
+                     Warenmenge
+        </li>
+        <li><span class="parameter">_CartOverlay</span>
+            <span class="types"><span class="type">number</span></span>
+                (optional) Overlay für Goldkarren
+        </li>
+        <li><span class="parameter">_IgnoreReservation</span>
+            <span class="types"><span class="type">boolean</span></span>
+         (optional) Marktplatzreservation ignorieren
+        </li>
+        <li><span class="parameter">_Overtake</span>
+            <span class="types"><span class="type">boolean</span></span>
+                  (optional) Mit Position austauschen
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Entity-ID des erzeugten Wagens
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="comment">-- API-Call
+</span>API.SendCart(Logic.GetStoreHouse(<span class="number">1</span>), <span class="number">2</span>, Goods.G_Grain, <span class="number">45</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.ShowTextInput"></a>
+    <strong>API.ShowTextInput (_PlayerID, _AllowDebug)</strong>
+    </dt>
+    <dd>
+    Offnet das Chatfenster für eine Eingabe.
+<p> <b>Hinweis</b>: Im Multiplayer kann der Chat nicht über Skript gesteuert
+ werden.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+            <span class="types"><span class="type">number</span></span>
+           Spieler für den der Chat geöffnet wird
+        </li>
+        <li><span class="parameter">_AllowDebug</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Debug Eingaben werden bearbeitet
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Multiplayer"></a>Multiplayer</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.GetActivePlayers"></a>
+    <strong>API.GetActivePlayers ()</strong>
+    </dt>
+    <dd>
+    Gibt eine Liste aller Spieler im Spiel zurück.
+<p> <h5>Multiplayer</h5>
+ Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
+
+
+
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Liste der aktiven Spieler
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.GetDelayedPlayers"></a>
+    <strong>API.GetDelayedPlayers ()</strong>
+    </dt>
+    <dd>
+    Gibt alle Spieler zurück, auf die gerade gewartet wird.
+<p> <h5>Multiplayer</h5>
+ Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
+
+
+
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Liste der aktiven Spieler
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.GetPlayerSlotID"></a>
+    <strong>API.GetPlayerSlotID (_PlayerID)</strong>
+    </dt>
+    <dd>
+    Gibt den Slot zurück, den der Spieler einnimmt.  Hat der Spieler keinen
+ Slot okkupiert oder ist nicht menschlich, wird -1 zurückgegeben.
+<p> <h5>Multiplayer</h5>
+ Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ID des Player</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Slot ID des Player</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.GetSlotPlayerID"></a>
+    <strong>API.GetSlotPlayerID (_SlotID)</strong>
+    </dt>
+    <dd>
+    Gibt den Spieler zurück, welcher den Slot okkupiert.  Hat der Slot keinen
+ Spieler oder ist der Spieler nicht menschlich, wird -1 zurückgegeben.
+<p> <h5>Multiplayer</h5>
+ Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_SlotID</span>
+
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Slot ID des Player</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ID des Player</li>
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Job"></a>Job</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.EndJob"></a>
+    <strong>API.EndJob (_JobID)</strong>
+    </dt>
+    <dd>
+    Beendet den Job mit der übergebenen ID endgültig.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_JobID</span>
+            <span class="types"><span class="type">number</span></span>
+         ID des Jobs
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.EndJob(AnyJobID);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.JobIsRunning"></a>
+    <strong>API.JobIsRunning (_JobID)</strong>
+    </dt>
+    <dd>
+    Gibt zurück, ob der Job mit der übergebenen ID aktiv ist.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_JobID</span>
+            <span class="types"><span class="type">number</span></span>
+         ID des Jobs
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Job ist aktiv
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">if</span> API.JobIsRunning(AnyJobID) <span class="keyword">then</span>
+    <span class="comment">-- Mach was
+</span><span class="keyword">end</span>;</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.RealTimeGetSecondsPassedSinceGameStart"></a>
+    <strong>API.RealTimeGetSecondsPassedSinceGameStart ()</strong>
+    </dt>
+    <dd>
+    Gibt die real vergangene Zeit seit dem Spielstart in Sekunden zurück.
+
+
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Vergangene reale Zeit
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> RealTime = API.RealTimeGetSecondsPassedSinceGameStart();</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.ResumeJob"></a>
+    <strong>API.ResumeJob (_JobID)</strong>
+    </dt>
+    <dd>
+    Aktiviert einen pausierten Job.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_JobID</span>
+            <span class="types"><span class="type">number</span></span>
+         ID des Jobs
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.ResumeJob(AnyJobID);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.StartDelay"></a>
+    <strong>API.StartDelay (_Waittime, _Function, ...)</strong>
+    </dt>
+    <dd>
+    Wartet die angebene Zeit in Sekunden und führt anschließend die Funktion aus.
+<p> Die Funktion kann als Referenz, Inline oder als String übergeben werden.
+<p> <b>Achtung</b>: Die Ausführung erfolgt asynchron. Das bedeutet, dass das
+ Skript weiterläuft.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Waittime</span>
+            <span class="types"><span class="type">number</span></span>
+           Wartezeit in Sekunden
+        </li>
+        <li><span class="parameter">_Function</span>
+            <span class="types"><span class="type">function</span></span>
+         Callback-Funktion
+        </li>
+        <li><span class="parameter">...</span>
+         Liste der Argumente
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        ID der Verzögerung
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.StartDelay(
+    <span class="number">30</span>,
+    <span class="keyword">function</span>()
+        Logic.DEBUG_AddNote(<span class="string">"Zeit abgelaufen!"</span>);
+    <span class="keyword">end</span>
+)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.StartHiResDelay"></a>
+    <strong>API.StartHiResDelay (_Waittime, _Function, ...)</strong>
+    </dt>
+    <dd>
+    Wartet die angebene Zeit in Turns und führt anschließend die Funktion aus.
+<p> Die Funktion kann als Referenz, Inline oder als String übergeben werden.
+<p> <b>Achtung</b>: Die Ausführung erfolgt asynchron. Das bedeutet, dass das
+ Skript weiterläuft.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Waittime</span>
+            <span class="types"><span class="type">number</span></span>
+           Wartezeit in Turns
+        </li>
+        <li><span class="parameter">_Function</span>
+            <span class="types"><span class="type">function</span></span>
+         Callback-Funktion
+        </li>
+        <li><span class="parameter">...</span>
+         Liste der Argumente
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        ID der Verzögerung
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.StartHiResDelay(
+    <span class="number">30</span>,
+    <span class="keyword">function</span>()
+        Logic.DEBUG_AddNote(<span class="string">"Zeit abgelaufen!"</span>);
+    <span class="keyword">end</span>
+)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.StartHiResJob"></a>
+    <strong>API.StartHiResJob (_Function, ...)</strong>
+    </dt>
+    <dd>
+    Führt eine Funktion ein mal pro Turn aus.  Ein Turn entspricht einer 1/10
+ Sekunde in der Spielzeit. Die weiteren Argumente werden an die Funktion
+ übergeben.
+<p> Die Funktion kann als Referenz, Inline oder als String übergeben werden.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Function</span>
+         Funktion (Funktionsreferenz oder String)
+        </li>
+        <li><span class="parameter">...</span>
+               Liste von Argumenten
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Job ID
+    </ol>
+
+
+    <h3>Verwandte Themen:</h3>
+    <ul>
+         <a href="../modules/qsb.html#API.StartJob">API.StartJob</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "API.StartJob"></a>
+    <strong>API.StartJob (_Function, ...)</strong>
+    </dt>
+    <dd>
+    Führt eine Funktion ein mal pro Sekunde aus.  Die weiteren Argumente werden an
+ die Funktion übergeben.
+<p> Die Funktion kann als Referenz, Inline oder als String übergeben werden.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Function</span>
+         Funktion (Funktionsreferenz oder String)
+        </li>
+        <li><span class="parameter">...</span>
+               Liste von Argumenten
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Job ID
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="comment">-- Führt eine Funktion nach 15 Sekunden aus.
+</span>API.StartJob(<span class="keyword">function</span>(_Time, _EntityType)
+    <span class="keyword">if</span> Logic.GetTime() &gt; _Time + <span class="number">15</span> <span class="keyword">then</span>
+        MachWas(_EntityType);
+        <span class="keyword">return</span> <span class="keyword">true</span>;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>, Logic.GetTime(), Entities.U_KnightHealing)
+
+<span class="comment">-- Startet einen Job
+</span>StartSimpleJob(<span class="string">"MeinJob"</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.StartJobByEventType"></a>
+    <strong>API.StartJobByEventType (_EventType, _Function, ...)</strong>
+    </dt>
+    <dd>
+    Erzeugt einen neuen Event-Job.
+<p> <b>Hinweis</b>: Nur wenn ein Event Job mit dieser Funktion gestartet wird,
+ können ResumeJob und YieldJob auf den Job angewendet werden.
+<p> <b>Hinweis</b>: Events.LOGIC_EVENT_ENTITY_CREATED funktioniert nicht!
+<p> <b>Hinweis</b>: Wird ein Table als Argument an den Job übergeben, wird eine
+ Kopie angelegt um Speicherprobleme zu verhindern. Es handelt sich also um
+ eine neue Table und keine Referenz!
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_EventType</span>
+            <span class="types"><span class="type">number</span></span>
+         Event-Typ
+        </li>
+        <li><span class="parameter">_Function</span>
+              Funktion (Funktionsreferenz oder String)
+        </li>
+        <li><span class="parameter">...</span>
+                    Optionale Argumente des Job
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        ID des Jobs
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.StartJobByEventType(
+    Events.LOGIC_EVENT_EVERY_SECOND,
+    FunctionRefToCall
+);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.StartRealTimeDelay"></a>
+    <strong>API.StartRealTimeDelay (_Waittime, _Function, ...)</strong>
+    </dt>
+    <dd>
+    Wartet die angebene Zeit in realen Sekunden und führt anschließend die
+ Funktion aus.
+<p> Die Funktion kann als Referenz, Inline oder als String übergeben werden.
+<p> <b>Achtung</b>: Die Ausführung erfolgt asynchron. Das bedeutet, dass das
+ Skript weiterläuft.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Waittime</span>
+            <span class="types"><span class="type">number</span></span>
+           Wartezeit in realen Sekunden
+        </li>
+        <li><span class="parameter">_Function</span>
+            <span class="types"><span class="type">function</span></span>
+         Callback-Funktion
+        </li>
+        <li><span class="parameter">...</span>
+         Liste der Argumente
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        ID der Verzögerung
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.StartRealTimeDelay(
+    <span class="number">30</span>,
+    <span class="keyword">function</span>()
+        Logic.DEBUG_AddNote(<span class="string">"Zeit abgelaufen!"</span>);
+    <span class="keyword">end</span>
+)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.YieldJob"></a>
+    <strong>API.YieldJob (_JobID)</strong>
+    </dt>
+    <dd>
+    Pausiert einen aktivien Job.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_JobID</span>
+            <span class="types"><span class="type">number</span></span>
+         ID des Jobs
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.YieldJob(AnyJobID);</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Spielstand"></a>Spielstand</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.DisableAutoSave"></a>
+    <strong>API.DisableAutoSave (_Flag)</strong>
+    </dt>
+    <dd>
+    Deaktiviert das automatische Speichern der History Edition.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Flag</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Auto-Speichern ist deaktiviert
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.DisableLoading"></a>
+    <strong>API.DisableLoading (_Flag)</strong>
+    </dt>
+    <dd>
+    Deaktiviert das Laden von Spielständen.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Flag</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Laden ist deaktiviert
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.DisableSaving"></a>
+    <strong>API.DisableSaving (_Flag)</strong>
+    </dt>
+    <dd>
+    Deaktiviert das Speichern des Spiels.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Flag</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Speichern ist deaktiviert
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Text"></a>Text</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.AddEntityTypePlaceholder"></a>
+    <strong>API.AddEntityTypePlaceholder (_Type, _Replacement)</strong>
+    </dt>
+    <dd>
+    Fügt einen Platzhalter für einen Entity-Typ hinzu.
+<p> Innerhalb des Textes wird der Plathalter wie folgt geschrieben:
+ <pre>{t:ENTITY_TYP}</pre>
+ ENTITY_TYP muss mit einem Entity-Typ ersetzt werden. Der Typ wird ohne
+ Entities. davor geschrieben.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Type</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+                Typname, der ersetzt werden soll
+        </li>
+        <li><span class="parameter">_Replacement</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Wert, der ersetzt wird
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.AddNamePlaceholder(<span class="string">"U_KnightHealing"</span>, <span class="string">"Arroganze Ziege"</span>);
+API.AddNamePlaceholder(<span class="string">"B_Castle_SE"</span>, {de = <span class="string">"Festung des Bösen"</span>, en = <span class="string">"Fortress of Evil"</span>});</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.AddNamePlaceholder"></a>
+    <strong>API.AddNamePlaceholder (_Name, _Replacement)</strong>
+    </dt>
+    <dd>
+    Fügt einen Platzhalter für den angegebenen Namen hinzu.
+<p> Innerhalb des Textes wird der Plathalter wie folgt geschrieben:
+ <pre>{n:SOME_NAME}</pre>
+ SOME_NAME muss mit dem Namen ersetzt werden.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+                Name, der ersetzt werden soll
+        </li>
+        <li><span class="parameter">_Replacement</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Wert, der ersetzt wird
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, <span class="string">"Horst"</span>);
+API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span class="string">"Kuchen"</span>, en = <span class="string">"Cake"</span>});</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.ClearNotes"></a>
+    <strong>API.ClearNotes ()</strong>
+    </dt>
+    <dd>
+    Löscht alle Nachrichten im Debug Window.
+
+
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.ClearNotes();</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.ConvertPlaceholders"></a>
+    <strong>API.ConvertPlaceholders (_Message)</strong>
+    </dt>
+    <dd>
+    Ersetzt alle Platzhalter im Text oder in der Table.
+<p> Mögliche Platzhalter:
+ <ul>
+ <li>{n:xyz} - Ersetzt einen Skriptnamen mit dem zuvor gesetzten Wert.</li>
+ <li>{t:xyz} - Ersetzt einen Typen mit dem zuvor gesetzten Wert.</li>
+ <li>{v:xyz} - Ersetzt mit dem Inhalt der angegebenen Variable. Der Wert muss
+ in der Umgebung vorhanden sein, in der er ersetzt wird.</li>
+ </ul>
+<p> Außerdem werden einige Standardfarben ersetzt.
+ <pre>{COLOR}</pre>
+ Ersetze {COLOR} in deinen Texten mit einer der gelisteten Farben.
+<p> <table border="1">
+ <tr><th><b>Platzhalter</b></th><th><b>Farbe</b></th><th><b>RGBA</b></th></tr>
+<p> <tr><td>red</td>     <td>Rot</td>           <td>255,80,80,255</td></tr>
+ <tr><td>blue</td>    <td>Blau</td>          <td>104,104,232,255</td></tr>
+ <tr><td>yellow</td>  <td>Gelp</td>          <td>255,255,80,255</td></tr>
+ <tr><td>green</td>   <td>Grün</td>          <td>80,180,0,255</td></tr>
+ <tr><td>white</td>   <td>Weiß</td>          <td>255,255,255,255</td></tr>
+ <tr><td>black</td>   <td>Schwarz</td>       <td>0,0,0,255</td></tr>
+ <tr><td>grey</td>    <td>Grau</td>          <td>140,140,140,255</td></tr>
+ <tr><td>azure</td>   <td>Azurblau</td>      <td>255,176,30,255</td></tr>
+ <tr><td>orange</td>  <td>Orange</td>        <td>255,176,30,255</td></tr>
+ <tr><td>amber</td>   <td>Bernstein</td>     <td>224,197,117,255</td></tr>
+ <tr><td>violet</td>  <td>Violett</td>       <td>180,100,190,255</td></tr>
+ <tr><td>pink</td>    <td>Rosa</td>          <td>255,170,200,255</td></tr>
+ <tr><td>scarlet</td> <td>Scharlachrot</td>  <td>190,0,0,255</td></tr>
+ <tr><td>magenta</td> <td>Magenta</td>       <td>190,0,89,255</td></tr>
+ <tr><td>olive</td>   <td>Olivgrün</td>      <td>74,120,0,255</td></tr>
+ <tr><td>sky</td>     <td>Himmelsblau</td>   <td>145,170,210,255</td></tr>
+ <tr><td>tooltip</td> <td>Tooltip-Blau</td>  <td>51,51,120,255</td></tr>
+ <tr><td>lucid</td>   <td>Transparent</td>   <td>0,0,0,0</td></tr>
+ <tr><td>none</td>    <td>Standardfarbe</td> <td>(Abhängig vom Widget)</td></tr>
+ </table>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Message</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Text
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+        Ersetzter Text
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <li><pre class="example"><span class="comment">-- Beispiel #1: Vordefinierte Farbe austauschen
+</span><span class="keyword">local</span> Replaced = API.ConvertPlaceholders(<span class="string">"{scarlet}Dieser Text ist jetzt rot!"</span>);</pre></li>
+        <li><pre class="example"><span class="comment">-- Beispiel #2: Skriptnamen austauschen
+</span><span class="keyword">local</span> Replaced = API.ConvertPlaceholders(<span class="string">"{n:placeholder2} wurde ersetzt!"</span>);</pre></li>
+        <li><pre class="example"><span class="comment">-- Beispiel #3: Typen austauschen
+</span><span class="keyword">local</span> Replaced = API.ConvertPlaceholders(<span class="string">"{t:U_KnightHealing} wurde ersetzt!"</span>);</pre></li>
+        <li><pre class="example"><span class="comment">-- Beispiel #4: Variable austauschen
+</span><span class="keyword">local</span> Replaced = API.ConvertPlaceholders(<span class="string">"{v:MyVariable.1.MyValue} wurde ersetzt!"</span>);</pre></li>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.Localize"></a>
+    <strong>API.Localize (_Text)</strong>
+    </dt>
+    <dd>
+    Ermittelt den lokalisierten Text anhand der eingestellten Sprache der QSB.
+<p> Wird ein normaler String übergeben, wird dieser sofort zurückgegeben.
+ Bei einem Table mit einem passenden Sprach-Key (de, en, fr, ...) wird die
+ entsprechende Sprache zurückgegeben. Sollte ein Nested Table übergeben
+ werden, werden alle Texte innerhalb des Tables rekursiv übersetzt als Table
+ zurückgegeben. Alle anderen Werte sind nicht in der Rückgabe enthalten.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Text</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Table mit Übersetzungen
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+        Übersetzten Text oder Table mit Texten
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <li><pre class="example"><span class="comment">-- Beispiel #1: Table lokalisieren
+</span><span class="keyword">local</span> Text = API.Localize({de = <span class="string">"Deutsch"</span>, en = <span class="string">"English"</span>});
+<span class="comment">-- Rückgabe: "Deutsch"</span></pre></li>
+        <li><pre class="example"><span class="comment">-- Beispiel #2: Mehrstufige (Nested) Tables
+</span><span class="comment">-- (Nested Tables sind in dem Fall mit Vorsicht zu genießen!)
+</span>API.Localize{{de = <span class="string">"Deutsch"</span>, en = <span class="string">"English"</span>}, {{<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>, de = <span class="string">"A"</span>, en = <span class="string">"B"</span>}}}
+<span class="comment">-- Rückgabe: {"Deutsch", {"A"}}</span></pre></li>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.Message"></a>
+    <strong>API.Message (_Text, _Sound)</strong>
+    </dt>
+    <dd>
+    Schreibt eine Nachricht unten in das Nachrichtenfenster.  Die Nachricht
+ verschwindet nach einigen Sekunden.
+
+ <i>Platzhalter werden automatisch im aufrufenden Environment ersetzt.</i><br>
+ <i>Multilinguale Texte werden automatisch im aufrufenden Environment übersetzt.</i>
+<p> <b>Hinweis:</b> Texte werden automatisch lokalisiert und Platzhalter ersetzt.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Text</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+          Anzeigetext
+        </li>
+        <li><span class="parameter">_Sound</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         (Optional) Soundeffekt der Nachricht
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <li><pre class="example"><span class="comment">-- Beispiel #1: Einfache Nachricht
+</span>API.Message(<span class="string">"Das ist eine Nachricht!"</span>);</pre></li>
+        <li><pre class="example"><span class="comment">-- Beispiel #2: Nachricht und Ton
+</span>API.Message(<span class="string">"Das ist eine WERTVOLLE Nachricht!"</span>, <span class="string">"ui/menu_left_gold_pay"</span>);</pre></li>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.Note"></a>
+    <strong>API.Note (_Text)</strong>
+    </dt>
+    <dd>
+    Schreibt eine Nachricht in das Debug Window.  Der Text erscheint links am
+ Bildschirm und ist nicht statisch.
+
+ <i>Platzhalter werden automatisch im aufrufenden Environment ersetzt.</i><br>
+ <i>Multilinguale Texte werden automatisch im aufrufenden Environment übersetzt.</i>
+<p> <b>Hinweis:</b> Texte werden automatisch lokalisiert und Platzhalter ersetzt.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Text</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Anzeigetext
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.Note(<span class="string">"Das ist eine flüchtige Information!"</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.StaticNote"></a>
+    <strong>API.StaticNote (_Text)</strong>
+    </dt>
+    <dd>
+    Schreibt eine Nachricht in das Debug Window.  Der Text erscheint links am
+ Bildschirm und verbleibt dauerhaft am Bildschirm.
+
+ <i>Platzhalter werden automatisch im aufrufenden Environment ersetzt.</i><br>
+ <i>Multilinguale Texte werden automatisch im aufrufenden Environment übersetzt.</i>
+<p> <b>Hinweis:</b> Texte werden automatisch lokalisiert und Platzhalter ersetzt.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Text</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Anzeigetext
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.StaticNote(<span class="string">"Das ist eine dauerhafte Information!"</span>);</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Entity"></a>Entity</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.ChangeEntityHealth"></a>
+    <strong>API.ChangeEntityHealth (_Entity, _Health, _Relative)</strong>
+    </dt>
+    <dd>
+    Setzt die Gesundheit des Entity.  Optional kann die Gesundheit relativ zur
+ maximalen Gesundheit geändert werden.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+           Entity (Scriptname oder ID)
+        </li>
+        <li><span class="parameter">_Health</span>
+            <span class="types"><span class="type">number</span></span>
+           Neue aktuelle Gesundheit
+        </li>
+        <li><span class="parameter">_Relative</span>
+            <span class="types"><span class="type">boolean</span></span>
+         (Optional) Relativ zur maximalen Gesundheit
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.GetEntityHealth"></a>
+    <strong>API.GetEntityHealth (_Entity)</strong>
+    </dt>
+    <dd>
+    Gibt die relative Gesundheit des Entity zurück.
+<p> <b>Hinweis</b>: Der Wert wird als Prozentwert zurückgegeben. Das bedeutet,
+ der Wert liegt zwischen 0 und 100.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+         Entity (Scriptname oder ID)
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Aktuelle Gesundheit
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.GetGroupLeader"></a>
+    <strong>API.GetGroupLeader (_Entity)</strong>
+    </dt>
+    <dd>
+    Gibt den Leader des Soldaten zurück.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+         Entity (Skriptname oder ID)
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Menge an Soldaten
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.GroupHeal"></a>
+    <strong>API.GroupHeal (_Entity, _Amount)</strong>
+    </dt>
+    <dd>
+    Heilt das Entity um die angegebene Menge an Gesundheit.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+           Entity (Scriptname oder ID)
+        </li>
+        <li><span class="parameter">_Amount</span>
+            <span class="types"><span class="type">number</span></span>
+           Geheilte Gesundheit
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.GroupHurt"></a>
+    <strong>API.GroupHurt (_Entity, _Damage, _Attacker)</strong>
+    </dt>
+    <dd>
+    Verwundet ein Entity oder ein Battallion um die angegebene
+ Menge an Schaden.  Bei einem Battalion wird der Schaden solange
+ auf Soldaten aufgeteilt, bis er komplett verrechnet wurde.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+           Entity (Scriptname oder ID)
+        </li>
+        <li><span class="parameter">_Damage</span>
+            <span class="types"><span class="type">number</span></span>
+           Schaden
+        </li>
+        <li><span class="parameter">_Attacker</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Angreifer
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.InteractiveObjectActivate"></a>
+    <strong>API.InteractiveObjectActivate (_ScriptName, _State)</strong>
+    </dt>
+    <dd>
+    Aktiviert ein Interaktives Objekt.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_ScriptName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Skriptname des Objektes
+        </li>
+        <li><span class="parameter">_State</span>
+            <span class="types"><span class="type">number</span></span>
+              State des Objektes
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.InteractiveObjectDeactivate"></a>
+    <strong>API.InteractiveObjectDeactivate (_ScriptName)</strong>
+    </dt>
+    <dd>
+    Deaktiviert ein interaktives Objekt.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_ScriptName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Scriptname des Objektes
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.ReplaceEntity"></a>
+    <strong>API.ReplaceEntity (_Entity, _Type, _NewOwner)</strong>
+    </dt>
+    <dd>
+    Ersetzt ein Entity mit einem neuen eines anderen Typs.  Skriptname,
+ Rotation, Position und Besitzer werden übernommen.
+<p> Für Siedler wird automatisch die Tasklist TL_NPC_IDLE gesetzt, damit
+ sie nicht versteinert in der Landschaft rumstehen.
+<p> <b>Hinweis</b>: Die Entity-ID ändert sich und beim Ersetzen von
+ Spezialgebäuden kann eine Niederlage erfolgen.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+              Entity (Skriptname oder ID)
+        </li>
+        <li><span class="parameter">_Type</span>
+            <span class="types"><span class="type">number</span></span>
+             Neuer Typ
+        </li>
+        <li><span class="parameter">_NewOwner</span>
+            <span class="types"><span class="type">number</span></span>
+         (optional) Neuer Besitzer
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Entity-ID des Entity
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.ReplaceEntity(<span class="string">"Stein"</span>, Entities.XD_ScriptEntity)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.SetResourceAmount"></a>
+    <strong>API.SetResourceAmount (_Entity, _StartAmount, _RefillAmount)</strong>
+    </dt>
+    <dd>
+    Setzt die Menge an Rohstoffen und die durchschnittliche Auffüllmenge
+ in einer Mine.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+               Rohstoffvorkommen (Skriptname oder ID)
+        </li>
+        <li><span class="parameter">_StartAmount</span>
+            <span class="types"><span class="type">number</span></span>
+          Menge an Rohstoffen
+        </li>
+        <li><span class="parameter">_RefillAmount</span>
+            <span class="types"><span class="type">number</span></span>
+         Minimale Nachfüllmenge (> 0)
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.SetResourceAmount(<span class="string">"mine1"</span>, <span class="number">250</span>, <span class="number">150</span>);</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Position"></a>Position</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.GetClosestToTarget"></a>
+    <strong>API.GetClosestToTarget (_Target, _List)</strong>
+    </dt>
+    <dd>
+    Gibt das Entity aus der Liste zurück, welches dem Ziel am nähsten ist.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Target</span>
+         Entity oder Position
+        </li>
+        <li><span class="parameter">_List</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+           Liste von Entities oder Positionen
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+        Nähste Entity oder Position
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Clostest = API.GetClosestToTarget(<span class="string">"HQ1"</span>, {<span class="string">"Marcus"</span>, <span class="string">"Alandra"</span>, <span class="string">"Hakim"</span>});</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetPosition"></a>
+    <strong>API.GetPosition (_Entity)</strong>
+    </dt>
+    <dd>
+    Lokalisiert ein Entity auf der Map.  Es können sowohl Skriptnamen als auch
+ IDs verwendet werden. Wenn das Entity nicht gefunden wird, wird eine
+ Tabelle mit XYZ = 0 zurückgegeben.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+         Entity (Skriptname oder ID)
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Positionstabelle {X= x, Y= y, Z= z}
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Position = API.GetPosition(<span class="string">"Hans"</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.IsValidPosition"></a>
+    <strong>API.IsValidPosition (_pos)</strong>
+    </dt>
+    <dd>
+    Prüft, ob eine Positionstabelle eine gültige Position enthält.
+<p> Eine Position ist Ungültig, wenn sie sich nicht auf der Welt befindet.
+ Das ist der Fall bei negativen Werten oder Werten, welche die Größe
+ der Welt übersteigen.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_pos</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Positionstable {X= x, Y= y}
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Position ist valide
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.SetPosition"></a>
+    <strong>API.SetPosition (_Entity, _Target)</strong>
+    </dt>
+    <dd>
+    Setzt ein Entity auf eine neue Position
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+         Entity (Skriptname oder ID)
+        </li>
+        <li><span class="parameter">_Target</span>
+         Ziel (Skriptname, ID oder Position)
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.SetPosition(<span class="string">"Hans"</span>, <span class="string">"Horst"</span>);</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Math"></a>Math</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.GetAngleBetween"></a>
+    <strong>API.GetAngleBetween (_Pos1, _Pos2)</strong>
+    </dt>
+    <dd>
+    Bestimmt den Winkel zwischen zwei Punkten.  Es können Entity-IDs,
+ Skriptnamen oder Positionstables angegeben werden.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Pos1</span>
+         Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
+        </li>
+        <li><span class="parameter">_Pos2</span>
+         Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Winkel zwischen den Punkten
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Angle = API.GetAngleBetween(<span class="string">"HQ1"</span>, Logic.GetKnightID(<span class="number">1</span>))</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetCirclePosition"></a>
+    <strong>API.GetCirclePosition (_Target, _Distance, _Angle)</strong>
+    </dt>
+    <dd>
+    Gibt eine Position auf einer Kreisbahn um einen Punkt zurück.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Target</span>
+                  Entity oder Position
+        </li>
+        <li><span class="parameter">_Distance</span>
+            <span class="types"><span class="type">number</span></span>
+                Entfernung um das Zentrum
+        </li>
+        <li><span class="parameter">_Angle</span>
+            <span class="types"><span class="type">number</span></span>
+                   Winkel auf dem Kreis
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Position auf Kreisbahn
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Position = API.GetCirclePosition(<span class="string">"HQ1"</span>, <span class="number">3000</span>, -<span class="number">45</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetCirclePositions"></a>
+    <strong>API.GetCirclePositions (_Target, _Distance, _Periode, _Offset)</strong>
+    </dt>
+    <dd>
+    Gibt Positionen im gleichen Abstand auf der Kreisbahn zurück.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Target</span>
+                  Entity oder Position
+        </li>
+        <li><span class="parameter">_Distance</span>
+            <span class="types"><span class="type">number</span></span>
+                Entfernung um das Zentrum
+        </li>
+        <li><span class="parameter">_Periode</span>
+            <span class="types"><span class="type">number</span></span>
+                 Anzahl an Positionen
+        </li>
+        <li><span class="parameter">_Offset</span>
+            <span class="types"><span class="type">number</span></span>
+                  Start Offset
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Positionend auf Kreisbahn
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> PositionList = API.GetCirclePositions(<span class="string">"Position"</span>, <span class="number">3000</span>, <span class="number">6</span>, <span class="number">45</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetDistance"></a>
+    <strong>API.GetDistance (_pos1, _pos2)</strong>
+    </dt>
+    <dd>
+    Bestimmt die Distanz zwischen zwei Punkten.  Es können Entity-IDs,
+ Skriptnamen oder Positionstables angegeben werden.
+<p> Wenn die Distanz nicht bestimmt werden kann, wird -1 zurückgegeben.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_pos1</span>
+         Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
+        </li>
+        <li><span class="parameter">_pos2</span>
+         Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Entfernung zwischen den Punkten
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Distance = API.GetDistance(<span class="string">"HQ1"</span>, Logic.GetKnightID(<span class="number">1</span>))</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetGeometricFocus"></a>
+    <strong>API.GetGeometricFocus (...)</strong>
+    </dt>
+    <dd>
+    Bestimmt die Durchschnittsposition mehrerer Entities.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         Positionen mit Komma getrennt
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Durchschnittsposition aller Positionen
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Center = API.GetGeometricFocus(<span class="string">"Hakim"</span>, <span class="string">"Marcus"</span>, <span class="string">"Alandra"</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetLinePosition"></a>
+    <strong>API.GetLinePosition (_Pos1, _Pos2, _Percentage)</strong>
+    </dt>
+    <dd>
+    Gib eine Position auf einer Linie im relativen Abstand zur ersten Position
+ zurück.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Pos1</span>
+               Erste Position
+        </li>
+        <li><span class="parameter">_Pos2</span>
+               Zweite Position
+        </li>
+        <li><span class="parameter">_Percentage</span>
+            <span class="types"><span class="type">number</span></span>
+         Entfernung zu Erster Position
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Position auf Linie
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Position = API.GetLinePosition(<span class="string">"HQ1"</span>, <span class="string">"HQ2"</span>, <span class="number">0.75</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetLinePositions"></a>
+    <strong>API.GetLinePositions (_Pos1, _Pos2, _Periode)</strong>
+    </dt>
+    <dd>
+    Gib Positionen im gleichen Abstand auf der Linie zurück.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Pos1</span>
+            Erste Position
+        </li>
+        <li><span class="parameter">_Pos2</span>
+            Zweite Position
+        </li>
+        <li><span class="parameter">_Periode</span>
+            <span class="types"><span class="type">number</span></span>
+         Anzahl an Positionen
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        Positionen auf Linie
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> PositionList = API.GetLinePositions(<span class="string">"HQ1"</span>, <span class="string">"HQ2"</span>, <span class="number">6</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.LookAt"></a>
+    <strong>API.LookAt (_Entity, _Target, _Offset)</strong>
+    </dt>
+    <dd>
+    Rotiert ein Entity, sodass es zum Ziel schaut.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+              Entity (Skriptname oder ID)
+        </li>
+        <li><span class="parameter">_Target</span>
+              Ziel (Skriptname, ID oder Position)
+        </li>
+        <li><span class="parameter">_Offset</span>
+            <span class="types"><span class="type">number</span></span>
+         Winkel Offset
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.LookAt(<span class="string">"Hakim"</span>, <span class="string">"Alandra"</span>)</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Quest"></a>Quest</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.FailQuest"></a>
+    <strong>API.FailQuest (_QuestName, _NoMessage)</strong>
+    </dt>
+    <dd>
+    Lässt den Quest fehlschlagen.
+<p> Der Status wird auf Over und das Resultat auf Failure gesetzt.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_QuestName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name des Quest
+        </li>
+        <li><span class="parameter">_NoMessage</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Meldung nicht anzeigen
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.GetQuestID"></a>
+    <strong>API.GetQuestID (_Name)</strong>
+    </dt>
+    <dd>
+    Gibt die ID des Quests mit dem angegebenen Namen zurück.  Existiert der
+ Quest nicht, wird nil zurückgegeben.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name des Quest
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        ID des Quest
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.IsValidQuest"></a>
+    <strong>API.IsValidQuest (_QuestID)</strong>
+    </dt>
+    <dd>
+    Prüft, ob zu der angegebenen ID ein Quest existiert.  Wird ein Questname
+ angegeben wird dessen Quest-ID ermittelt und geprüft.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_QuestID</span>
+            <span class="types"><span class="type">number</span></span>
+         ID oder Name des Quest
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Quest existiert
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.IsValidQuestName"></a>
+    <strong>API.IsValidQuestName (_Name)</strong>
+    </dt>
+    <dd>
+    Prüft den angegebenen Questnamen auf verbotene Zeichen.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Name</span>
+            <span class="types"><span class="type">number</span></span>
+         Name des Quest
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Name ist gültig
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.RestartQuest"></a>
+    <strong>API.RestartQuest (_QuestName, _NoMessage)</strong>
+    </dt>
+    <dd>
+    Startet den Quest neu.
+<p> Der Quest muss beendet sein um ihn wieder neu zu starten. Wird ein Quest
+ neu gestartet, müssen auch alle Trigger wieder neu ausgelöst werden, außer
+ der Quest wird manuell getriggert.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_QuestName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name des Quest
+        </li>
+        <li><span class="parameter">_NoMessage</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Meldung nicht anzeigen
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.StartQuest"></a>
+    <strong>API.StartQuest (_QuestName, _NoMessage)</strong>
+    </dt>
+    <dd>
+    Startet den Quest sofort, sofern er existiert.
+<p> Dabei ist es unerheblich, ob die Bedingungen zum Start erfüllt sind.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_QuestName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name des Quest
+        </li>
+        <li><span class="parameter">_NoMessage</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Meldung nicht anzeigen
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.StopQuest"></a>
+    <strong>API.StopQuest (_QuestName, _NoMessage)</strong>
+    </dt>
+    <dd>
+    Unterbricht den Quest.
+<p> Der Status wird auf Over und das Resultat auf Interrupt gesetzt. Sind Marker
+ gesetzt, werden diese entfernt.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_QuestName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name des Quest
+        </li>
+        <li><span class="parameter">_NoMessage</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Meldung nicht anzeigen
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.WinQuest"></a>
+    <strong>API.WinQuest (_QuestName, _NoMessage)</strong>
+    </dt>
+    <dd>
+    Gewinnt den Quest.
+<p> Der Status wird auf Over und das Resultat auf Success gesetzt.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_QuestName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name des Quest
+        </li>
+        <li><span class="parameter">_NoMessage</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Meldung nicht anzeigen
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="ScriptingValue"></a>ScriptingValue</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.ConvertFloatToInteger"></a>
+    <strong>API.ConvertFloatToInteger (_Value)</strong>
+    </dt>
+    <dd>
+    Konvertirert den Wert in eine Gleitkommazahl.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Value</span>
+            <span class="types"><span class="type">number</span></span>
+         Gleitkommazahl
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Konvertierte Ganzzahl
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Converted = API.ConvertFloatToInteger(Value)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.ConvertIntegerToFloat"></a>
+    <strong>API.ConvertIntegerToFloat (_Value)</strong>
+    </dt>
+    <dd>
+    Konvertirert den Wert in eine Ganzzahl.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Value</span>
+            <span class="types"><span class="type">number</span></span>
+         Gleitkommazahl
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Konvertierte Ganzzahl
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Converted = API.ConvertIntegerToFloat(Value)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetFloat"></a>
+    <strong>API.GetFloat (_Entity, _SV)</strong>
+    </dt>
+    <dd>
+    Gibt den Wert auf dem übergebenen Index für das Entity zurück.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+            <span class="types"><span class="type">number</span></span>
+         Entity
+        </li>
+        <li><span class="parameter">_SV</span>
+            <span class="types"><span class="type">number</span></span>
+             Typ der Scripting Value
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Ermittelter Wert
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Size = API.GetFloat(<span class="string">"HansWurst"</span>, QSB.ScriptingValue.Size);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.GetInteger"></a>
+    <strong>API.GetInteger (_Entity, _SV)</strong>
+    </dt>
+    <dd>
+    Gibt den Wert auf dem übergebenen Index für das Entity zurück.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+            <span class="types"><span class="type">number</span></span>
+         Entity
+        </li>
+        <li><span class="parameter">_SV</span>
+            <span class="types"><span class="type">number</span></span>
+             Typ der Scripting Value
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Ermittelter Wert
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> PlayerID = API.GetInteger(<span class="string">"HansWurst"</span>, QSB.ScriptingValue.Player);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.SetFloat"></a>
+    <strong>API.SetFloat (_Entity, _SV, _Value)</strong>
+    </dt>
+    <dd>
+    Setzt den Wert auf dem übergebenen Index für das Entity.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+            <span class="types"><span class="type">number</span></span>
+         Entity
+        </li>
+        <li><span class="parameter">_SV</span>
+            <span class="types"><span class="type">number</span></span>
+             Typ der Scripting Value
+        </li>
+        <li><span class="parameter">_Value</span>
+            <span class="types"><span class="type">number</span></span>
+          Zu setzender Wert
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.SetFloat(<span class="string">"HansWurst"</span>, QSB.ScriptingValue.Size, <span class="number">1.5</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.SetInteger"></a>
+    <strong>API.SetInteger (_Entity, _SV, _Value)</strong>
+    </dt>
+    <dd>
+    Setzt den Wert auf dem übergebenen Index für das Entity.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_Entity</span>
+            <span class="types"><span class="type">number</span></span>
+         Entity
+        </li>
+        <li><span class="parameter">_SV</span>
+            <span class="types"><span class="type">number</span></span>
+             Typ der Scripting Value
+        </li>
+        <li><span class="parameter">_Value</span>
+            <span class="types"><span class="type">number</span></span>
+          Zu setzender Wert
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.SetInteger(<span class="string">"HansWurst"</span>, QSB.ScriptingValue.Player, <span class="number">2</span>);</pre>
+    </ul>
+
+</dd>
+</dl>
 
 
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-12-17 15:26:19 </i>
+<i style="float:right;">Last updated 2022-12-18 12:32:19 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 

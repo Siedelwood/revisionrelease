@@ -60,11 +60,11 @@ function ModuleKnightTitleRequirements.Global:OverrideKnightTitleChanged()
         GameCallback_KnightTitleChanged_Orig_QSB_Requirements(_PlayerID, _TitleID);
 
         -- Send event
+        API.SendScriptEvent(QSB.ScriptEvents.KnightTitleChanged, _PlayerID, _TitleID);
         Logic.ExecuteInLuaLocalState(string.format(
             [[API.SendScriptEvent(QSB.ScriptEvents.KnightTitleChanged, %d, %d)]],
             _PlayerID, _TitleID
         ));
-        API.SendScriptEvent(QSB.ScriptEvents.KnightTitleChanged, _PlayerID, _TitleID);
     end
 end
 
@@ -74,11 +74,11 @@ function ModuleKnightTitleRequirements.Global:OverwriteConsumedGoods()
         GameCallback_ConsumeGood_Orig_QSB_Requirements(_Consumer, _Good, _Building)
 
         -- Send event
+        API.SendScriptEvent(QSB.ScriptEvents.GoodsConsumed, _Consumer, _Good, _Building);
         Logic.ExecuteInLuaLocalState(string.format(
             [[API.SendScriptEvent(QSB.ScriptEvents.GoodsConsumed, %d, %d, %d)]],
             _Consumer, _Good, _Building
         ));
-        API.SendScriptEvent(QSB.ScriptEvents.GoodsConsumed, _Consumer, _Good, _Building);
     end
 end
 

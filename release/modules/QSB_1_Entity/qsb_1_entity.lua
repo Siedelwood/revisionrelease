@@ -215,10 +215,20 @@ function ModuleEntitySurveillance.Global:OverrideLogic()
     self.Logic_ChangeSettlerPlayerID = Logic.ChangeSettlerPlayerID;
     Logic.ChangeSettlerPlayerID = function(...)
         local OldID = {arg[1]};
-        OldID = Array_Append(OldID, API.GetGroupSoldiers(arg[1]));
         local OldPlayerID = Logic.EntityGetPlayer(arg[1]);
+        local OldSoldierTable = {Logic.GetSoldiersAttachedToLeader(arg[1])};
+        if OldSoldierTable[1] and OldSoldierTable[1] > 0 then
+            for i=2, OldSoldierTable[1]+1 do
+                table.insert(OldID, OldSoldierTable[i]);
+            end
+        end
         local NewID = {self.Logic_ChangeSettlerPlayerID(unpack(arg))};
-        NewID = Array_Append(NewID, API.GetGroupSoldiers(NewID[1]));
+        local NewSoldierTable = {Logic.GetSoldiersAttachedToLeader(NewID[1])};
+        if NewSoldierTable[1] and NewSoldierTable[1] > 0 then
+            for i=2, NewSoldierTable[1]+1 do
+                table.insert(NewID, NewSoldierTable[i]);
+            end
+        end
         local NewPlayerID = Logic.EntityGetPlayer(NewID[1]);
         ModuleEntitySurveillance.Global:TriggerEntityOnwershipChangedEvent(OldID, OldPlayerID, NewID, NewPlayerID);
         return NewID[1];
@@ -696,10 +706,6 @@ end
 -- den Typ schnell gehen, dauern Gebietssuchen lange! Es ist daher klug, zuerst
 -- Kriterien auszuschließen, die schnell bestimmt werden können!
 --
--- <h5>Multiplayer</h5>
--- Im Multiplayer kann diese Funktion nur in synchron
--- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
---
 -- @param[type=function] _Filter Funktion zur Filterung
 -- @return[type=table] Liste mit Ergebnissen
 -- @within Suche
@@ -737,7 +743,7 @@ function API.GetEntitiesOfCategoryInTerritory(_PlayerID, _Category, _Territory)
 end
 
 -- Compatibility option
--- Realy needed? Don't they throw the old version in the script anyway?
+-- FIXME: Realy needed? Don't they throw the old version in the script anyway?
 function API.GetEntitiesOfCategoriesInTerritories(_PlayerID, _Category, _Territory)
     local p = (type(_PlayerID) == "table" and _PlayerID) or {_PlayerID};
     local c = (type(_Category) == "table" and _Category) or {_Category};

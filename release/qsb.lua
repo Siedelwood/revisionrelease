@@ -809,7 +809,7 @@ end
 -- <b>Achtung</b>: Die Funktion Framework.RestartMap kann nicht mehr verwendet
 -- werden, da es sonst zu Fehlern mit dem Ladebildschirm kommt!
 --
--- @within Werkzeugkasten
+-- @within System
 --
 function API.RestartMap()
     Camera.RTS_FollowEntity(0);
@@ -826,7 +826,7 @@ end
 -- Option zum LAN-Spiel in der HE nicht verfügbar ist.
 --
 -- @return[type=boolean] Spiel ist History Edition
--- @within Multiplayer
+-- @within System
 --
 function API.IsHistoryEditionNetworkGame()
     return Revision.GameVersion == QSB.GameVersion.HISTORY_EDITION and Framework.IsNetworkGame();
@@ -2504,7 +2504,7 @@ end
 -- 
 -- @param[type=number]  _PlayerID   Spieler für den der Chat geöffnet wird
 -- @param[type=boolean] _AllowDebug Debug Eingaben werden bearbeitet
--- @within Chat
+-- @within System
 --
 function API.ShowTextInput(_PlayerID, _AllowDebug)
     Revision.Chat:ShowTextInput(_PlayerID, _AllowDebug);
@@ -3361,55 +3361,6 @@ function Revision.Utils:UpdateCustomVariable(_Name, _Value)
 end
 
 ---
--- Rundet eine Dezimalzahl kaufmännisch ab.
---
--- Zusätzlich können die Dezimalstellen beschränkt werden. Alle überschüssigen
--- Dezimalstellen werden abgeschnitten.
---
--- @param[type=string] _Value         Zu rundender Wert
--- @param[type=string] _DecimalDigits Maximale Dezimalstellen
--- @return[type=number] Abgerundete Zahl
--- @within Werkzeugkasten
---
-function API.Round(_Value, _DecimalDigits)
-    _DecimalDigits = _DecimalDigits or 2;
-    _DecimalDigits = (_DecimalDigits < 0 and 0) or _DecimalDigits;
-    local Value = tostring(_Value);
-    if tonumber(Value) == nil then
-        return 0;
-    end
-    local s,e = Value:find(".", 1, true);
-    if e then
-        local Overhead = nil;
-        if Value:len() > e + _DecimalDigits then
-            if _DecimalDigits > 0 then
-                local TmpNum;
-                if tonumber(Value:sub(e+_DecimalDigits+1, e+_DecimalDigits+1)) >= 5 then
-                    TmpNum = tonumber(Value:sub(e+1, e+_DecimalDigits)) +1;
-                    Overhead = (_DecimalDigits == 1 and TmpNum == 10);
-                else
-                    TmpNum = tonumber(Value:sub(e+1, e+_DecimalDigits));
-                end
-                Value = Value:sub(1, e-1);
-                if (tostring(TmpNum):len() >= _DecimalDigits) then
-                    Value = Value .. "." ..TmpNum;
-                end
-            else
-                local NewValue = tonumber(Value:sub(1, e-1));
-                if tonumber(Value:sub(e+_DecimalDigits+1, e+_DecimalDigits+1)) >= 5 then
-                    NewValue = NewValue +1;
-                end
-                Value = NewValue;
-            end
-        else
-            Value = (Overhead and (tonumber(Value) or 0) +1) or
-                     Value .. string.rep("0", Value:len() - (e + _DecimalDigits))
-        end
-    end
-    return tonumber(Value);
-end
-
----
 -- Speichert den Wert der Custom Variable im globalen und lokalen Skript.
 --
 -- Des weiteren wird in beiden Umgebungen ein Event ausgelöst, wenn der Wert
@@ -3418,7 +3369,7 @@ end
 --
 -- @param[type=boolean] _Name  Name der Custom Variable
 -- @param               _Value Neuer Wert
--- @within Werkzeugkasten
+-- @within System
 -- @local
 --
 -- @usage
@@ -3433,7 +3384,7 @@ end
 -- @param[type=boolean] _Name    Name der Custom Variable
 -- @param               _Default (Optional) Defaultwert falls leer
 -- @return Wert
--- @within Werkzeugkasten
+-- @within System
 -- @local
 --
 -- @usage
@@ -3464,7 +3415,7 @@ end
 -- @param[type=number] _Type     Neuer Typ
 -- @param[type=number] _NewOwner (optional) Neuer Besitzer
 -- @return[type=number] Entity-ID des Entity
--- @within Werkzeugkasten
+-- @within Entity
 -- @usage
 -- API.ReplaceEntity("Stein", Entities.XD_ScriptEntity)
 --
@@ -3488,42 +3439,11 @@ end
 ReplaceEntity = API.ReplaceEntity;
 
 ---
--- Gibt den Typen des Entity zurück.
---
--- @param _Entity Entity (Scriptname oder ID)
--- @return[type=number] Typ des Entity
--- @within Werkzeugkasten
---
-function API.GetEntityType(_Entity)
-    local EntityID = GetID(_Entity);
-    if EntityID > 0 then
-        return Logic.GetEntityType(EntityID);
-    end
-    error("API.EntityGetType: _Entity (" ..tostring(_Entity).. ") must be a leader with soldiers!");
-    return 0;
-end
-
----
--- Gibt den Typnamen des Entity zurück.
---
--- @param _Entity Entity (Scriptname oder ID)
--- @return[type=string] Typname des Entity
--- @within Werkzeugkasten
---
-function API.GetEntityTypeName(_Entity)
-    if not IsExisting(_Entity) then
-        error("API.GetEntityTypeName: _Entity (" ..tostring(_Entity).. ") does not exist!");
-        return;
-    end
-    return Logic.GetEntityTypeName(API.GetEntityType(_Entity));
-end
-
----
 -- Setzt das Entity oder das Battalion verwundbar oder unverwundbar.
 --
 -- @param               _Entity Entity (Scriptname oder ID)
 -- @param[type=boolean] _Flag Verwundbar
--- @within Werkzeugkasten
+-- @within Entity
 -- @local
 --
 function API.SetEntityVulnerableFlag(_Entity, _Flag)
@@ -3533,9 +3453,10 @@ function API.SetEntityVulnerableFlag(_Entity, _Flag)
     local EntityID = GetID(_Entity);
     local VulnerabilityFlag = (_Flag and 1) or 0;
     if EntityID > 0 then
-        if API.CountSoldiersOfGroup(EntityID) > 0 then
-            for k, v in pairs(API.GetGroupSoldiers(EntityID)) do
-                Logic.SetEntityInvulnerabilityFlag(v, VulnerabilityFlag);
+        local SoldierTable = {Logic.GetSoldiersAttachedToLeader(EntityID)};
+        if SoldierTable[1] and SoldierTable[1] > 0 then
+            for i= 2, SoldierTable[1]+1 do
+                Logic.SetEntityInvulnerabilityFlag(SoldierTable[i], VulnerabilityFlag);
             end
         end
         Logic.SetEntityInvulnerabilityFlag(EntityID, VulnerabilityFlag);
@@ -3561,7 +3482,7 @@ end
 -- @param[type=boolean] _IgnoreReservation (optional) Marktplatzreservation ignorieren
 -- @param[type=boolean] _Overtake          (optional) Mit Position austauschen
 -- @return[type=number] Entity-ID des erzeugten Wagens
--- @within Werkzeugkasten
+-- @within System
 -- @usage
 -- -- API-Call
 -- API.SendCart(Logic.GetStoreHouse(1), 2, Goods.G_Grain, 45)
@@ -3638,7 +3559,7 @@ end
 --
 -- @param _Entity Entity (Scriptname oder ID)
 -- @return[type=number] Aktuelle Gesundheit
--- @within Werkzeugkasten
+-- @within Entity
 --
 function API.GetEntityHealth(_Entity)
     local EntityID = GetID(_Entity);
@@ -3658,7 +3579,7 @@ end
 -- @param               _Entity   Entity (Scriptname oder ID)
 -- @param[type=number]  _Health   Neue aktuelle Gesundheit
 -- @param[type=boolean] _Relative (Optional) Relativ zur maximalen Gesundheit
--- @within Werkzeugkasten
+-- @within Entity
 --
 function API.ChangeEntityHealth(_Entity, _Health, _Relative)
     if GUI then
@@ -3673,8 +3594,9 @@ function API.ChangeEntityHealth(_Entity, _Health, _Relative)
         end
         _Health = (_Health > MaxHealth and MaxHealth) or _Health;
         if Logic.IsLeader(EntityID) == 1 then
-            for k, v in pairs(API.GetGroupSoldiers(EntityID)) do
-                API.ChangeEntityHealth(v, _Health, _Relative);
+            local SoldierTable = {Logic.GetSoldiersAttachedToLeader(EntityID)};
+            for i= 2, SoldierTable[1]+1 do
+                API.ChangeEntityHealth(SoldierTable[i], _Health, _Relative);
             end
         else
             local OldHealth = Logic.GetEntityHealth(EntityID);
@@ -3696,157 +3618,13 @@ function API.ChangeEntityHealth(_Entity, _Health, _Relative)
 end
 
 ---
--- Gibt alle Kategorien zurück, zu denen das Entity gehört.
---
--- @param              _Entity Entity (Skriptname oder ID)
--- @return[type=table] Kategorien des Entity
--- @within Werkzeugkasten
---
-function API.GetEntityCategoyList(_Entity)
-    local EntityID = GetID(_Entity);
-    if EntityID == 0 then
-        error("API.GetEntityCategoyList: _Entity (" ..tostring(_Entity).. ") does not exist!");
-        return {};
-    end
-    return API.GetEntityTypeCategoyList(Logic.GetEntityType(EntityID));
-end
-
----
--- Gibt alle Kategorien zurück, zu denen der Entity-Typ gehört.
---
--- @param              _Type Typ des Entity
--- @return[type=table] Kategorien des Entity
--- @within Werkzeugkasten
---
-function API.GetEntityTypeCategoyList(_Type)
-    local Categories = {};
-    for k, v in pairs(EntityCategories) do
-        if Logic.IsEntityTypeInCategory(_Type, v) == 1 then
-            Categories[#Categories+1] = v;
-        end
-    end
-    return Categories;
-end
-
----
--- Prüft, ob das Entity mindestens eine der Kategorien hat.
---
--- @param              _Entity Entity (Skriptname oder ID)
--- @param[type=number] ...     Liste mit Kategorien
--- @return[type=boolean] Entity hat Kategorie
--- @within Werkzeugkasten
---
-function API.IsEntityInAtLeastOneCategory(_Entity, ...)
-    local EntityID = GetID(_Entity);
-    if EntityID > 0 then
-        for k, v in pairs(arg) do
-            if table.contains(API.GetEntityCategoyList(_Entity), v) then
-                return true;
-            end
-        end
-        return;
-    end
-    error("API.IsEntityInAtLeastOneCategory: _Entity (" ..tostring(_Entity).. ") does not exist!");
-    return false;
-end
-
----
--- Gibt die aktuelle Tasklist des Entity zurück.
---
--- @param _Entity Entity (Scriptname oder ID)
--- @return[type=number] Tasklist
--- @within Werkzeugkasten
---
-function API.GetEntityTaskList(_Entity)
-    local EntityID = GetID(_Entity);
-    if EntityID == 0 then
-        error("API.GetEntityTaskList: _Entity (" ..tostring(_Entity).. ") does not exist!");
-        return 0;
-    end
-    local CurrentTask = Logic.GetCurrentTaskList(EntityID) or "";
-    return TaskLists[CurrentTask];
-end
-
----
--- Weist dem Entity ein Neues Model zu.
---
--- @param              _Entity  Entity (Scriptname oder ID)
--- @param[type=number] _NewModel Neues Model
--- @param[type=number] _AnimSet  (optional) Animation Set
--- @within Werkzeugkasten
---
-function API.SetEntityModel(_Entity, _NewModel, _AnimSet)
-    if GUI then
-        return;
-    end
-    local EntityID = GetID(_Entity);
-    if EntityID == 0 then
-        error("API.SetEntityModel: _Entity (" ..tostring(_Entity).. ") does not exist!");
-        return;
-    end
-    if type(_NewModel) ~= "number" or _NewModel < 1 then
-        error("API.SetEntityModel: _NewModel (" ..tostring(_NewModel).. ") is wrong!");
-        return;
-    end
-    if _AnimSet and (type(_AnimSet) ~= "number" or _AnimSet < 1) then
-        error("API.SetEntityModel: _AnimSet (" ..tostring(_AnimSet).. ") is wrong!");
-        return;
-    end
-    if not _AnimSet then
-        Logic.SetModel(EntityID, _NewModel);
-    else
-        Logic.SetModelAndAnimSet(EntityID, _NewModel, _AnimSet);
-    end
-end
-
----
--- Setzt die aktuelle Tasklist des Entity.
---
--- @param              _Entity  Entity (Scriptname oder ID)
--- @param[type=number] _NewTask Neuer Task
--- @within Werkzeugkasten
---
-function API.SetEntityTaskList(_Entity, _NewTask)
-    if GUI then
-        return;
-    end
-    local EntityID = GetID(_Entity);
-    if EntityID == 0 then
-        error("API.SetEntityTaskList: _Entity (" ..tostring(_Entity).. ") does not exist!");
-        return;
-    end
-    if type(_NewTask) ~= "number" or _NewTask < 1 then
-        error("API.SetEntityTaskList: _NewTask (" ..tostring(_NewTask).. ") is wrong!");
-        return;
-    end
-    Logic.SetTaskList(EntityID, _NewTask);
-end
-
----
--- Gibt die Menge an Rohstoffen des Entity zurück. Optional kann
--- eine neue Menge gesetzt werden.
---
--- @param _Entity  Entity (Scriptname oder ID)
--- @return[type=number] Menge an Rohstoffen
--- @within Werkzeugkasten
---
-function API.GetResourceAmount(_Entity)
-    local EntityID = GetID(_Entity);
-    if EntityID > 0 then
-        return Logic.GetResourceDoodadGoodAmount(EntityID);
-    end
-    error("API.GetResourceAmount: _Entity (" ..tostring(_Entity).. ") does not exist!");
-    return 0;
-end
-
----
 -- Setzt die Menge an Rohstoffen und die durchschnittliche Auffüllmenge
 -- in einer Mine.
 --
 -- @param              _Entity       Rohstoffvorkommen (Skriptname oder ID)
 -- @param[type=number] _StartAmount  Menge an Rohstoffen
 -- @param[type=number] _RefillAmount Minimale Nachfüllmenge (> 0)
--- @within Werkzeugkasten
+-- @within Entity
 --
 -- @usage
 -- API.SetResourceAmount("mine1", 250, 150);
@@ -3877,7 +3655,7 @@ end
 -- zurückgegeben.
 -- @param[type=number] _EntityID Entity ID
 -- @return[type=string] Skriptname
--- @within Werkzeugkasten
+-- @within System
 --
 function API.CreateEntityName(_EntityID)
     if type(_EntityID) == "string" then
@@ -3931,7 +3709,7 @@ QSB.PossibleSettlerTypes = {
 -- weiblich sein.
 --
 -- @return[type=number] Zufälliger Typ
--- @within Werkzeugkasten
+-- @within Entity
 -- @local
 --
 function API.GetRandomSettlerType()
@@ -3945,7 +3723,7 @@ end
 -- werden nur Stadtsiedler zurückgegeben.
 --
 -- @return[type=number] Zufälliger Typ
--- @within Werkzeugkasten
+-- @within Entity
 -- @local
 --
 function API.GetRandomMaleSettlerType()
@@ -3958,7 +3736,7 @@ end
 -- werden nur Stadtsiedler zurückgegeben.
 --
 -- @return[type=number] Zufälliger Typ
--- @within Werkzeugkasten
+-- @within Entity
 -- @local
 --
 function API.GetRandomFemaleSettlerType()
@@ -3967,51 +3745,12 @@ function API.GetRandomFemaleSettlerType()
 end
 
 ---
--- Gibt die Ausrichtung des Entity zurück.
---
--- @param               _Entity  Entity (Scriptname oder ID)
--- @return[type=number] Ausrichtung in Grad
--- @within Werkzeugkasten
---
-function API.GetEntityOrientation(_Entity)
-    local EntityID = GetID(_Entity);
-    if EntityID > 0 then
-        return API.Round(Logic.GetEntityOrientation(EntityID));
-    end
-    error("API.GetEntityOrientation: _Entity (" ..tostring(_Entity).. ") does not exist!");
-    return 0;
-end
-
----
--- Setzt die Ausrichtung des Entity.
---
--- @param               _Entity  Entity (Scriptname oder ID)
--- @param[type=number] _Orientation Neue Ausrichtung
--- @within Werkzeugkasten
---
-function API.SetEntityOrientation(_Entity, _Orientation)
-    if GUI then
-        return;
-    end
-    local EntityID = GetID(_Entity);
-    if EntityID > 0 then
-        if type(_Orientation) ~= "number" then
-            error("API.SetEntityOrientation: _Orientation is wrong!");
-            return
-        end
-        Logic.SetOrientation(EntityID, API.Round(_Orientation));
-    else
-        error("API.SetEntityOrientation: _Entity (" ..tostring(_Entity).. ") does not exist!");
-    end
-end
-
----
 -- Gibt das Entity aus der Liste zurück, welches dem Ziel am nähsten ist.
 --
 -- @param             _Target Entity oder Position
 -- @param[type=table] _List   Liste von Entities oder Positionen
 -- @return Nähste Entity oder Position
--- @within Werkzeugkasten
+-- @within Position
 -- @usage
 -- local Clostest = API.GetClosestToTarget("HQ1", {"Marcus", "Alandra", "Hakim"});
 --
@@ -4035,7 +3774,7 @@ end
 --
 -- @param _Entity Entity (Skriptname oder ID)
 -- @return[type=table] Positionstabelle {X= x, Y= y, Z= z}
--- @within Werkzeugkasten
+-- @within Position
 -- @usage
 -- local Position = API.GetPosition("Hans");
 --
@@ -4051,7 +3790,7 @@ function API.GetPosition(_Entity)
         return {X= 0, Y= 0, Z= 0};
     end
     local x, y, z = Logic.EntityGetPos(GetID(_Entity));
-    return {X= API.Round(x), Y= API.Round(y), Z= API.Round(y)};
+    return {X= x, Y= y, Z= y};
 end
 API.LocateEntity = API.GetPosition;
 GetPosition = API.GetPosition;
@@ -4061,7 +3800,7 @@ GetPosition = API.GetPosition;
 --
 -- @param _Entity Entity (Skriptname oder ID)
 -- @param _Target Ziel (Skriptname, ID oder Position)
--- @within Werkzeugkasten
+-- @within Position
 -- @usage
 -- API.SetPosition("Hans", "Horst");
 --
@@ -4100,7 +3839,7 @@ SetPosition = API.SetPosition;
 --
 -- @param[type=table] _pos Positionstable {X= x, Y= y}
 -- @return[type=boolean] Position ist valide
--- @within Werkzeugkasten
+-- @within Position
 --
 function API.IsValidPosition(_pos)
     if type(_pos) == "table" then
@@ -4129,7 +3868,7 @@ end
 -- @param _pos1 Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
 -- @param _pos2 Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
 -- @return[type=number] Entfernung zwischen den Punkten
--- @within Werkzeugkasten
+-- @within Math
 -- @usage
 -- local Distance = API.GetDistance("HQ1", Logic.GetKnightID(1))
 --
@@ -4156,7 +3895,7 @@ GetDistance = API.GetDistance;
 -- @param _Entity      Entity (Skriptname oder ID)
 -- @param _Target      Ziel (Skriptname, ID oder Position)
 -- @param[type=number] _Offset Winkel Offset
--- @within Werkzeugkasten
+-- @within Math
 -- @usage
 -- API.LookAt("Hakim", "Alandra")
 --
@@ -4209,7 +3948,7 @@ LookAt = API.LookAt;
 -- @param _Pos1 Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
 -- @param _Pos2 Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
 -- @return[type=number] Winkel zwischen den Punkten
--- @within Werkzeugkasten
+-- @within Math
 -- @usage
 -- local Angle = API.GetAngleBetween("HQ1", Logic.GetKnightID(1))
 --
@@ -4246,7 +3985,7 @@ end
 --
 -- @param ... Positionen mit Komma getrennt
 -- @return[type=table] Durchschnittsposition aller Positionen
--- @within Werkzeugkasten
+-- @within Math
 -- @usage
 -- local Center = API.GetGeometricFocus("Hakim", "Marcus", "Alandra");
 --
@@ -4277,7 +4016,7 @@ end
 -- @param               _Pos2       Zweite Position
 -- @param[type=number]  _Percentage Entfernung zu Erster Position
 -- @return[type=table] Position auf Linie
--- @within Werkzeugkasten
+-- @within Math
 -- @usage
 -- local Position = API.GetLinePosition("HQ1", "HQ2", 0.75);
 --
@@ -4316,7 +4055,7 @@ end
 -- @param               _Pos2    Zweite Position
 -- @param[type=number]  _Periode Anzahl an Positionen
 -- @return[type=table] Positionen auf Linie
--- @within Werkzeugkasten
+-- @within Math
 -- @usage
 -- local PositionList = API.GetLinePositions("HQ1", "HQ2", 6);
 --
@@ -4336,7 +4075,7 @@ end
 -- @param[type=number]  _Distance        Entfernung um das Zentrum
 -- @param[type=number]  _Angle           Winkel auf dem Kreis
 -- @return[type=table] Position auf Kreisbahn
--- @within Werkzeugkasten
+-- @within Math
 -- @usage
 -- local Position = API.GetCirclePosition("HQ1", 3000, -45);
 --
@@ -4371,12 +4110,12 @@ API.GetRelatiePos = API.GetCirclePosition;
 -- @param[type=number]  _Periode         Anzahl an Positionen
 -- @param[type=number]  _Offset          Start Offset
 -- @return[type=table] Positionend auf Kreisbahn
--- @within Werkzeugkasten
+-- @within Math
 -- @usage
 -- local PositionList = API.GetCirclePositions("Position", 3000, 6, 45);
 --
 function API.GetCirclePositions(_Target, _Distance, _Periode, _Offset)
-    local Periode = API.Round(360 / _Periode, 0);
+    local Periode = math.floor((360 / _Periode) + 0.5);
     local PositionList = {};
     for i= (Periode + _Offset), (360 + _Offset) do
         local Section = API.GetCirclePosition(_Target, _Distance, i);
@@ -4389,52 +4128,11 @@ end
 -- Group
 
 ---
--- Gibt die Mänge an Soldaten zurück, die dem Entity unterstehen
---
--- @param _Entity Entity (Skriptname oder ID)
--- @return[type=number] Menge an Soldaten
--- @within Werkzeugkasten
---
-function API.CountSoldiersOfGroup(_Entity)
-    local EntityID = GetID(_Entity);
-    if EntityID == 0 then
-        error("API.CountSoldiersOfGroup: _Entity (" ..tostring(_Entity).. ") does not exist!");
-        return 0;
-    end
-    if Logic.IsLeader(EntityID) == 0 then
-        return 0;
-    end
-    local SoldierTable = {Logic.GetSoldiersAttachedToLeader(EntityID)};
-    return SoldierTable[1];
-end
-
----
--- Gibt die IDs aller Soldaten zurück, die zum Battalion gehören.
---
--- @param _Entity Entity (Skriptname oder ID)
--- @return[type=table] Liste aller Soldaten
--- @within Werkzeugkasten
---
-function API.GetGroupSoldiers(_Entity)
-    local EntityID = GetID(_Entity);
-    if EntityID == 0 then
-        error("API.GetGroupSoldiers: _Entity (" ..tostring(_Entity).. ") does not exist!");
-        return {};
-    end
-    if Logic.IsLeader(EntityID) == 0 then
-        return {};
-    end
-    local SoldierTable = {Logic.GetSoldiersAttachedToLeader(EntityID)};
-    table.remove(SoldierTable, 1);
-    return SoldierTable;
-end
-
----
 -- Gibt den Leader des Soldaten zurück.
 --
 -- @param _Entity Entity (Skriptname oder ID)
 -- @return[type=number] Menge an Soldaten
--- @within Werkzeugkasten
+-- @within Entity
 --
 function API.GetGroupLeader(_Entity)
     local EntityID = GetID(_Entity);
@@ -4453,7 +4151,7 @@ end
 --
 -- @param               _Entity   Entity (Scriptname oder ID)
 -- @param[type=number]  _Amount   Geheilte Gesundheit
--- @within Werkzeugkasten
+-- @within Entity
 --
 function API.GroupHeal(_Entity, _Amount)
     if GUI then
@@ -4479,7 +4177,7 @@ end
 -- @param               _Entity   Entity (Scriptname oder ID)
 -- @param[type=number] _Damage   Schaden
 -- @param[type=string] _Attacker Angreifer
--- @within Werkzeugkasten
+-- @within Entity
 --
 function API.GroupHurt(_Entity, _Damage, _Attacker)
     if GUI then
@@ -4490,7 +4188,7 @@ function API.GroupHurt(_Entity, _Damage, _Attacker)
         error("API.GroupHurt: _Entity (" ..tostring(_Entity).. ") does not exist!");
         return;
     end
-    if API.IsEntityInAtLeastOneCategory(EntityID, EntityCategories.Soldier) then
+    if Logic.IsEntityInCategory(EntityID, EntityCategories.Soldier) == 1 then
         API.GroupHurt(API.GetGroupLeader(EntityID), _Damage);
         return;
     end
@@ -4498,7 +4196,10 @@ function API.GroupHurt(_Entity, _Damage, _Attacker)
     local EntityToHurt = EntityID;
     local IsLeader = Logic.IsLeader(EntityToHurt) == 1;
     if IsLeader then
-        EntityToHurt = API.GetGroupSoldiers(EntityToHurt)[1];
+        local SoldierTable = {Logic.GetSoldiersAttachedToLeader(EntityID)};
+        if SoldierTable[1] > 0 then
+            EntityToHurt = SoldierTable[2];
+        end
     end
     if type(_Damage) ~= "number" or _Damage < 0 then
         error("API.GroupHurt: _Damage (" ..tostring(_Damage).. ") must be greater than 0!");
@@ -4529,7 +4230,7 @@ end
 --
 -- @param[type=string] _ScriptName Skriptname des Objektes
 -- @param[type=number] _State      State des Objektes
--- @within Werkzeugkasten
+-- @within Entity
 --
 function API.InteractiveObjectActivate(_ScriptName, _State)
     _State = _State or 0;
@@ -4546,7 +4247,7 @@ InteractiveObjectActivate = API.InteractiveObjectActivate;
 -- Deaktiviert ein interaktives Objekt.
 --
 -- @param[type=string] _ScriptName Scriptname des Objektes
--- @within Werkzeugkasten
+-- @within Entity
 --
 function API.InteractiveObjectDeactivate(_ScriptName)
     if GUI or not IsExisting(_ScriptName) then
@@ -5101,7 +4802,7 @@ end
 -- @param[type=boolean] _TraceQuests      Quest Trace an/aus
 -- @param[type=boolean] _DevelopingCheats Cheats an/aus
 -- @param[type=boolean] _DevelopingShell  Eingabeaufforderung an/aus
--- @within Debug
+-- @within System
 --
 function API.ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)
     Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell);
@@ -5393,12 +5094,6 @@ You may use and modify this file unter the terms of the MIT licence.
 Revision.Behavior = {
     QuestCounter = 0,
     Text = {
-        -- FIXME: Remove
-        DestroySoldiers = {
-            de = "{center}SOLDATEN ZERSTÖREN {cr}{cr}von der Partei: %s{cr}{cr}Anzahl: %d",
-            en = "{center}DESTROY SOLDIERS {cr}{cr}from faction: %s{cr}{cr}Amount: %d",
-            fr = "{center}DESTRUCTION DE SOLDATS {cr}{cr}De la faction : %s{cr}{cr}Nombre : %d",
-        },
         ActivateBuff = {
             Pattern = {
                 de = "BONUS AKTIVIEREN{cr}{cr}%s",
@@ -5797,7 +5492,7 @@ function B_Goal_Diplomacy:ChangeCaption(_Quest)
         Revision:Localize(self.DiploNameMap[self.DiplState]),
         PlayerName
     );
-    Revision:ChangeCustomQuestCaptionText(Text, _Quest);
+    Revision.Quest:ChangeCustomQuestCaptionText(Text, _Quest);
 end
 
 function B_Goal_Diplomacy:CustomFunction(_Quest)
@@ -6621,7 +6316,7 @@ function B_Goal_ActivateBuff:CustomFunction(_Quest)
         if g_GameExtraNo >= 1 then
             tMapping = Revision.LuaBase:CopyTable(Revision.Behavior.Text.ActivateBuff.BuffsEx1, tMapping);
         end
-        Revision:ChangeCustomQuestCaptionText(
+        Revision.Quest:ChangeCustomQuestCaptionText(
             string.format(
                 Revision:Localize(Revision.Behavior.Text.ActivateBuff.Pattern),
                 Revision:Localize(tMapping[self.BuffName])
@@ -7338,7 +7033,7 @@ function B_Goal_SoldierCount:CustomFunction(_Quest)
     if not _Quest.QuestDescription or _Quest.QuestDescription == "" then
         local Relation = tostring(self.bRelSmallerThan);
         local PlayerName = GetPlayerName(self.PlayerID) or "";
-        Revision:ChangeCustomQuestCaptionText(
+        Revision.Quest:ChangeCustomQuestCaptionText(
             string.format(
                 Revision:Localize(Revision.Behavior.Text.SoldierCount.Pattern),
                 PlayerName,
@@ -7523,7 +7218,7 @@ end
 function B_Goal_Festivals:CustomFunction(_Quest)
     if not _Quest.QuestDescription or _Quest.QuestDescription == "" then
         local PlayerName = GetPlayerName(self.PlayerID) or "";
-        Revision:ChangeCustomQuestCaptionText(
+        Revision.Quest:ChangeCustomQuestCaptionText(
             string.format(
                 Revision:Localize(Revision.Behavior.Text.Festivals.Pattern),
                 PlayerName, self.NeededFestivals
@@ -10784,7 +10479,7 @@ function B_Reward_CreateEntity:CustomFunction(_Quest)
     if Logic.IsEntityTypeInCategory( self.UnitKey, EntityCategories.Soldier ) == 1 then
         NewID     = Logic.CreateBattalionOnUnblockedLand( Entities[self.UnitKey], pos.X, pos.Y, self.Orientation, self.PlayerID, 1 )
         local l,s = Logic.GetSoldiersAttachedToLeader(NewID)
-        Logic.SetOrientation(s, API.Round(self.Orientation))
+        Logic.SetOrientation(s, math.floor(self.Orientation + 0.5))
     else
         NewID = Logic.CreateEntityOnUnblockedLand( Entities[self.UnitKey], pos.X, pos.Y, self.Orientation, self.PlayerID )
     end
@@ -10921,7 +10616,7 @@ function B_Reward_CreateSeveralEntities:CustomFunction(_Quest)
         if Logic.IsEntityTypeInCategory( self.UnitKey, EntityCategories.Soldier ) == 1 then
             NewID     = Logic.CreateBattalionOnUnblockedLand( Entities[self.UnitKey], pos.X, pos.Y, self.Orientation, self.PlayerID, 1 )
             local l,s = Logic.GetSoldiersAttachedToLeader(NewID)
-            Logic.SetOrientation(s, API.Round(self.Orientation))
+            Logic.SetOrientation(s, math.floor(self.Orientation + 0.5))
         else
             NewID = Logic.CreateEntityOnUnblockedLand( Entities[self.UnitKey], pos.X, pos.Y, self.Orientation, self.PlayerID )
         end

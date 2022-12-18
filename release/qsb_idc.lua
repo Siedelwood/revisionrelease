@@ -809,7 +809,7 @@ end
 -- <b>Achtung</b>: Die Funktion Framework.RestartMap kann nicht mehr verwendet
 -- werden, da es sonst zu Fehlern mit dem Ladebildschirm kommt!
 --
--- @within Werkzeugkasten
+-- @within System
 --
 function API.RestartMap()
     Camera.RTS_FollowEntity(0);
@@ -826,7 +826,7 @@ end
 -- Option zum LAN-Spiel in der HE nicht verfügbar ist.
 --
 -- @return[type=boolean] Spiel ist History Edition
--- @within Multiplayer
+-- @within System
 --
 function API.IsHistoryEditionNetworkGame()
     return Revision.GameVersion == QSB.GameVersion.HISTORY_EDITION and Framework.IsNetworkGame();
@@ -2504,7 +2504,7 @@ end
 -- 
 -- @param[type=number]  _PlayerID   Spieler für den der Chat geöffnet wird
 -- @param[type=boolean] _AllowDebug Debug Eingaben werden bearbeitet
--- @within Chat
+-- @within System
 --
 function API.ShowTextInput(_PlayerID, _AllowDebug)
     Revision.Chat:ShowTextInput(_PlayerID, _AllowDebug);
@@ -3361,55 +3361,6 @@ function Revision.Utils:UpdateCustomVariable(_Name, _Value)
 end
 
 ---
--- Rundet eine Dezimalzahl kaufmännisch ab.
---
--- Zusätzlich können die Dezimalstellen beschränkt werden. Alle überschüssigen
--- Dezimalstellen werden abgeschnitten.
---
--- @param[type=string] _Value         Zu rundender Wert
--- @param[type=string] _DecimalDigits Maximale Dezimalstellen
--- @return[type=number] Abgerundete Zahl
--- @within Werkzeugkasten
---
-function API.Round(_Value, _DecimalDigits)
-    _DecimalDigits = _DecimalDigits or 2;
-    _DecimalDigits = (_DecimalDigits < 0 and 0) or _DecimalDigits;
-    local Value = tostring(_Value);
-    if tonumber(Value) == nil then
-        return 0;
-    end
-    local s,e = Value:find(".", 1, true);
-    if e then
-        local Overhead = nil;
-        if Value:len() > e + _DecimalDigits then
-            if _DecimalDigits > 0 then
-                local TmpNum;
-                if tonumber(Value:sub(e+_DecimalDigits+1, e+_DecimalDigits+1)) >= 5 then
-                    TmpNum = tonumber(Value:sub(e+1, e+_DecimalDigits)) +1;
-                    Overhead = (_DecimalDigits == 1 and TmpNum == 10);
-                else
-                    TmpNum = tonumber(Value:sub(e+1, e+_DecimalDigits));
-                end
-                Value = Value:sub(1, e-1);
-                if (tostring(TmpNum):len() >= _DecimalDigits) then
-                    Value = Value .. "." ..TmpNum;
-                end
-            else
-                local NewValue = tonumber(Value:sub(1, e-1));
-                if tonumber(Value:sub(e+_DecimalDigits+1, e+_DecimalDigits+1)) >= 5 then
-                    NewValue = NewValue +1;
-                end
-                Value = NewValue;
-            end
-        else
-            Value = (Overhead and (tonumber(Value) or 0) +1) or
-                     Value .. string.rep("0", Value:len() - (e + _DecimalDigits))
-        end
-    end
-    return tonumber(Value);
-end
-
----
 -- Speichert den Wert der Custom Variable im globalen und lokalen Skript.
 --
 -- Des weiteren wird in beiden Umgebungen ein Event ausgelöst, wenn der Wert
@@ -3418,7 +3369,7 @@ end
 --
 -- @param[type=boolean] _Name  Name der Custom Variable
 -- @param               _Value Neuer Wert
--- @within Werkzeugkasten
+-- @within System
 -- @local
 --
 -- @usage
@@ -3433,7 +3384,7 @@ end
 -- @param[type=boolean] _Name    Name der Custom Variable
 -- @param               _Default (Optional) Defaultwert falls leer
 -- @return Wert
--- @within Werkzeugkasten
+-- @within System
 -- @local
 --
 -- @usage
@@ -3464,7 +3415,7 @@ end
 -- @param[type=number] _Type     Neuer Typ
 -- @param[type=number] _NewOwner (optional) Neuer Besitzer
 -- @return[type=number] Entity-ID des Entity
--- @within Werkzeugkasten
+-- @within Entity
 -- @usage
 -- API.ReplaceEntity("Stein", Entities.XD_ScriptEntity)
 --
@@ -3488,42 +3439,11 @@ end
 ReplaceEntity = API.ReplaceEntity;
 
 ---
--- Gibt den Typen des Entity zurück.
---
--- @param _Entity Entity (Scriptname oder ID)
--- @return[type=number] Typ des Entity
--- @within Werkzeugkasten
---
-function API.GetEntityType(_Entity)
-    local EntityID = GetID(_Entity);
-    if EntityID > 0 then
-        return Logic.GetEntityType(EntityID);
-    end
-    error("API.EntityGetType: _Entity (" ..tostring(_Entity).. ") must be a leader with soldiers!");
-    return 0;
-end
-
----
--- Gibt den Typnamen des Entity zurück.
---
--- @param _Entity Entity (Scriptname oder ID)
--- @return[type=string] Typname des Entity
--- @within Werkzeugkasten
---
-function API.GetEntityTypeName(_Entity)
-    if not IsExisting(_Entity) then
-        error("API.GetEntityTypeName: _Entity (" ..tostring(_Entity).. ") does not exist!");
-        return;
-    end
-    return Logic.GetEntityTypeName(API.GetEntityType(_Entity));
-end
-
----
 -- Setzt das Entity oder das Battalion verwundbar oder unverwundbar.
 --
 -- @param               _Entity Entity (Scriptname oder ID)
 -- @param[type=boolean] _Flag Verwundbar
--- @within Werkzeugkasten
+-- @within Entity
 -- @local
 --
 function API.SetEntityVulnerableFlag(_Entity, _Flag)
@@ -3533,9 +3453,10 @@ function API.SetEntityVulnerableFlag(_Entity, _Flag)
     local EntityID = GetID(_Entity);
     local VulnerabilityFlag = (_Flag and 1) or 0;
     if EntityID > 0 then
-        if API.CountSoldiersOfGroup(EntityID) > 0 then
-            for k, v in pairs(API.GetGroupSoldiers(EntityID)) do
-                Logic.SetEntityInvulnerabilityFlag(v, VulnerabilityFlag);
+        local SoldierTable = {Logic.GetSoldiersAttachedToLeader(EntityID)};
+        if SoldierTable[1] and SoldierTable[1] > 0 then
+            for i= 2, SoldierTable[1]+1 do
+                Logic.SetEntityInvulnerabilityFlag(SoldierTable[i], VulnerabilityFlag);
             end
         end
         Logic.SetEntityInvulnerabilityFlag(EntityID, VulnerabilityFlag);
@@ -3561,7 +3482,7 @@ end
 -- @param[type=boolean] _IgnoreReservation (optional) Marktplatzreservation ignorieren
 -- @param[type=boolean] _Overtake          (optional) Mit Position austauschen
 -- @return[type=number] Entity-ID des erzeugten Wagens
--- @within Werkzeugkasten
+-- @within System
 -- @usage
 -- -- API-Call
 -- API.SendCart(Logic.GetStoreHouse(1), 2, Goods.G_Grain, 45)
@@ -3638,7 +3559,7 @@ end
 --
 -- @param _Entity Entity (Scriptname oder ID)
 -- @return[type=number] Aktuelle Gesundheit
--- @within Werkzeugkasten
+-- @within Entity
 --
 function API.GetEntityHealth(_Entity)
     local EntityID = GetID(_Entity);
@@ -3658,7 +3579,7 @@ end
 -- @param               _Entity   Entity (Scriptname oder ID)
 -- @param[type=number]  _Health   Neue aktuelle Gesundheit
 -- @param[type=boolean] _Relative (Optional) Relativ zur maximalen Gesundheit
--- @within Werkzeugkasten
+-- @within Entity
 --
 function API.ChangeEntityHealth(_Entity, _Health, _Relative)
     if GUI then
@@ -3673,8 +3594,9 @@ function API.ChangeEntityHealth(_Entity, _Health, _Relative)
         end
         _Health = (_Health > MaxHealth and MaxHealth) or _Health;
         if Logic.IsLeader(EntityID) == 1 then
-            for k, v in pairs(API.GetGroupSoldiers(EntityID)) do
-                API.ChangeEntityHealth(v, _Health, _Relative);
+            local SoldierTable = {Logic.GetSoldiersAttachedToLeader(EntityID)};
+            for i= 2, SoldierTable[1]+1 do
+                API.ChangeEntityHealth(SoldierTable[i], _Health, _Relative);
             end
         else
             local OldHealth = Logic.GetEntityHealth(EntityID);
@@ -3696,157 +3618,13 @@ function API.ChangeEntityHealth(_Entity, _Health, _Relative)
 end
 
 ---
--- Gibt alle Kategorien zurück, zu denen das Entity gehört.
---
--- @param              _Entity Entity (Skriptname oder ID)
--- @return[type=table] Kategorien des Entity
--- @within Werkzeugkasten
---
-function API.GetEntityCategoyList(_Entity)
-    local EntityID = GetID(_Entity);
-    if EntityID == 0 then
-        error("API.GetEntityCategoyList: _Entity (" ..tostring(_Entity).. ") does not exist!");
-        return {};
-    end
-    return API.GetEntityTypeCategoyList(Logic.GetEntityType(EntityID));
-end
-
----
--- Gibt alle Kategorien zurück, zu denen der Entity-Typ gehört.
---
--- @param              _Type Typ des Entity
--- @return[type=table] Kategorien des Entity
--- @within Werkzeugkasten
---
-function API.GetEntityTypeCategoyList(_Type)
-    local Categories = {};
-    for k, v in pairs(EntityCategories) do
-        if Logic.IsEntityTypeInCategory(_Type, v) == 1 then
-            Categories[#Categories+1] = v;
-        end
-    end
-    return Categories;
-end
-
----
--- Prüft, ob das Entity mindestens eine der Kategorien hat.
---
--- @param              _Entity Entity (Skriptname oder ID)
--- @param[type=number] ...     Liste mit Kategorien
--- @return[type=boolean] Entity hat Kategorie
--- @within Werkzeugkasten
---
-function API.IsEntityInAtLeastOneCategory(_Entity, ...)
-    local EntityID = GetID(_Entity);
-    if EntityID > 0 then
-        for k, v in pairs(arg) do
-            if table.contains(API.GetEntityCategoyList(_Entity), v) then
-                return true;
-            end
-        end
-        return;
-    end
-    error("API.IsEntityInAtLeastOneCategory: _Entity (" ..tostring(_Entity).. ") does not exist!");
-    return false;
-end
-
----
--- Gibt die aktuelle Tasklist des Entity zurück.
---
--- @param _Entity Entity (Scriptname oder ID)
--- @return[type=number] Tasklist
--- @within Werkzeugkasten
---
-function API.GetEntityTaskList(_Entity)
-    local EntityID = GetID(_Entity);
-    if EntityID == 0 then
-        error("API.GetEntityTaskList: _Entity (" ..tostring(_Entity).. ") does not exist!");
-        return 0;
-    end
-    local CurrentTask = Logic.GetCurrentTaskList(EntityID) or "";
-    return TaskLists[CurrentTask];
-end
-
----
--- Weist dem Entity ein Neues Model zu.
---
--- @param              _Entity  Entity (Scriptname oder ID)
--- @param[type=number] _NewModel Neues Model
--- @param[type=number] _AnimSet  (optional) Animation Set
--- @within Werkzeugkasten
---
-function API.SetEntityModel(_Entity, _NewModel, _AnimSet)
-    if GUI then
-        return;
-    end
-    local EntityID = GetID(_Entity);
-    if EntityID == 0 then
-        error("API.SetEntityModel: _Entity (" ..tostring(_Entity).. ") does not exist!");
-        return;
-    end
-    if type(_NewModel) ~= "number" or _NewModel < 1 then
-        error("API.SetEntityModel: _NewModel (" ..tostring(_NewModel).. ") is wrong!");
-        return;
-    end
-    if _AnimSet and (type(_AnimSet) ~= "number" or _AnimSet < 1) then
-        error("API.SetEntityModel: _AnimSet (" ..tostring(_AnimSet).. ") is wrong!");
-        return;
-    end
-    if not _AnimSet then
-        Logic.SetModel(EntityID, _NewModel);
-    else
-        Logic.SetModelAndAnimSet(EntityID, _NewModel, _AnimSet);
-    end
-end
-
----
--- Setzt die aktuelle Tasklist des Entity.
---
--- @param              _Entity  Entity (Scriptname oder ID)
--- @param[type=number] _NewTask Neuer Task
--- @within Werkzeugkasten
---
-function API.SetEntityTaskList(_Entity, _NewTask)
-    if GUI then
-        return;
-    end
-    local EntityID = GetID(_Entity);
-    if EntityID == 0 then
-        error("API.SetEntityTaskList: _Entity (" ..tostring(_Entity).. ") does not exist!");
-        return;
-    end
-    if type(_NewTask) ~= "number" or _NewTask < 1 then
-        error("API.SetEntityTaskList: _NewTask (" ..tostring(_NewTask).. ") is wrong!");
-        return;
-    end
-    Logic.SetTaskList(EntityID, _NewTask);
-end
-
----
--- Gibt die Menge an Rohstoffen des Entity zurück. Optional kann
--- eine neue Menge gesetzt werden.
---
--- @param _Entity  Entity (Scriptname oder ID)
--- @return[type=number] Menge an Rohstoffen
--- @within Werkzeugkasten
---
-function API.GetResourceAmount(_Entity)
-    local EntityID = GetID(_Entity);
-    if EntityID > 0 then
-        return Logic.GetResourceDoodadGoodAmount(EntityID);
-    end
-    error("API.GetResourceAmount: _Entity (" ..tostring(_Entity).. ") does not exist!");
-    return 0;
-end
-
----
 -- Setzt die Menge an Rohstoffen und die durchschnittliche Auffüllmenge
 -- in einer Mine.
 --
 -- @param              _Entity       Rohstoffvorkommen (Skriptname oder ID)
 -- @param[type=number] _StartAmount  Menge an Rohstoffen
 -- @param[type=number] _RefillAmount Minimale Nachfüllmenge (> 0)
--- @within Werkzeugkasten
+-- @within Entity
 --
 -- @usage
 -- API.SetResourceAmount("mine1", 250, 150);
@@ -3877,7 +3655,7 @@ end
 -- zurückgegeben.
 -- @param[type=number] _EntityID Entity ID
 -- @return[type=string] Skriptname
--- @within Werkzeugkasten
+-- @within System
 --
 function API.CreateEntityName(_EntityID)
     if type(_EntityID) == "string" then
@@ -3931,7 +3709,7 @@ QSB.PossibleSettlerTypes = {
 -- weiblich sein.
 --
 -- @return[type=number] Zufälliger Typ
--- @within Werkzeugkasten
+-- @within Entity
 -- @local
 --
 function API.GetRandomSettlerType()
@@ -3945,7 +3723,7 @@ end
 -- werden nur Stadtsiedler zurückgegeben.
 --
 -- @return[type=number] Zufälliger Typ
--- @within Werkzeugkasten
+-- @within Entity
 -- @local
 --
 function API.GetRandomMaleSettlerType()
@@ -3958,7 +3736,7 @@ end
 -- werden nur Stadtsiedler zurückgegeben.
 --
 -- @return[type=number] Zufälliger Typ
--- @within Werkzeugkasten
+-- @within Entity
 -- @local
 --
 function API.GetRandomFemaleSettlerType()
@@ -3967,51 +3745,12 @@ function API.GetRandomFemaleSettlerType()
 end
 
 ---
--- Gibt die Ausrichtung des Entity zurück.
---
--- @param               _Entity  Entity (Scriptname oder ID)
--- @return[type=number] Ausrichtung in Grad
--- @within Werkzeugkasten
---
-function API.GetEntityOrientation(_Entity)
-    local EntityID = GetID(_Entity);
-    if EntityID > 0 then
-        return API.Round(Logic.GetEntityOrientation(EntityID));
-    end
-    error("API.GetEntityOrientation: _Entity (" ..tostring(_Entity).. ") does not exist!");
-    return 0;
-end
-
----
--- Setzt die Ausrichtung des Entity.
---
--- @param               _Entity  Entity (Scriptname oder ID)
--- @param[type=number] _Orientation Neue Ausrichtung
--- @within Werkzeugkasten
---
-function API.SetEntityOrientation(_Entity, _Orientation)
-    if GUI then
-        return;
-    end
-    local EntityID = GetID(_Entity);
-    if EntityID > 0 then
-        if type(_Orientation) ~= "number" then
-            error("API.SetEntityOrientation: _Orientation is wrong!");
-            return
-        end
-        Logic.SetOrientation(EntityID, API.Round(_Orientation));
-    else
-        error("API.SetEntityOrientation: _Entity (" ..tostring(_Entity).. ") does not exist!");
-    end
-end
-
----
 -- Gibt das Entity aus der Liste zurück, welches dem Ziel am nähsten ist.
 --
 -- @param             _Target Entity oder Position
 -- @param[type=table] _List   Liste von Entities oder Positionen
 -- @return Nähste Entity oder Position
--- @within Werkzeugkasten
+-- @within Position
 -- @usage
 -- local Clostest = API.GetClosestToTarget("HQ1", {"Marcus", "Alandra", "Hakim"});
 --
@@ -4035,7 +3774,7 @@ end
 --
 -- @param _Entity Entity (Skriptname oder ID)
 -- @return[type=table] Positionstabelle {X= x, Y= y, Z= z}
--- @within Werkzeugkasten
+-- @within Position
 -- @usage
 -- local Position = API.GetPosition("Hans");
 --
@@ -4051,7 +3790,7 @@ function API.GetPosition(_Entity)
         return {X= 0, Y= 0, Z= 0};
     end
     local x, y, z = Logic.EntityGetPos(GetID(_Entity));
-    return {X= API.Round(x), Y= API.Round(y), Z= API.Round(y)};
+    return {X= x, Y= y, Z= y};
 end
 API.LocateEntity = API.GetPosition;
 GetPosition = API.GetPosition;
@@ -4061,7 +3800,7 @@ GetPosition = API.GetPosition;
 --
 -- @param _Entity Entity (Skriptname oder ID)
 -- @param _Target Ziel (Skriptname, ID oder Position)
--- @within Werkzeugkasten
+-- @within Position
 -- @usage
 -- API.SetPosition("Hans", "Horst");
 --
@@ -4100,7 +3839,7 @@ SetPosition = API.SetPosition;
 --
 -- @param[type=table] _pos Positionstable {X= x, Y= y}
 -- @return[type=boolean] Position ist valide
--- @within Werkzeugkasten
+-- @within Position
 --
 function API.IsValidPosition(_pos)
     if type(_pos) == "table" then
@@ -4129,7 +3868,7 @@ end
 -- @param _pos1 Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
 -- @param _pos2 Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
 -- @return[type=number] Entfernung zwischen den Punkten
--- @within Werkzeugkasten
+-- @within Math
 -- @usage
 -- local Distance = API.GetDistance("HQ1", Logic.GetKnightID(1))
 --
@@ -4156,7 +3895,7 @@ GetDistance = API.GetDistance;
 -- @param _Entity      Entity (Skriptname oder ID)
 -- @param _Target      Ziel (Skriptname, ID oder Position)
 -- @param[type=number] _Offset Winkel Offset
--- @within Werkzeugkasten
+-- @within Math
 -- @usage
 -- API.LookAt("Hakim", "Alandra")
 --
@@ -4209,7 +3948,7 @@ LookAt = API.LookAt;
 -- @param _Pos1 Erste Vergleichsposition (Skriptname, ID oder Positions-Table)
 -- @param _Pos2 Zweite Vergleichsposition (Skriptname, ID oder Positions-Table)
 -- @return[type=number] Winkel zwischen den Punkten
--- @within Werkzeugkasten
+-- @within Math
 -- @usage
 -- local Angle = API.GetAngleBetween("HQ1", Logic.GetKnightID(1))
 --
@@ -4246,7 +3985,7 @@ end
 --
 -- @param ... Positionen mit Komma getrennt
 -- @return[type=table] Durchschnittsposition aller Positionen
--- @within Werkzeugkasten
+-- @within Math
 -- @usage
 -- local Center = API.GetGeometricFocus("Hakim", "Marcus", "Alandra");
 --
@@ -4277,7 +4016,7 @@ end
 -- @param               _Pos2       Zweite Position
 -- @param[type=number]  _Percentage Entfernung zu Erster Position
 -- @return[type=table] Position auf Linie
--- @within Werkzeugkasten
+-- @within Math
 -- @usage
 -- local Position = API.GetLinePosition("HQ1", "HQ2", 0.75);
 --
@@ -4316,7 +4055,7 @@ end
 -- @param               _Pos2    Zweite Position
 -- @param[type=number]  _Periode Anzahl an Positionen
 -- @return[type=table] Positionen auf Linie
--- @within Werkzeugkasten
+-- @within Math
 -- @usage
 -- local PositionList = API.GetLinePositions("HQ1", "HQ2", 6);
 --
@@ -4336,7 +4075,7 @@ end
 -- @param[type=number]  _Distance        Entfernung um das Zentrum
 -- @param[type=number]  _Angle           Winkel auf dem Kreis
 -- @return[type=table] Position auf Kreisbahn
--- @within Werkzeugkasten
+-- @within Math
 -- @usage
 -- local Position = API.GetCirclePosition("HQ1", 3000, -45);
 --
@@ -4371,12 +4110,12 @@ API.GetRelatiePos = API.GetCirclePosition;
 -- @param[type=number]  _Periode         Anzahl an Positionen
 -- @param[type=number]  _Offset          Start Offset
 -- @return[type=table] Positionend auf Kreisbahn
--- @within Werkzeugkasten
+-- @within Math
 -- @usage
 -- local PositionList = API.GetCirclePositions("Position", 3000, 6, 45);
 --
 function API.GetCirclePositions(_Target, _Distance, _Periode, _Offset)
-    local Periode = API.Round(360 / _Periode, 0);
+    local Periode = math.floor((360 / _Periode) + 0.5);
     local PositionList = {};
     for i= (Periode + _Offset), (360 + _Offset) do
         local Section = API.GetCirclePosition(_Target, _Distance, i);
@@ -4389,52 +4128,11 @@ end
 -- Group
 
 ---
--- Gibt die Mänge an Soldaten zurück, die dem Entity unterstehen
---
--- @param _Entity Entity (Skriptname oder ID)
--- @return[type=number] Menge an Soldaten
--- @within Werkzeugkasten
---
-function API.CountSoldiersOfGroup(_Entity)
-    local EntityID = GetID(_Entity);
-    if EntityID == 0 then
-        error("API.CountSoldiersOfGroup: _Entity (" ..tostring(_Entity).. ") does not exist!");
-        return 0;
-    end
-    if Logic.IsLeader(EntityID) == 0 then
-        return 0;
-    end
-    local SoldierTable = {Logic.GetSoldiersAttachedToLeader(EntityID)};
-    return SoldierTable[1];
-end
-
----
--- Gibt die IDs aller Soldaten zurück, die zum Battalion gehören.
---
--- @param _Entity Entity (Skriptname oder ID)
--- @return[type=table] Liste aller Soldaten
--- @within Werkzeugkasten
---
-function API.GetGroupSoldiers(_Entity)
-    local EntityID = GetID(_Entity);
-    if EntityID == 0 then
-        error("API.GetGroupSoldiers: _Entity (" ..tostring(_Entity).. ") does not exist!");
-        return {};
-    end
-    if Logic.IsLeader(EntityID) == 0 then
-        return {};
-    end
-    local SoldierTable = {Logic.GetSoldiersAttachedToLeader(EntityID)};
-    table.remove(SoldierTable, 1);
-    return SoldierTable;
-end
-
----
 -- Gibt den Leader des Soldaten zurück.
 --
 -- @param _Entity Entity (Skriptname oder ID)
 -- @return[type=number] Menge an Soldaten
--- @within Werkzeugkasten
+-- @within Entity
 --
 function API.GetGroupLeader(_Entity)
     local EntityID = GetID(_Entity);
@@ -4453,7 +4151,7 @@ end
 --
 -- @param               _Entity   Entity (Scriptname oder ID)
 -- @param[type=number]  _Amount   Geheilte Gesundheit
--- @within Werkzeugkasten
+-- @within Entity
 --
 function API.GroupHeal(_Entity, _Amount)
     if GUI then
@@ -4479,7 +4177,7 @@ end
 -- @param               _Entity   Entity (Scriptname oder ID)
 -- @param[type=number] _Damage   Schaden
 -- @param[type=string] _Attacker Angreifer
--- @within Werkzeugkasten
+-- @within Entity
 --
 function API.GroupHurt(_Entity, _Damage, _Attacker)
     if GUI then
@@ -4490,7 +4188,7 @@ function API.GroupHurt(_Entity, _Damage, _Attacker)
         error("API.GroupHurt: _Entity (" ..tostring(_Entity).. ") does not exist!");
         return;
     end
-    if API.IsEntityInAtLeastOneCategory(EntityID, EntityCategories.Soldier) then
+    if Logic.IsEntityInCategory(EntityID, EntityCategories.Soldier) == 1 then
         API.GroupHurt(API.GetGroupLeader(EntityID), _Damage);
         return;
     end
@@ -4498,7 +4196,10 @@ function API.GroupHurt(_Entity, _Damage, _Attacker)
     local EntityToHurt = EntityID;
     local IsLeader = Logic.IsLeader(EntityToHurt) == 1;
     if IsLeader then
-        EntityToHurt = API.GetGroupSoldiers(EntityToHurt)[1];
+        local SoldierTable = {Logic.GetSoldiersAttachedToLeader(EntityID)};
+        if SoldierTable[1] > 0 then
+            EntityToHurt = SoldierTable[2];
+        end
     end
     if type(_Damage) ~= "number" or _Damage < 0 then
         error("API.GroupHurt: _Damage (" ..tostring(_Damage).. ") must be greater than 0!");
@@ -4529,7 +4230,7 @@ end
 --
 -- @param[type=string] _ScriptName Skriptname des Objektes
 -- @param[type=number] _State      State des Objektes
--- @within Werkzeugkasten
+-- @within Entity
 --
 function API.InteractiveObjectActivate(_ScriptName, _State)
     _State = _State or 0;
@@ -4546,7 +4247,7 @@ InteractiveObjectActivate = API.InteractiveObjectActivate;
 -- Deaktiviert ein interaktives Objekt.
 --
 -- @param[type=string] _ScriptName Scriptname des Objektes
--- @within Werkzeugkasten
+-- @within Entity
 --
 function API.InteractiveObjectDeactivate(_ScriptName)
     if GUI or not IsExisting(_ScriptName) then
@@ -5101,7 +4802,7 @@ end
 -- @param[type=boolean] _TraceQuests      Quest Trace an/aus
 -- @param[type=boolean] _DevelopingCheats Cheats an/aus
 -- @param[type=boolean] _DevelopingShell  Eingabeaufforderung an/aus
--- @within Debug
+-- @within System
 --
 function API.ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)
     Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell);
@@ -5393,12 +5094,6 @@ You may use and modify this file unter the terms of the MIT licence.
 Revision.Behavior = {
     QuestCounter = 0,
     Text = {
-        -- FIXME: Remove
-        DestroySoldiers = {
-            de = "{center}SOLDATEN ZERSTÖREN {cr}{cr}von der Partei: %s{cr}{cr}Anzahl: %d",
-            en = "{center}DESTROY SOLDIERS {cr}{cr}from faction: %s{cr}{cr}Amount: %d",
-            fr = "{center}DESTRUCTION DE SOLDATS {cr}{cr}De la faction : %s{cr}{cr}Nombre : %d",
-        },
         ActivateBuff = {
             Pattern = {
                 de = "BONUS AKTIVIEREN{cr}{cr}%s",
@@ -5797,7 +5492,7 @@ function B_Goal_Diplomacy:ChangeCaption(_Quest)
         Revision:Localize(self.DiploNameMap[self.DiplState]),
         PlayerName
     );
-    Revision:ChangeCustomQuestCaptionText(Text, _Quest);
+    Revision.Quest:ChangeCustomQuestCaptionText(Text, _Quest);
 end
 
 function B_Goal_Diplomacy:CustomFunction(_Quest)
@@ -6621,7 +6316,7 @@ function B_Goal_ActivateBuff:CustomFunction(_Quest)
         if g_GameExtraNo >= 1 then
             tMapping = Revision.LuaBase:CopyTable(Revision.Behavior.Text.ActivateBuff.BuffsEx1, tMapping);
         end
-        Revision:ChangeCustomQuestCaptionText(
+        Revision.Quest:ChangeCustomQuestCaptionText(
             string.format(
                 Revision:Localize(Revision.Behavior.Text.ActivateBuff.Pattern),
                 Revision:Localize(tMapping[self.BuffName])
@@ -7338,7 +7033,7 @@ function B_Goal_SoldierCount:CustomFunction(_Quest)
     if not _Quest.QuestDescription or _Quest.QuestDescription == "" then
         local Relation = tostring(self.bRelSmallerThan);
         local PlayerName = GetPlayerName(self.PlayerID) or "";
-        Revision:ChangeCustomQuestCaptionText(
+        Revision.Quest:ChangeCustomQuestCaptionText(
             string.format(
                 Revision:Localize(Revision.Behavior.Text.SoldierCount.Pattern),
                 PlayerName,
@@ -7523,7 +7218,7 @@ end
 function B_Goal_Festivals:CustomFunction(_Quest)
     if not _Quest.QuestDescription or _Quest.QuestDescription == "" then
         local PlayerName = GetPlayerName(self.PlayerID) or "";
-        Revision:ChangeCustomQuestCaptionText(
+        Revision.Quest:ChangeCustomQuestCaptionText(
             string.format(
                 Revision:Localize(Revision.Behavior.Text.Festivals.Pattern),
                 PlayerName, self.NeededFestivals
@@ -10784,7 +10479,7 @@ function B_Reward_CreateEntity:CustomFunction(_Quest)
     if Logic.IsEntityTypeInCategory( self.UnitKey, EntityCategories.Soldier ) == 1 then
         NewID     = Logic.CreateBattalionOnUnblockedLand( Entities[self.UnitKey], pos.X, pos.Y, self.Orientation, self.PlayerID, 1 )
         local l,s = Logic.GetSoldiersAttachedToLeader(NewID)
-        Logic.SetOrientation(s, API.Round(self.Orientation))
+        Logic.SetOrientation(s, math.floor(self.Orientation + 0.5))
     else
         NewID = Logic.CreateEntityOnUnblockedLand( Entities[self.UnitKey], pos.X, pos.Y, self.Orientation, self.PlayerID )
     end
@@ -10921,7 +10616,7 @@ function B_Reward_CreateSeveralEntities:CustomFunction(_Quest)
         if Logic.IsEntityTypeInCategory( self.UnitKey, EntityCategories.Soldier ) == 1 then
             NewID     = Logic.CreateBattalionOnUnblockedLand( Entities[self.UnitKey], pos.X, pos.Y, self.Orientation, self.PlayerID, 1 )
             local l,s = Logic.GetSoldiersAttachedToLeader(NewID)
-            Logic.SetOrientation(s, API.Round(self.Orientation))
+            Logic.SetOrientation(s, math.floor(self.Orientation + 0.5))
         else
             NewID = Logic.CreateEntityOnUnblockedLand( Entities[self.UnitKey], pos.X, pos.Y, self.Orientation, self.PlayerID )
         end
@@ -14517,10 +14212,20 @@ function ModuleEntitySurveillance.Global:OverrideLogic()
     self.Logic_ChangeSettlerPlayerID = Logic.ChangeSettlerPlayerID;
     Logic.ChangeSettlerPlayerID = function(...)
         local OldID = {arg[1]};
-        OldID = Array_Append(OldID, API.GetGroupSoldiers(arg[1]));
         local OldPlayerID = Logic.EntityGetPlayer(arg[1]);
+        local OldSoldierTable = {Logic.GetSoldiersAttachedToLeader(arg[1])};
+        if OldSoldierTable[1] and OldSoldierTable[1] > 0 then
+            for i=2, OldSoldierTable[1]+1 do
+                table.insert(OldID, OldSoldierTable[i]);
+            end
+        end
         local NewID = {self.Logic_ChangeSettlerPlayerID(unpack(arg))};
-        NewID = Array_Append(NewID, API.GetGroupSoldiers(NewID[1]));
+        local NewSoldierTable = {Logic.GetSoldiersAttachedToLeader(NewID[1])};
+        if NewSoldierTable[1] and NewSoldierTable[1] > 0 then
+            for i=2, NewSoldierTable[1]+1 do
+                table.insert(NewID, NewSoldierTable[i]);
+            end
+        end
         local NewPlayerID = Logic.EntityGetPlayer(NewID[1]);
         ModuleEntitySurveillance.Global:TriggerEntityOnwershipChangedEvent(OldID, OldPlayerID, NewID, NewPlayerID);
         return NewID[1];
@@ -14998,10 +14703,6 @@ end
 -- den Typ schnell gehen, dauern Gebietssuchen lange! Es ist daher klug, zuerst
 -- Kriterien auszuschließen, die schnell bestimmt werden können!
 --
--- <h5>Multiplayer</h5>
--- Im Multiplayer kann diese Funktion nur in synchron
--- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
---
 -- @param[type=function] _Filter Funktion zur Filterung
 -- @return[type=table] Liste mit Ergebnissen
 -- @within Suche
@@ -15039,7 +14740,7 @@ function API.GetEntitiesOfCategoryInTerritory(_PlayerID, _Category, _Territory)
 end
 
 -- Compatibility option
--- Realy needed? Don't they throw the old version in the script anyway?
+-- FIXME: Realy needed? Don't they throw the old version in the script anyway?
 function API.GetEntitiesOfCategoriesInTerritories(_PlayerID, _Category, _Territory)
     local p = (type(_PlayerID) == "table" and _PlayerID) or {_PlayerID};
     local c = (type(_Category) == "table" and _Category) or {_Category};
@@ -15135,6 +14836,8 @@ ModuleGUI = {
         CinematicElementID = 0,
         CinematicElementStatus = {},
         CinematicElementQueue = {},
+        TypewriterEventData = {},
+        TypewriterEventCounter = 0,
     },
     Local = {
         CinematicElementStatus = {},
@@ -15168,6 +14871,8 @@ function ModuleGUI.Global:OnGameStart()
     QSB.ScriptEvents.GameInterfaceHidden = API.RegisterScriptEvent("Event_GameInterfaceHidden");
     QSB.ScriptEvents.ImageScreenShown = API.RegisterScriptEvent("Event_ImageScreenShown");
     QSB.ScriptEvents.ImageScreenHidden = API.RegisterScriptEvent("Event_ImageScreenHidden");
+    QSB.ScriptEvents.TypewriterStarted = API.RegisterScriptEvent("Event_TypewriterStarted");
+    QSB.ScriptEvents.TypewriterEnded = API.RegisterScriptEvent("Event_TypewriterEnded");
 
     API.RegisterScriptCommand("Cmd_UpdateTexturePosition", function(_Category, _Key, _Value)
         g_TexturePositions = g_TexturePositions or {};
@@ -15179,7 +14884,9 @@ function ModuleGUI.Global:OnGameStart()
         self.CinematicElementStatus[i] = {};
         self.CinematicElementQueue[i] = {};
     end
-
+    API.StartHiResJob(function()
+        ModuleGUI.Global:ControlTypewriter();
+    end);
     self:ShowInitialBlackscreen();
 end
 
@@ -15251,6 +14958,7 @@ end
 
 function ModuleGUI.Global:ActivateCinematicElement(_PlayerID)
     local ID = self:GetNewCinematicElementID();
+    API.SendScriptEvent(QSB.ScriptEvents.CinematicActivated, ID, _PlayerID);
     Logic.ExecuteInLuaLocalState(string.format(
         [[API.SendScriptEvent(QSB.ScriptEvents.CinematicActivated, %d, %d);
           if GUI.GetPlayerID() == %d then
@@ -15261,11 +14969,11 @@ function ModuleGUI.Global:ActivateCinematicElement(_PlayerID)
         _PlayerID,
         _PlayerID
     ))
-    API.SendScriptEvent(QSB.ScriptEvents.CinematicActivated, ID, _PlayerID);
     return ID;
 end
 
 function ModuleGUI.Global:ConcludeCinematicElement(_ID, _PlayerID)
+    API.SendScriptEvent(QSB.ScriptEvents.CinematicConcluded, _ID, _PlayerID);
     Logic.ExecuteInLuaLocalState(string.format(
         [[API.SendScriptEvent(QSB.ScriptEvents.CinematicConcluded, %d, %d);
           if GUI.GetPlayerID() == %d then
@@ -15278,7 +14986,6 @@ function ModuleGUI.Global:ConcludeCinematicElement(_ID, _PlayerID)
         _PlayerID,
         _PlayerID
     ))
-    API.SendScriptEvent(QSB.ScriptEvents.CinematicConcluded, _ID, _PlayerID);
 end
 
 function ModuleGUI.Global:ShowInitialBlackscreen()
@@ -15304,6 +15011,8 @@ function ModuleGUI.Local:OnGameStart()
     QSB.ScriptEvents.GameInterfaceHidden = API.RegisterScriptEvent("Event_GameInterfaceHidden");
     QSB.ScriptEvents.ImageScreenShown = API.RegisterScriptEvent("Event_ImageScreenShown");
     QSB.ScriptEvents.ImageScreenHidden = API.RegisterScriptEvent("Event_ImageScreenHidden");
+    QSB.ScriptEvents.TypewriterStarted = API.RegisterScriptEvent("Event_TypewriterStarted");
+    QSB.ScriptEvents.TypewriterEnded = API.RegisterScriptEvent("Event_TypewriterEnded");
 
     for i= 1, 8 do
         self.CinematicElementStatus[i] = {};
@@ -15382,6 +15091,184 @@ function ModuleGUI.Local:PostTexturePositionsToGlobal()
             return true;
         end
     end);
+end
+
+-- -------------------------------------------------------------------------- --
+
+function ModuleGUI.Global:StartTypewriter(_Data)
+    self.TypewriterEventCounter = self.TypewriterEventCounter +1;
+    local EventName = "CinematicElement_Typewriter" ..self.TypewriterEventCounter;
+    _Data.Name = EventName;
+    if not self.LoadscreenClosed or API.IsCinematicElementActive(_Data.PlayerID) then
+        ModuleGUI.Global:PushCinematicElementToQueue(
+            _Data.PlayerID,
+            QSB.CinematicElementTypes.Typewriter,
+            EventName,
+            _Data
+        );
+        return _Data.Name;
+    end
+    return self:PlayTypewriter(_Data);
+end
+
+function ModuleGUI.Global:PlayTypewriter(_Data)
+    local ID = API.StartCinematicElement(_Data.Name, _Data.PlayerID);
+    _Data.ID = ID;
+    _Data.TextTokens = self:TokenizeText(_Data);
+    self.TypewriterEventData[_Data.PlayerID] = _Data;
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[
+        if GUI.GetPlayerID() == %d then
+            API.ActivateImageScreen(GUI.GetPlayerID(), "%s", %d, %d, %d, %d)
+            API.DeactivateNormalInterface(GUI.GetPlayerID())
+            API.DeactivateBorderScroll(GUI.GetPlayerID(), %d)
+            Input.CutsceneMode()
+            GUI.ClearNotes()
+        end
+        ]],
+        _Data.PlayerID,
+        _Data.Image,
+        _Data.Color.R or 0,
+        _Data.Color.G or 0,
+        _Data.Color.B or 0,
+        _Data.Color.A or 255,
+        _Data.TargetEntity
+    ));
+
+    API.SendScriptEvent(QSB.ScriptEvents.TypewriterStarted, _Data.PlayerID, _Data);
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[API.SendScriptEvent(QSB.ScriptEvents.TypewriterStarted, %d, %s)]],
+        _Data.PlayerID,
+        table.tostring(_Data)
+    ));
+    return _Data.Name;
+end
+
+function ModuleGUI.Global:FinishTypewriter(_PlayerID)
+    if self.TypewriterEventData[_PlayerID] then
+        local EventData = table.copy(self.TypewriterEventData[_PlayerID]);
+        local EventPlayer = self.TypewriterEventData[_PlayerID].PlayerID;
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[
+            if GUI.GetPlayerID() == %d then
+                ModuleGUI.Local:ResetFarClipPlane()
+                API.DeactivateImageScreen(GUI.GetPlayerID())
+                API.ActivateNormalInterface(GUI.GetPlayerID())
+                API.ActivateBorderScroll(GUI.GetPlayerID())
+                ModuleGUI.Local:UpdateHiddenWidgets()
+                Input.GameMode()
+                GUI.ClearNotes()
+            end
+            ]],
+            _PlayerID
+        ));
+        API.SendScriptEvent(QSB.ScriptEvents.TypewriterEnded, EventPlayer, EventData);
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[API.SendScriptEvent(QSB.ScriptEvents.TypewriterEnded, %d, %s)]],
+            EventPlayer,
+            table.tostring(EventData)
+        ));
+        self.TypewriterEventData[_PlayerID]:Callback();
+        API.FinishCinematicElement(EventData.Name, EventPlayer);
+        self.TypewriterEventData[_PlayerID] = nil;
+    end
+end
+
+function ModuleGUI.Global:TokenizeText(_Data)
+    local TextTokens = {};
+    local TempTokens = {};
+    local Text = API.ConvertPlaceholders(_Data.Text);
+    Text = Text:gsub("%s+", " ");
+    while (true) do
+        local s1, e1 = Text:find("{");
+        local s2, e2 = Text:find("}");
+        if not s1 or not s2 then
+            table.insert(TempTokens, Text);
+            break;
+        end
+        if s1 > 1 then
+            table.insert(TempTokens, Text:sub(1, s1 -1));
+        end
+        table.insert(TempTokens, Text:sub(s1, e2));
+        Text = Text:sub(e2 +1);
+    end
+
+    local LastWasPlaceholder = false;
+    for i= 1, #TempTokens, 1 do
+        if TempTokens[i]:find("{") then
+            local Index = #TextTokens;
+            if LastWasPlaceholder then
+                TextTokens[Index] = TextTokens[Index] .. TempTokens[i];
+            else
+                table.insert(TextTokens, Index+1, TempTokens[i]);
+            end
+            LastWasPlaceholder = true;
+        else
+            local Index = 1;
+            while (Index <= #TempTokens[i]) do
+                if string.byte(TempTokens[i]:sub(Index, Index)) == 195 then
+                    table.insert(TextTokens, TempTokens[i]:sub(Index, Index+1));
+                    Index = Index +1;
+                else
+                    table.insert(TextTokens, TempTokens[i]:sub(Index, Index));
+                end
+                Index = Index +1;
+            end
+            LastWasPlaceholder = false;
+        end
+    end
+    return TextTokens;
+end
+
+function ModuleGUI.Global:ControlTypewriter()
+    -- Check queue for next event
+    for i= 1, 8 do
+        if self.LoadscreenClosed and not API.IsCinematicElementActive(i) then
+            local Next = ModuleGUI.Global:LookUpCinematicInQueue(i);
+            if Next and Next[1] == QSB.CinematicElementTypes.Typewriter then
+                local Data = ModuleGUI.Global:PopCinematicElementFromQueue(i);
+                self:PlayTypewriter(Data[3]);
+            end
+        end
+    end
+
+    -- Perform active events
+    for k, v in pairs(self.TypewriterEventData) do
+        if self.TypewriterEventData[k].Delay > 0 then
+            self.TypewriterEventData[k].Delay = self.TypewriterEventData[k].Delay -1;
+            -- Just my paranoia...
+            Logic.ExecuteInLuaLocalState(string.format(
+                [[if GUI.GetPlayerID() == %d then GUI.ClearNotes() end]],
+                self.TypewriterEventData[k].PlayerID
+            ));
+        end
+        if self.TypewriterEventData[k].Delay == 0 then
+            self.TypewriterEventData[k].Index = v.Index + v.CharSpeed;
+            if v.Index > #self.TypewriterEventData[k].TextTokens then
+                self.TypewriterEventData[k].Index = #self.TypewriterEventData[k].TextTokens;
+            end
+            local Index = math.floor(v.Index + 0.5);
+            local Text = "";
+            for i= 1, Index, 1 do
+                Text = Text .. self.TypewriterEventData[k].TextTokens[i];
+            end
+            Logic.ExecuteInLuaLocalState(string.format(
+                [[
+                if GUI.GetPlayerID() == %d then
+                    GUI.ClearNotes()
+                    GUI.AddNote("]] ..Text.. [[");
+                end
+                ]],
+                self.TypewriterEventData[k].PlayerID
+            ));
+            if Index == #self.TypewriterEventData[k].TextTokens then
+                self.TypewriterEventData[k].Waittime = v.Waittime -1;
+                if v.Waittime <= 0 then
+                    self:FinishTypewriter(k);
+                end
+            end
+        end
+    end
 end
 
 -- -------------------------------------------------------------------------- --
@@ -16006,6 +15893,8 @@ CinematicElement = {
 -- @field GameInterfaceHidden Die Spieloberfläche wird ausgeblendet (Parameter: PlayerID)
 -- @field ImageScreenShown    Der schwarze Hintergrund wird angezeigt (Parameter: PlayerID)
 -- @field ImageScreenHidden   Der schwarze Hintergrund wird ausgeblendet (Parameter: PlayerID)
+-- @field TypewriterStarted   Ein Schreibmaschineneffekt beginnt (Parameter: PlayerID, DataTable)
+-- @field TypewriterEnded     Ein Schreibmaschineneffekt endet (Parameter: PlayerID, DataTable)
 --
 QSB.ScriptEvents = QSB.ScriptEvents or {};
 
@@ -16528,6 +16417,124 @@ function API.RemoveShortcutEntry(_ID)
         end
     end
 end
+
+---
+-- Blendet einen Text Zeichen für Zeichen ein.
+--
+-- Der Effekt startet erst, nachdem die Map geladen ist. Wenn ein anderes
+-- Cinematic Event läuft, wird gewartet, bis es beendet ist. Wärhend der Effekt
+-- läuft, können wiederrum keine Cinematic Events starten.
+--
+-- Mögliche Werte:
+-- <table border="1">
+-- <tr>
+-- <td><b>Feldname</b></td>
+-- <td><b>Typ</b></td>
+-- <td><b>Beschreibung</b></td>
+-- </tr>
+-- <tr>
+-- <td>Text</td>
+-- <td>string|table</td>
+-- <td>Der anzuzeigene Text</td>
+-- </tr>
+-- <tr>
+-- <td>PlayerID</td>
+-- <td>number</td>
+-- <td>(Optional) Spieler, dem der Effekt angezeigt wird (Default: Menschlicher Spieler)</td>
+-- </tr>
+-- <tr>
+-- <td>Callback</td>
+-- <td>function</td>
+-- <td>(Optional) Funktion nach Abschluss der Textanzeige (Default: nil)</td>
+-- </tr>
+-- <tr>
+-- <td>TargetEntity</td>
+-- <td>string|number</td>
+-- <td>(Optional) TargetEntity der Kamera (Default: nil)</td>
+-- </tr>
+-- <tr>
+-- <td>CharSpeed</td>
+-- <td>number</td>
+-- <td>(Optional) Die Schreibgeschwindigkeit (Default: 1.0)</td>
+-- </tr>
+-- <tr>
+-- <td>Waittime</td>
+-- <td>number</td>
+-- <td>(Optional) Initiale Wartezeigt bevor der Effekt startet</td>
+-- </tr>
+-- <tr>
+-- <td>Opacity</td>
+-- <td>number</td>
+-- <td>(Optional) Durchsichtigkeit des Hintergrund (Default: 1)</td>
+-- </tr>
+-- <tr>
+-- <td>Color</td>
+-- <td>table</td>
+-- <td>(Optional) Farbe des Hintergrund (Default: {R= 0, G= 0, B= 0}}</td>
+-- </tr>
+-- <tr>
+-- <td>Image</td>
+-- <td>string</td>
+-- <td>(Optional) Pfad zur anzuzeigenden Grafik</td>
+-- </tr>
+-- </table>
+--
+-- <b>Hinweis</b>: Steuerzeichen wie {cr} oder {@color} werden als ein Token
+-- gewertet und immer sofort eingeblendet. Steht z.B. {cr}{cr} im Text, werden
+-- die Zeichen atomar behandelt, als seien sie ein einzelnes Zeichen.
+-- Gibt es mehr als 1 Leerzeichen hintereinander, werden alle zusammenhängenden
+-- Leerzeichen (vom Spiel) auf ein Leerzeichen reduziert!
+--
+-- @param[type=table] _Data Konfiguration
+-- @return[type=string] Name des zugeordneten Event
+--
+-- @usage
+-- local EventName = API.StartTypewriter {
+--     PlayerID = 1,
+--     Text     = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, "..
+--                "sed diam nonumy eirmod tempor invidunt ut labore et dolore"..
+--                "magna aliquyam erat, sed diam voluptua. At vero eos et"..
+--                " accusam et justo duo dolores et ea rebum. Stet clita kasd"..
+--                " gubergren, no sea takimata sanctus est Lorem ipsum dolor"..
+--                " sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing"..
+--                " elitr, sed diam nonumy eirmod tempor invidunt ut labore et"..
+--                " dolore magna aliquyam erat, sed diam voluptua. At vero eos"..
+--                " et accusam et justo duo dolores et ea rebum. Stet clita"..
+--                " kasd gubergren, no sea takimata sanctus est Lorem ipsum"..
+--                " dolor sit amet.",
+--     Callback = function(_Data)
+--         -- Hier kann was passieren
+--     end
+-- };
+-- @within Anwenderfunktionen
+--
+function API.StartTypewriter(_Data)
+    if Framework.IsNetworkGame() ~= true then
+        _Data.PlayerID = _Data.PlayerID or QSB.HumanPlayerID;
+    end
+    if _Data.PlayerID == nil or (_Data.PlayerID < 1 or _Data.PlayerID > 8) then
+        return;
+    end
+    _Data.Text = API.Localize(_Data.Text or "");
+    _Data.Callback = _Data.Callback or function() end;
+    _Data.CharSpeed = _Data.CharSpeed or 1;
+    _Data.Waittime = (_Data.Waittime or 8) * 10;
+    _Data.TargetEntity = GetID(_Data.TargetEntity or 0);
+    _Data.Image = _Data.Image or "";
+    _Data.Color = _Data.Color or {
+        R = (_Data.Image and _Data.Image ~= "" and 255) or 0,
+        G = (_Data.Image and _Data.Image ~= "" and 255) or 0,
+        B = (_Data.Image and _Data.Image ~= "" and 255) or 0,
+        A = 255
+    };
+    if _Data.Opacity and _Data.Opacity >= 0 and _Data.Opacity then
+        _Data.Color.A = math.floor((255 * _Data.Opacity) + 0.5);
+    end
+    _Data.Delay = 15;
+    _Data.Index = 0;
+    return ModuleGUI.Global:StartTypewriter(_Data);
+end
+API.SimpleTypewriter = API.StartTypewriter;
 
 ---
 -- Graut die Minimap aus oder macht sie wieder verwendbar.
@@ -17546,6 +17553,988 @@ function API.DefineLanguage(_Shortcut, _Name, _Fallback)
     Logic.ExecuteInLuaLocalState(string.format([[
         table.insert(Revision.Text.Languages, {"%s", "%s", "%s"})
     ]], _Shortcut, _Name, _Fallback));
+end
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+ModuleEntityMovement = {
+    Properties = {
+        Name = "ModuleEntityMovement",
+    },
+
+    Global = {
+        PathMovingEntities = {},
+    };
+    Local = {},
+
+    Shared = {},
+};
+
+-- -------------------------------------------------------------------------- --
+-- Global Script
+
+function ModuleEntityMovement.Global:OnGameStart()
+    QSB.ScriptEvents.EntityArrived = API.RegisterScriptEvent("Event_EntityArrived");
+    QSB.ScriptEvents.EntityStuck = API.RegisterScriptEvent("Event_EntityStuck");
+    QSB.ScriptEvents.EntityAtCheckpoint = API.RegisterScriptEvent("Event_EntityAtCheckpoint");
+    QSB.ScriptEvents.PathFindingFinished = API.RegisterScriptEvent("Event_PathFindingFinished");
+    QSB.ScriptEvents.PathFindingFailed = API.RegisterScriptEvent("Event_PathFindingFailed");
+
+    API.StartHiResJob(function()
+        ModuleEntityMovement.Global.PathFinder:Controller();
+    end);
+end
+
+function ModuleEntityMovement.Global:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    end
+end
+
+function ModuleEntityMovement.Global:FillMovingEntityDataForController(_Entity, _Path, _LookAt, _Action, _IgnoreBlocking)
+    -- FIXME: Should we check that the entity isn't already processed?
+    local Index = #self.PathMovingEntities +1;
+    self.PathMovingEntities[Index] = {
+        Entity = GetID(_Entity),
+        IgnoreBlocking = _IgnoreBlocking == true,
+        LookAt = _LookAt,
+        Callback = _Action,
+        Index = 0
+    };
+    for i= 1, #_Path do
+        table.insert(self.PathMovingEntities[Index], _Path[i]);
+    end
+    return Index;
+end
+
+function ModuleEntityMovement.Global:MoveEntityPathController(_Index)
+    local Data = self.PathMovingEntities[_Index];
+
+    local CanMove = true;
+    if not IsExisting(Data.Entity) then
+        CanMove = false;
+    end
+
+    if CanMove and Logic.IsEntityMoving(Data.Entity) == false then
+        -- Arrived at waypoint
+        if Data.Index > 0 then
+            API.SendScriptEvent(QSB.ScriptEvents.EntityAtCheckpoint, Data.Entity, Data[Data.Index], _Index);
+            local Target = tostring(Data[Data.Index]);
+            if type(Data[Data.Index]) == "table" then
+                Target = table.tostring(Data[Data.Index]);
+            end
+            Logic.ExecuteInLuaLocalState(string.format(
+                [[API.SendScriptEvent(QSB.ScriptEvents.EntityAtCheckpoint, %d, %s, %d)]],
+                Data.Entity, Target, _Index
+            ));
+        end
+        self.PathMovingEntities[_Index].Index = Data.Index +1;
+
+        -- Check entity arrived
+        if #Data < Data.Index then
+            if  Logic.IsSettler(Data.Entity) == 1
+            and Logic.GetEntityType(Data.Entity) ~= Entities.D_X_TradeShip then
+                Logic.SetTaskList(Data.Entity, TaskLists.TL_NPC_IDLE);
+                if Data.LookAt then
+                    API.LookAt(Data.Entity, Data.LookAt);
+                end
+                if Data.Callback then
+                    Data:Callback();
+                end
+            end
+            -- The event is send when the task is fully completed. That means
+            -- look at and callback must be executed first!
+            API.SendScriptEvent(QSB.ScriptEvents.EntityArrived, Data.Entity, Data[#Data], _Index);
+            local Target = tostring(Data[#Data]);
+            if type(Data[#Data]) == "table" then
+                Target = table.tostring(Data[#Data]);
+            end
+            Logic.ExecuteInLuaLocalState(string.format(
+                [[API.SendScriptEvent(QSB.ScriptEvents.EntityArrived, %d, %s, %d)]],
+                Data.Entity, Target, _Index
+            ));
+            return true;
+        end
+
+        -- Check reachablility
+        local x1,y1,z1 = Logic.EntityGetPos(Data.Entity);
+        local x2,y2,z2;
+        if type(Data[Data.Index]) == "table" then
+            x2 = Data[Data.Index].X;
+            y2 = Data[Data.Index].Y;
+        else
+            x2,y2,z2 = Logic.EntityGetPos(GetID(Data[Data.Index]));
+        end
+        local PlayerID = Logic.EntityGetPlayer(Data.Entity);
+        local SectorType = Logic.GetEntityPlayerSectorType(Data.Entity);
+        local Sector1 = Logic.GetPlayerSectorID(PlayerID, SectorType, x1, y1);
+        local Sector2 = Logic.GetPlayerSectorID(PlayerID, SectorType, x2, y2);
+        if Sector1 ~= Sector2 then
+            if Logic.IsSettler(Data.Entity) == 1 then
+                Logic.SetTaskList(Data.Entity, TaskLists.TL_NPC_IDLE);
+            end
+            CanMove = false;
+        end
+
+        -- Move entity
+        if CanMove then
+            if Data.IgnoreBlocking then
+                if  Logic.IsSettler(Data.Entity) == 1
+                and Logic.GetEntityType(Data.Entity) ~= Entities.D_X_TradeShip then
+                    Logic.SetTaskList(Data.Entity, TaskLists.TL_NPC_WALK);
+                end
+                Logic.MoveEntity(Data.Entity, x2, y2);
+            else
+                Logic.MoveSettler(Data.Entity, x2, y2);
+            end
+        end
+    end
+
+    -- Send movement failed event
+    if not CanMove then
+        API.SendScriptEvent(QSB.ScriptEvents.EntityStuck, Data.Entity, Data[Data.Index], _Index);
+        local Target = tostring(Data[Data.Index]);
+        if type(Data[Data.Index]) == "table" then
+            Target = table.tostring(Data[Data.Index]);
+        end
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[API.SendScriptEvent(QSB.ScriptEvents.EntityStuck, %d, %s, %d)]],
+            Data.Entity, Target, _Index
+        ));
+        return true;
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+-- Pathfinder Class
+
+ModuleEntityMovement.Global.PathFinder = {
+    NodeDistance = 300;
+    StepsPerTurn = 1;
+
+    PathSequence = 0;
+    PathList = {};
+    ProcessedPaths = {};
+}
+
+function ModuleEntityMovement.Global.PathFinder:Insert(_Start, _End, _NodeDistance, _StepsPerTick, _Filter, ...)
+    local Start = self:GetClosestPositionOnNodeMap(_Start, _NodeDistance);
+    if not Start then
+        return 0;
+    end
+    local End = self:GetClosestPositionOnNodeMap(_End, _NodeDistance);
+    if not _End then
+        return 0;
+    end
+
+    self.PathSequence = self.PathSequence +1;
+    self.ProcessedPaths[self.PathSequence] = {
+        NodeDistance = _NodeDistance or 300,
+        StepsPerTick = _StepsPerTick or 1,
+        StartNode = Start,
+        TargetNode = End,
+        Suspended = false,
+        Closed = {},
+        ClosedMap = {},
+        Open = {},
+        OpenMap = {};
+        AcceptMethode = _Filter,
+        AcceptArgs = arg,
+    };
+
+    Start.ID = "ID_"..Start.X.."_"..Start.Y;
+    table.insert(self.ProcessedPaths[self.PathSequence].Open, 1, Start);
+    self.ProcessedPaths[self.PathSequence].OpenMap[Start.ID] = true;
+
+    return self.PathSequence;
+end
+
+function ModuleEntityMovement.Global.PathFinder:Controller()
+    for k, v in pairs(self.ProcessedPaths) do
+        if v.Suspended == false then
+            self:Step(k);
+        end
+    end
+end
+
+function ModuleEntityMovement.Global.PathFinder:SendPathingSucceedEvent(_Index)
+    API.SendScriptEvent(QSB.ScriptEvents.PathFindingFinished, _Index);
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[API.SendScriptEvent(QSB.ScriptEvents.PathFindingFinished, %d)]],
+        _Index
+    ));
+end
+
+function ModuleEntityMovement.Global.PathFinder:SendPathingFailedEvent(_Index)
+    API.SendScriptEvent(QSB.ScriptEvents.PathFindingFailed, _Index);
+    Logic.ExecuteInLuaLocalState(string.format(
+        [[API.SendScriptEvent(QSB.ScriptEvents.PathFindingFailed, %d)]],
+        _Index
+    ))
+end
+
+function ModuleEntityMovement.Global.PathFinder:SetSuspended(_ID, _Flag)
+    if self.ProcessedPaths[_ID] then
+        self.ProcessedPaths[_ID].Suspended = _Flag == true;
+    end
+end
+
+function ModuleEntityMovement.Global.PathFinder:Step(_Index)
+    if not self.ProcessedPaths[_Index] then
+        self.ProcessedPaths[_Index] = nil;
+        self.PathList[_Index] = nil;
+        self:SendPathingFailedEvent(_Index);
+        return true;
+    end
+    for i= 1, self.ProcessedPaths[_Index].StepsPerTick, 1 do
+        if #self.ProcessedPaths[_Index].Open == 0 then
+            self.ProcessedPaths[_Index] = nil;
+            self.PathList[_Index] = nil;
+            self:SendPathingFailedEvent(_Index);
+            return true;
+        end
+        local removed = table.remove(self.ProcessedPaths[_Index].Open, 1);
+        self.ProcessedPaths[_Index].OpenMap[removed.ID] = nil;
+        if  removed.X == self.ProcessedPaths[_Index].TargetNode.X
+        and removed.Y == self.ProcessedPaths[_Index].TargetNode.Y then
+            local LastNode = removed;
+            local path = {}
+            local prev = LastNode;
+            while (prev) do
+                table.insert(path, prev);
+                local tmp = LastNode.Father;
+                LastNode = prev;
+                prev = self:GetNodeByID(_Index, tmp);
+                if not prev.Father then
+                    table.insert(path, prev);
+                    break;
+                end
+            end
+            self.PathList[_Index] = ModuleEntityMovement.Global.PathModel:New(path);
+            self.ProcessedPaths[_Index] = nil;
+            self:SendPathingSucceedEvent(_Index);
+            return true;
+        else
+            self:Expand(_Index, removed);
+        end
+    end
+    return false;
+end
+
+function ModuleEntityMovement.Global.PathFinder:Expand(_Index, _Node)
+    local x = _Node.X;
+    local y = _Node.Y;
+
+    -- Regular nodes
+    local FatherNodeID = _Node.ID;
+    local SuccessorNodes = {};
+    local Distance = self.ProcessedPaths[_Index].NodeDistance;
+    for i= x-Distance, x+Distance, Distance do
+        for j= y-Distance, y+Distance, Distance do
+            if not (i == x and j == y) then
+                if  not self.ProcessedPaths[_Index].OpenMap["ID_"..i.."_"..j] 
+                and not self.ProcessedPaths[_Index].ClosedMap["ID_"..i.."_"..j] then
+                    -- Insert node
+                    table.insert(SuccessorNodes, {
+                        ID = "ID_"..i.."_"..j,
+                        X = i,
+                        Y = j,
+                        Father = FatherNodeID,
+                        Distance1 = API.GetDistance(_Node, self.ProcessedPaths[_Index].TargetNode),
+                        Distance2 = API.GetDistance(self.ProcessedPaths[_Index].StartNode, _Node)
+                    });
+                end
+            end
+        end
+    end
+
+    -- Check successor nodes and put into open list
+    self:AcceptSuccessors(_Index, SuccessorNodes);
+    -- Sort open list
+    self:SortOpenList(_Index);
+    -- Insert current node to closed list
+    table.insert(self.ProcessedPaths[_Index].Closed, _Node);
+    self.ProcessedPaths[_Index].OpenMap[_Node.ID] = true;
+end
+
+function ModuleEntityMovement.Global.PathFinder:AcceptSuccessors(_Index, _SuccessorList)
+    local SuccessorList = {};
+    for k,v in pairs(_SuccessorList) do
+        if not self.ProcessedPaths[_Index].ClosedMap["ID_"..v.X.."_"..v.Y] then
+            if not self.ProcessedPaths[_Index].OpenMap["ID_"..v.X.."_"..v.Y] then
+                table.insert(SuccessorList, v);
+            end
+        end
+    end
+    for k,v in pairs(SuccessorList) do
+        local useNode = true;
+        if self.ProcessedPaths[_Index].AcceptMethode then
+            useNode = useNode and self.ProcessedPaths[_Index].AcceptMethode(
+                v, SuccessorList, unpack(self.ProcessedPaths[_Index].AcceptArgs)
+            );
+        end
+        if useNode then
+            table.insert(self.ProcessedPaths[_Index].Open, v);
+            self.ProcessedPaths[_Index].OpenMap[v.ID] = true;
+            -- Make visible (debug only)
+            -- Logic.CreateEntity(Entities.XD_CoordinateEntity, v.X, v.Y, 0, 0);
+        end
+    end
+end
+
+function ModuleEntityMovement.Global.PathFinder:SortOpenList(_Index)
+    local comp = function(v,w)
+        return v.Distance1 < w.Distance1 and v.Distance2 < w.Distance2;
+    end
+    table.sort(self.ProcessedPaths[_Index].Open, comp);
+end
+
+function ModuleEntityMovement.Global.PathFinder:GetClosestPositionOnNodeMap(_Position, _NodeDistance)
+    if type(_Position) ~= "table" then
+        _Position = API.GetPosition(_Position);
+    end
+    local Distance = _NodeDistance;
+    local X = math.floor(_Position.X + 0.5);
+    local XMod = (X % Distance);
+    local bx = (XMod > Distance/2 and (X + (Distance - XMod))) or X - XMod;
+    local Y = math.floor(_Position.Y + 0.5);
+    local YMod = (Y % Distance);
+    local by = (YMod > Distance/2 and (Y + (Distance - YMod))) or Y - YMod;
+    return {X= bx, Y= by};
+end
+
+function ModuleEntityMovement.Global.PathFinder:GetNodeByID(_Index, _ID)
+    local node;
+    for i=1, #self.ProcessedPaths[_Index].Closed do
+        if self.ProcessedPaths[_Index].Closed[i].ID == _ID then
+            node = self.ProcessedPaths[_Index].Closed[i];
+        end
+    end
+    return node;
+end
+
+function ModuleEntityMovement.Global.PathFinder:IsPathExisting(_ID)
+    return self.PathList[_ID] ~= nil;
+end
+
+function ModuleEntityMovement.Global.PathFinder:IsPathStillCalculated(_ID)
+    return self.ProcessedPaths[_ID] ~= nil;
+end
+
+function ModuleEntityMovement.Global.PathFinder:GetPath(_ID)
+    if self:IsPathExisting(_ID) then
+        return table.copy(self.PathList[_ID]);
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+-- Path Model Class
+
+ModuleEntityMovement.Global.PathModel = {
+    Nodes = {};
+};
+
+function ModuleEntityMovement.Global.PathModel:New(_Nodes)
+    local Instance = table.copy(self);
+    Instance.Nodes = _Nodes;
+    return Instance;
+end
+
+function ModuleEntityMovement.Global.PathModel:FromList(_List)
+    local path = ModuleEntityMovement.Global.PathModel:New({});
+    local father = nil;
+
+    local Start = _List[1];
+    local End   = _List[#_List];
+
+    for i= 1, #_List, 1 do
+        local ID = GetID(_List[i]);
+        local x,y,z = Logic.EntityGetPos(ID);
+        table.insert(path.Nodes, {
+            ID        = "ID_" ..ID,
+            Marker    = 0,
+            Father    = father,
+            Visited   = false,
+            X         = x,
+            Y         = y,
+            Distance1 = API.GetDistance(ID, End),
+            Distance2 = API.GetDistance(Start, ID),
+        });
+        father = "ID_" ..ID;
+    end
+    return path;
+end
+
+function ModuleEntityMovement.Global.PathModel:AddNode(_Node)
+    local n = #self.Nodes;
+    if n > 1 then
+        _Node.Father = self.Nodes[n-1].ID;
+    else
+        _Node.Father = nil;
+    end
+    table.insert(self.Nodes, _Node);
+end
+
+function ModuleEntityMovement.Global.PathModel:Merge(_Other)
+    if _Other and #_Other.Nodes > 0 and #self.Nodes > 0 then
+        _Other.Nodes[1].Father = self.Nodes[#self.Nodes].ID;
+        for i= 1, #_Other.Nodes, 1 do
+            table.insert(self.Nodes, _Other.Nodes[i]);
+        end
+    end
+end
+
+function ModuleEntityMovement.Global.PathModel:Reduce(_By)
+    local Reduced = table.copy(self);
+    local n = #Reduced.Nodes;
+    for i= n, 1, -1 do
+        if i ~= 1 and i ~= n and i % _By ~= 0 then
+            Reduced.Nodes[i+1].Father = Reduced.Nodes[i-1].Father;
+            table.remove(Reduced.Nodes, i);
+        end
+    end
+    return Reduced;
+end
+
+function ModuleEntityMovement.Global.PathModel:Reset()
+    for k,v in pairs(self.Nodes) do
+        self.Nodes[k].Visited = false;
+    end
+end
+
+function ModuleEntityMovement.Global.PathModel:Reverse()
+    return ModuleEntityMovement.Global.PathModel:New(table.invert(self.Nodes));
+end
+
+function ModuleEntityMovement.Global.PathModel:Next()
+    local Node, ID = self:GetCurrentWaypoint();
+    if Node then
+        self.Nodes[ID].Visited = true;
+    end
+end
+
+function ModuleEntityMovement.Global.PathModel:GetCurrentWaypoint()
+    local lastWP;
+    local id = 1;
+    repeat
+        lastWP = self.Nodes[id];
+        id = id +1;
+    until ((not self.Nodes[id]) or self.Nodes[id].Visited == false);
+    if not self.Nodes[id] then
+        id = id -1;
+    end
+    return lastWP, id;
+end
+
+function ModuleEntityMovement.Global.PathModel:Convert()
+    if #self.Nodes > 0 then
+        local nodes = {};
+        for i=1, #self.Nodes do
+            local eID = Logic.CreateEntity(
+                Entities.XD_ScriptEntity,
+                self.Nodes[i].X,
+                self.Nodes[i].Y,
+                0,
+                0
+            );
+            table.insert(nodes, eID);
+        end
+        return nodes;
+    end
+end
+
+function ModuleEntityMovement.Global.PathModel:Show()
+    if #self.Nodes > 0 then
+        for i=1, #self.Nodes do
+            local ID = Logic.CreateEntity(
+                Entities.XD_ScriptEntity,
+                self.Nodes[i].X,
+                self.Nodes[i].Y,
+                0,
+                0
+            );
+            Logic.SetModel(ID, Models.Doodads_D_X_Flag);
+            Logic.SetVisible(ID, true);
+            self.Nodes[i].Marker = ID;
+        end
+    end
+end
+
+function ModuleEntityMovement.Global.PathModel:Hide()
+    for k, v in pairs(self.Nodes) do
+        DestroyEntity(v.Marker);
+        self.Nodes[k].Marker = 0;
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+-- Local Script
+
+function ModuleEntityMovement.Local:OnGameStart()
+    QSB.ScriptEvents.EntityArrived = API.RegisterScriptEvent("Event_EntityArrived");
+    QSB.ScriptEvents.EntityStuck = API.RegisterScriptEvent("Event_EntityStuck");
+    QSB.ScriptEvents.EntityAtCheckpoint = API.RegisterScriptEvent("Event_EntityAtCheckpoint");
+    QSB.ScriptEvents.PathFindingFinished = API.RegisterScriptEvent("Event_PathFindingFinished");
+    QSB.ScriptEvents.PathFindingFailed = API.RegisterScriptEvent("Event_PathFindingFailed");
+end
+
+function ModuleEntityMovement.Local:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+
+Revision:RegisterModule(ModuleEntityMovement);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Ein Modul für die Bewegung von Entities.
+--
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
+-- </ul>
+--
+-- @within Beschreibung
+-- @set sort=true
+--
+
+---
+-- Events, auf die reagiert werden kann.
+--
+-- @field EntityArrived       Ein Entity hat das Ziel erreicht. (Parameter: EntityID, Position, DataIndex)
+-- @field EntityStuck         Ein Entity kann das Ziel nicht erreichen. (Parameter: EntityID, Position, DataIndex)
+-- @field EntityAtCheckpoint  Ein Entity hat einen Wegpunkt erreicht. (Parameter: EntityID, Position, DataIndex)
+-- @field PathFindingFinished Ein Pfad wurde erfolgreich gefunden (Parameter: PathID)
+-- @field PathFindingFailed   Ein Pfad konnte nicht ermittelt werden (Parameter: PathID)
+--
+-- @within Event
+--
+QSB.ScriptEvents = QSB.ScriptEvents or {};
+
+---
+-- Bewegt ein Entity zum Zielpunkt.
+--
+-- Wenn das Ziel zu irgend einem Zeitpunkt nicht erreicht werden kann, wird die
+-- Bewegung abgebrochen und das Event QSB.ScriptEvents.EntityStuck geworfen.
+--
+-- Das Ziel gilt als erreicht, sobald sich das Entity nicht mehr bewegt. Dann
+-- wird das Event QSB.ScriptEvents.EntityArrived geworfen.
+--
+-- @param               _Entity         Bewegtes Entity (Skriptname oder ID)
+-- @param               _Target         Ziel (Skriptname, ID oder Position)
+-- @param[type=boolean] _IgnoreBlocking Direkten Weg benutzen
+-- @within Bewegung
+--
+-- @usage
+-- -- Beispiel #1: Normale Bewegung
+-- API.MoveEntity("Marcus", "Target");
+--
+-- @usage
+-- -- Beispiel #2: Schiff bewegen
+-- API.MoveEntity("Ship", "Harbor", true);
+--
+function API.MoveEntity(_Entity, _Target, _IgnoreBlocking)
+    if not IsExisting(_Entity) then
+        error("API.MoveEntity: entity '" ..tostring(_Entity).. "' does not exist!");
+        return;
+    end
+    if type(_Target) == "table" then
+        if not API.IsValidPosition(_Target) then
+            error("API.MoveEntity: position '" ..tostring(_Target).. "' is invaid!");
+            return;
+        end
+    else
+        if not IsExisting(_Target) then
+            error("API.MoveEntity: entity '" ..tostring(_Target).. "' does not exist!");
+            return;
+        end
+    end
+    local Index = ModuleEntityMovement.Global:FillMovingEntityDataForController(
+        _Entity, {_Target}, nil, nil, _IgnoreBlocking
+    );
+    API.StartHiResJob(function(_Index)
+        return ModuleEntityMovement.Global:MoveEntityPathController(_Index);
+    end, Index);
+    return Index;
+end
+
+---
+-- Bewegt ein Entity zum Zielpunkt und lässt es das Ziel anschauen.
+--
+-- Wenn das Ziel zu irgend einem Zeitpunkt nicht erreicht werden kann, wird die
+-- Bewegung abgebrochen und das Event QSB.ScriptEvents.EntityStuck geworfen.
+--
+-- Das Ziel gilt als erreicht, sobald sich das Entity nicht mehr bewegt. Dann
+-- wird das Event QSB.ScriptEvents.EntityArrived geworfen.
+--
+-- @param               _Entity         Bewegtes Entity (Skriptname oder ID)
+-- @param               _Target         Ziel (Skriptname, ID oder Position)
+-- @param               _LookAt         Angeschaute Position (Skriptname, ID oder Position)
+-- @param[type=boolean] _IgnoreBlocking Direkten Weg benutzen
+-- @within Bewegung
+--
+-- @usage
+-- API.MoveEntityAndLookAt("Marcus", "Target", "Alandra");
+--
+function API.MoveEntityAndLookAt(_Entity, _Target, _LookAt, _IgnoreBlocking)
+    if not IsExisting(_Entity) then
+        error("API.MoveEntityAndLookAt: entity '" ..tostring(_Entity).. "' does not exist!");
+        return;
+    end
+    if type(_Target) == "table" then
+        if not API.IsValidPosition(_Target) then
+            error("API.MoveEntityAndLookAt: position '" ..tostring(_Target).. "' is invaid!");
+            return;
+        end
+    else
+        if not IsExisting(_Target) then
+            error("API.MoveEntityAndLookAt: entity '" ..tostring(_Target).. "' does not exist!");
+            return;
+        end
+    end
+    local Index = ModuleEntityMovement.Global:FillMovingEntityDataForController(
+        _Entity, {_Target}, _LookAt, nil, _IgnoreBlocking
+    );
+    API.StartHiResJob(function(_Index)
+        return ModuleEntityMovement.Global:MoveEntityPathController(_Index);
+    end, Index);
+    return Index;
+end
+
+---
+-- Bewegt ein Entity relativ zu einer Position.
+--
+-- Wenn das Ziel zu irgend einem Zeitpunkt nicht erreicht werden kann, wird die
+-- Bewegung abgebrochen und das Event QSB.ScriptEvents.EntityStuck geworfen.
+--
+-- Das Ziel gilt als erreicht, sobald sich das Entity nicht mehr bewegt. Dann
+-- wird das Event QSB.ScriptEvents.EntityArrived geworfen.
+--
+-- @param                _Entity         Bewegtes Entity (Skriptname oder ID)
+-- @param                _Target         Ziel (Skriptname, ID oder Position)
+-- @param[type=number]  _Distance        Entfernung zum Ziel
+-- @param[type=number]  _Angle           Winkel zum Ziel
+-- @within Bewegung
+--
+-- @usage
+-- API.MoveEntityToPosition("Marcus", "Target", 1000, 90);
+--
+function API.MoveEntityToPosition(_Entity, _Target, _Distance, _Angle, _IgnoreBlocking)
+    if not IsExisting(_Entity) then
+        error("API.MoveEntityToPosition: entity '" ..tostring(_Entity).. "' does not exist!");
+        return;
+    end
+    if type(_Target) == "table" then
+        if not API.IsValidPosition(_Target) then
+            error("API.MoveEntityToPosition: position '" ..tostring(_Target).. "' is invaid!");
+            return;
+        end
+    else
+        if not IsExisting(_Target) then
+            error("API.MoveEntityToPosition: entity '" ..tostring(_Target).. "' does not exist!");
+            return;
+        end
+    end
+    local Target = API.GetCirclePosition(_Target, _Distance, _Angle);
+    if not API.IsValidPosition(Target) then
+        return;
+    end
+    local Index = ModuleEntityMovement.Global:FillMovingEntityDataForController(
+        _Entity, {Target}, nil, nil, _IgnoreBlocking
+    );
+    API.StartHiResJob(function(_Index)
+        return ModuleEntityMovement.Global:MoveEntityPathController(_Index);
+    end, Index);
+    return Index;
+end
+
+---
+-- Bewegt ein Entity zum Zielpunkt und führt die Funktion aus.
+--
+-- Wenn das Ziel zu irgend einem Zeitpunkt nicht erreicht werden kann, wird die
+-- Bewegung abgebrochen und das Event QSB.ScriptEvents.EntityStuck geworfen.
+--
+-- Das Ziel gilt als erreicht, sobald sich das Entity nicht mehr bewegt. Dann
+-- wird das Event QSB.ScriptEvents.EntityArrived geworfen.
+--
+-- @param                _Entity         Bewegtes Entity (Skriptname oder ID)
+-- @param                _Target         Ziel (Skriptname, ID oder Position)
+-- @param[type=function] _Action         Funktion wenn Entity ankommt
+-- @param[type=boolean]  _IgnoreBlocking Direkten Weg benutzen
+-- @within Bewegung
+--
+-- @usage
+-- API.MoveEntityAndExecute("Marcus", "Target", function()
+--     Logic.DEBUG_AddNote("Marcus ist angekommen!");
+-- end);
+--
+function API.MoveEntityAndExecute(_Entity, _Target, _Action, _IgnoreBlocking)
+    if not IsExisting(_Entity) then
+        error("API.MoveEntityAndExecute: entity '" ..tostring(_Entity).. "' does not exist!");
+        return;
+    end
+    if type(_Target) == "table" then
+        if not API.IsValidPosition(_Target) then
+            error("API.MoveEntityAndExecute: position '" ..tostring(_Target).. "' is invaid!");
+            return;
+        end
+    else
+        if not IsExisting(_Target) then
+            error("API.MoveEntityAndExecute: entity '" ..tostring(_Target).. "' does not exist!");
+            return;
+        end
+    end
+    local Index = ModuleEntityMovement.Global:FillMovingEntityDataForController(
+        _Entity, {_Target}, nil, _Action, _IgnoreBlocking
+    );
+    API.StartHiResJob(function(_Index)
+        return ModuleEntityMovement.Global:MoveEntityPathController(_Index);
+    end, Index);
+    return Index;
+end
+
+---
+-- Bewegt ein Entity über den angegebenen Pfad.
+--
+-- Wenn das Ziel zu irgend einem Zeitpunkt nicht erreicht werden kann, wird die
+-- Bewegung abgebrochen und das Event QSB.ScriptEvents.EntityStuck geworfen.
+--
+-- Jedes Mal wenn das Entity einen Wegpunkt erreicht hat, wird das Event
+-- QSB.ScriptEvents.EntityAtCheckpoint geworfen.
+--
+-- Das Ziel gilt als erreicht, sobald sich das Entity nicht mehr bewegt. Dann
+-- wird das Event QSB.ScriptEvents.EntityArrived geworfen.
+--
+-- @param                _Entity         Bewegtes Entity (Skriptname oder ID)
+-- @param                _WaypointList   Liste mit Wegpunkten
+-- @param[type=boolean]  _IgnoreBlocking Direkten Weg benutzen
+-- @within Bewegung
+--
+-- @usage
+-- API.MoveEntityOnCheckpoints("Marcus", {"WP1", "WP2", "WP3", "Target"});
+--
+function API.MoveEntityOnCheckpoints(_Entity, _WaypointList, _IgnoreBlocking)
+    if not IsExisting(_Entity) then
+        error("API.MoveEntityOnCheckpoints: entity '" ..tostring(_Entity).. "' does not exist!");
+        return;
+    end
+    if type(_WaypointList) ~= "table" then
+        error("API.MoveEntityOnCheckpoints: target list must be a table!");
+        return;
+    end
+    local Index = ModuleEntityMovement.Global:FillMovingEntityDataForController(
+        _Entity, _WaypointList, nil, nil, _IgnoreBlocking
+    );
+    API.StartHiResJob(function(_Index)
+        return ModuleEntityMovement.Global:MoveEntityPathController(_Index);
+    end, Index);
+    return Index;
+end
+
+---
+-- Positioniert ein Entity und lässt es einen Ort ansehen.
+--
+-- @param _Entity Bewegtes Entity (Skriptname oder ID)
+-- @param _Target Ziel (Skriptname, ID oder Position)
+-- @param _LookAt Angeschaute Position (Skriptname, ID oder Position)
+-- @within Bewegung
+--
+-- @usage
+-- API.PlaceEntityAndLookAt("Marcus", "Target", "Alandra");
+--
+function API.PlaceEntityAndLookAt(_Entity, _Target, _LookAt)
+    if not IsExisting(_Entity) then
+        error("API.PlaceEntityAndLookAt: entity '" ..tostring(_Entity).. "' does not exist!");
+        return;
+    end
+    if type(_Target) == "table" then
+        if not API.IsValidPosition(_Target) then
+            error("API.PlaceEntityAndLookAt: position '" ..tostring(_Target).. "' is invaid!");
+            return;
+        end
+    else
+        if not IsExisting(_Target) then
+            error("API.PlaceEntityAndLookAt: entity '" ..tostring(_Target).. "' does not exist!");
+            return;
+        end
+    end
+    API.SetPosition(_Entity, _Target);
+    API.LookAt(_Entity, _LookAt);
+end
+
+---
+-- Positioniert ein Entity relativ zu einer Position.
+--
+-- @param               _Entity  Bewegtes Entity (Skriptname oder ID)
+-- @param               _Target  Ziel (Skriptname, ID oder Position)
+-- @param[type=number] _Distance Entfernung zum Ziel
+-- @param[type=number] _Angle    Winkel zum Ziel
+-- @within Bewegung
+--
+-- @usage
+-- API.PlaceEntityAndLookAt("Marcus", "Target", 1000, 90);
+--
+function API.PlaceEntityToPosition(_Entity, _Target, _Distance, _Angle)
+    if not IsExisting(_Entity) then
+        error("API.PlaceEntityToPosition: entity '" ..tostring(_Entity).. "' does not exist!");
+        return;
+    end
+    if type(_Target) == "table" then
+        if not API.IsValidPosition(_Target) then
+            error("API.PlaceEntityToPosition: position '" ..tostring(_Target).. "' is invaid!");
+            return;
+        end
+    else
+        if not IsExisting(_Target) then
+            error("API.PlaceEntityToPosition: entity '" ..tostring(_Target).. "' does not exist!");
+            return;
+        end
+    end
+    local Target = API.GetCirclePosition(_Target, _Distance, _Angle);
+    if not API.IsValidPosition(Target) then
+        return;
+    end
+    API.SetPosition(_Entity, Target);
+end
+
+---
+-- Beginnt die Wegsuche zwischen zwei Punkten.
+--
+-- Der Pfad wird nicht sofort zurückgegeben. Stattdessen eine ID. Der Pfad wird
+-- asynchron gesucht, damit das Spiel nicht einfriert. Wenn die Pfadsuche
+-- abgeschlossen wird, werden entsprechende Events ausgelöst.
+--
+-- <ul>
+-- <li><b>QSB.ScriptEvents.PathFindingFinished</b><br/>
+-- Ein Pfad zwischen den Punkten wurde gefunden.</li>
+-- <li><b>QSB.ScriptEvents.PathFindingFailed</b><br/>
+-- Es konnte kein Pfad gefunden werden.</li>
+-- </ul>
+--
+-- Wird der Node Filter weggelassen, wird automatisch eine Funktion erstellt,
+-- die alle Positionen ausschließt, die geblockt sind.
+--
+-- @param                _StartPosition Beginn des Pfad (Position, Skriptname oder ID)
+-- @param                _EndPosition   Ende des Pfad (Position, Skriptname oder ID)
+-- @param[type=function] _NodeFilter    (Optional) Filterfunktion für Wegpunkte
+-- @retun[type=number] ID des Pfad
+-- @within Pfadsuche
+--
+-- @usage
+-- -- Beispiel #1: Standard Wegsuche
+-- MyPathID = API.StartPathfinding("Start", "End");
+--
+-- @usage
+-- -- Beispiel #2: Wegsuche mit Filter
+-- MyPathID = API.StartPathfinding("Start", "End", function(_CurrentNode, _AdjacentNodes)
+--     -- Position verwerfen, wenn sie im Blocking ist
+--     if Logic.DEBUG_GetSectorAtPosition(_CurrentNode.X, _CurrentNode.Y) == 0 then
+--         return false;
+--     end
+--     -- Position verwerfen, wenn sie auf Territorium 16 liegt
+--     if Logic.GetTerritoryAtPosition(_CurrentNode.X, _CurrentNode.Y) == 16 then
+--         return false;
+--     end
+--     -- Position akzeptieren
+--     return true;
+-- end);
+--
+function API.StartPathfinding(_StartPosition, _EndPosition, _NodeFilter)
+    if type(_StartPosition) ~= "table" then
+        _StartPosition = API.GetPosition(_StartPosition);
+    end
+    if type(_EndPosition) ~= "table" then
+        _EndPosition = API.GetPosition(_EndPosition);
+    end
+
+    _NodeFilter = _NodeFilter or function(_CurrentNode, _AdjacentNodes)
+        if Logic.DEBUG_GetSectorAtPosition(_CurrentNode.X, _CurrentNode.Y) == 0 then
+            return false;
+        end
+        return true;
+    end
+    if type(_NodeFilter) ~= "function" then
+        error("API.StartPathfinding: node filter must be a function!");
+        return;
+    end
+    return ModuleEntityMovement.Global.PathFinder:Insert(
+        _EndPosition, _StartPosition, 750, 3, _NodeFilter
+    );
+end
+
+---
+-- Prüft ob ein Pfad mit der ID existiert.
+--
+-- @param[type=number]  _ID ID des Pfad
+-- @retun[type=boolean] Der Pfad existiert
+-- @within Pfadsuche
+--
+-- @usage
+-- if API.IsPathExisting(MyPathID) then
+--     -- Mach was
+-- end
+--
+function API.IsPathExisting(_ID)
+    return ModuleEntityMovement.Global.PathFinder:IsPathExisting(_ID);
+end
+
+---
+-- Prüft ob ein Pfad mit der ID noch gesucht wird.
+--
+-- @param[type=number]  _ID ID des Pfad
+-- @retun[type=boolean] Der Pfad wird gesucht
+-- @within Pfadsuche
+--
+-- @usage
+-- if API.IsPathBeingCalculated(MyPathID) then
+--     -- Mach was
+-- end
+--
+function API.IsPathBeingCalculated(_ID)
+    return ModuleEntityMovement.Global.PathFinder:IsPathStillCalculated(_ID);
+end
+
+---
+-- Gibt den Pfad mit der ID als Liste von Entity-IDs zurück.
+--
+-- @param[type=number]  _ID ID des Pfad
+-- @retun[type=table] Liste mit IDs
+-- @within Pfadsuche
+--
+-- @usage
+-- WaypointList = API.RetrievePath(MyPathID);
+--
+function API.RetrievePath(_ID)
+    if not API.IsPathExisting(_ID) then
+        error("API.StartPathfinding: no path is existing for id " .._ID.. "!");
+        return;
+    end
+    if API.IsPathBeingCalculated(_ID) then
+        error("API.StartPathfinding: the path " .._ID.. " is still being calculated!");
+        return;
+    end
+    local Path = ModuleEntityMovement.Global.PathFinder:GetPath(_ID);
+    return Path:Reduce(5):Convert();
 end
 
 --[[
@@ -22656,11 +23645,11 @@ function ModuleKnightTitleRequirements.Global:OverrideKnightTitleChanged()
         GameCallback_KnightTitleChanged_Orig_QSB_Requirements(_PlayerID, _TitleID);
 
         -- Send event
+        API.SendScriptEvent(QSB.ScriptEvents.KnightTitleChanged, _PlayerID, _TitleID);
         Logic.ExecuteInLuaLocalState(string.format(
             [[API.SendScriptEvent(QSB.ScriptEvents.KnightTitleChanged, %d, %d)]],
             _PlayerID, _TitleID
         ));
-        API.SendScriptEvent(QSB.ScriptEvents.KnightTitleChanged, _PlayerID, _TitleID);
     end
 end
 
@@ -22670,11 +23659,11 @@ function ModuleKnightTitleRequirements.Global:OverwriteConsumedGoods()
         GameCallback_ConsumeGood_Orig_QSB_Requirements(_Consumer, _Good, _Building)
 
         -- Send event
+        API.SendScriptEvent(QSB.ScriptEvents.GoodsConsumed, _Consumer, _Good, _Building);
         Logic.ExecuteInLuaLocalState(string.format(
             [[API.SendScriptEvent(QSB.ScriptEvents.GoodsConsumed, %d, %d, %d)]],
             _Consumer, _Good, _Building
         ));
-        API.SendScriptEvent(QSB.ScriptEvents.GoodsConsumed, _Consumer, _Good, _Building);
     end
 end
 
@@ -25686,6 +26675,2606 @@ You may use and modify this file unter the terms of the MIT licence.
 
 -- -------------------------------------------------------------------------- --
 
+ModuleBehaviorCollection = {
+    Properties = {
+        Name = "ModuleBehaviorCollection",
+    },
+
+    Global = {
+        SoldierKillsCounter = {},
+        VictoryWithPartyEntities = {},
+    },
+    Local = {},
+
+    Shared = {},
+};
+
+-- Global ------------------------------------------------------------------- --
+
+function ModuleBehaviorCollection.Global:OnGameStart()
+    for i= 0, 8 do
+        self.SoldierKillsCounter[i] = {};
+    end
+    self:OverrideIsObjectiveCompleted();
+    self:OverrideOnQuestTriggered();
+end
+
+function ModuleBehaviorCollection.Global:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.ThiefInfiltratedBuilding then
+        self:OnThiefInfiltratedBuilding(arg[1], arg[2], arg[3], arg[4]);
+    elseif _ID == QSB.ScriptEvents.ThiefDeliverEarnings then
+        self:OnThiefDeliverEarnings(arg[1], arg[2], arg[3], arg[4], arg[5]);
+    elseif _ID == QSB.ScriptEvents.EntityKilled then
+        self:OnEntityKilled(arg[1], arg[2], arg[3], arg[4]);
+    end
+end
+
+function ModuleBehaviorCollection.Global:OverrideOnQuestTriggered()
+    QuestTemplate.Trigger_Orig_QSB_NewBehaviors = QuestTemplate.Trigger;
+    QuestTemplate.Trigger = function(self)
+        for b= 1, #self.Objectives, 1 do
+            if self.Objectives[b] then
+                -- Special Objective.DestroyEntities for spawners
+                if self.Objectives[b].Type == Objective.DestroyEntities and self.Objectives[b].Data[1] == 3 then
+                    -- Refill spawner once at quest start
+                    if self.Objectives[b].Data[5] ~= true then
+                        local SpawnPoints = self.Objectives[b].Data[2][0];
+                        local SpawnAmount = self.Objectives[b].Data[3];
+                        -- Delete remaining entities
+                        for i=1, SpawnPoints, 1 do
+                            local ID = GetID(self.Objectives[b].Data[2][i]);
+                            local SpawnedEntities = {Logic.GetSpawnedEntities(ID)};
+                            for j= 1, #SpawnedEntities, 1 do
+                                DestroyEntity(SpawnedEntities[j]);
+                            end
+                        end
+                        -- Spawn new entities and distribute them equally over
+                        -- all spawner entities
+                        while (SpawnAmount > 0) do
+                            for i=1, SpawnPoints, 1 do
+                                if SpawnAmount < 1 then
+                                    break;
+                                end
+                                local ID = GetID(self.Objectives[b].Data[2][i]);
+                                Logic.RespawnResourceEntity_Spawn(ID);
+                                SpawnAmount = SpawnAmount -1;
+                            end
+                        end
+                        -- Set icon
+                        local CategoryDefinigEntity = Logic.GetSpawnedEntities(self.Objectives[b].Data[2][1]);
+                        if not self.Objectives[b].Data[6] then
+                            self.Objectives[b].Data[6] = {7, 12};
+                            if Logic.IsEntityInCategory(CategoryDefinigEntity, EntityCategories.AttackableAnimal) == 1 then
+                                self.Objectives[b].Data[6] = {13, 8};
+                            end
+                        end
+                        self.Objectives[b].Data[5] = true;
+                    end
+                end
+            end
+        end
+        self:Trigger_Orig_QSB_NewBehaviors();
+    end
+end
+
+function ModuleBehaviorCollection.Global:OverrideIsObjectiveCompleted()
+    QuestTemplate.IsObjectiveCompleted_Orig_QSB_NewBehaviors = QuestTemplate.IsObjectiveCompleted;
+    QuestTemplate.IsObjectiveCompleted = function(self, objective)
+        local objectiveType = objective.Type;
+        if objective.Completed ~= nil then
+            if objectiveType == Objective.DestroyEntities and objective.Data[1] == 3 then
+                objective.Data[5] = nil;
+            end
+            return objective.Completed;
+        end
+
+        if objectiveType == Objective.DestroyEntities then
+            if objective.Data[1] == 3 then
+                objective.Completed = self:AreSpawnedQuestEntitiesDestroyed(objective);
+            else
+                return self:IsObjectiveCompleted_Orig_QSB_NewBehaviors(objective);
+            end
+        else
+            return self:IsObjectiveCompleted_Orig_QSB_NewBehaviors(objective);
+        end
+    end
+
+    QuestTemplate.AreSpawnedQuestEntitiesDestroyed = function(self, _Objective)
+        if _Objective.Data[1] == 3 then
+            local AllSpawnedEntities = {};
+            for i=1, _Objective.Data[2][0], 1 do
+                local ID = GetID(_Objective.Data[2][i]);
+                AllSpawnedEntities = Array_Append(
+                    AllSpawnedEntities,
+                    {Logic.GetSpawnedEntities(ID)}
+                );
+            end
+            if #AllSpawnedEntities == 0 then
+                return true;
+            end
+        end
+    end
+end
+
+function ModuleBehaviorCollection.Global:GetPossibleModels()
+    local Data = {};
+    -- Add generic models
+    for k, v in pairs(Models) do
+        if  not string.find(k, "Animals_")
+        and not string.find(k, "MissionMap_")
+        and not string.find(k, "R_Fish")
+        and not string.find(k, "^[GEHUVXYZgt][ADSTfm]*")
+        and not string.find(string.lower(k), "goods|tools_") then
+            table.insert(Data, k);
+        end
+    end
+    -- Add specific models
+    table.insert(Data, "Effects_Dust01");
+    table.insert(Data, "Effects_E_DestructionSmoke");
+    table.insert(Data, "Effects_E_DustLarge");
+    table.insert(Data, "Effects_E_DustSmall");
+    table.insert(Data, "Effects_E_Firebreath");
+    table.insert(Data, "Effects_E_Fireworks01");
+    table.insert(Data, "Effects_E_Flies01");
+    table.insert(Data, "Effects_E_Grasshopper03");
+    table.insert(Data, "Effects_E_HealingFX");
+    table.insert(Data, "Effects_E_Knight_Chivalry_Aura");
+    table.insert(Data, "Effects_E_Knight_Plunder_Aura");
+    table.insert(Data, "Effects_E_Knight_Song_Aura");
+    table.insert(Data, "Effects_E_Knight_Trader_Aura");
+    table.insert(Data, "Effects_E_Knight_Wisdom_Aura");
+    table.insert(Data, "Effects_E_KnightFight");
+    table.insert(Data, "Effects_E_NA_BlowingSand01");
+    table.insert(Data, "Effects_E_NE_BlowingSnow01");
+    table.insert(Data, "Effects_E_Oillamp");
+    table.insert(Data, "Effects_E_SickBuilding");
+    table.insert(Data, "Effects_E_Splash");
+    table.insert(Data, "Effects_E_Torch");
+    table.insert(Data, "Effects_Fire01");
+    table.insert(Data, "Effects_FX_Lantern");
+    table.insert(Data, "Effects_FX_SmokeBIG");
+    table.insert(Data, "Effects_XF_BuildingSmoke");
+    table.insert(Data, "Effects_XF_BuildingSmokeLarge");
+    table.insert(Data, "Effects_XF_BuildingSmokeMedium");
+    table.insert(Data, "Effects_XF_HouseFire");
+    table.insert(Data, "Effects_XF_HouseFireLo");
+    table.insert(Data, "Effects_XF_HouseFireMedium");
+    table.insert(Data, "Effects_XF_HouseFireSmall");
+    if g_GameExtraNo > 0 then
+        table.insert(Data, "Effects_E_KhanaTemple_Fire");
+        table.insert(Data, "Effects_E_Knight_Saraya_Aura");
+    end
+    -- Sort list
+    table.sort(Data);
+    return Data;
+end
+
+function ModuleBehaviorCollection.Global:OnThiefInfiltratedBuilding(_ThiefID, _PlayerID, _BuildingID, _BuildingPlayerID)
+    for i=1, Quests[0] do
+        if Quests[i] and Quests[i].State == QuestState.Active and Quests[i].ReceivingPlayer == _PlayerID then
+            for j=1, Quests[i].Objectives[0] do
+                if Quests[i].Objectives[j].Type == Objective.Custom2 then
+                    if Quests[i].Objectives[j].Data[1].Name == "Goal_SpyOnBuilding" then
+                        if GetID(Quests[i].Objectives[j].Data[1].Building) == _BuildingID then
+                            Quests[i].Objectives[j].Data[1].Infiltrated = true;
+                            if Quests[i].Objectives[j].Data[1].Delete then
+                                DestroyEntity(_ThiefID);
+                            end
+                        end
+
+                    elseif Quests[i].Objectives[j].Data[1].Name == "Goal_StealFromBuilding" then
+                        local found;
+                        local isCathedral = Logic.IsEntityInCategory(_BuildingID, EntityCategories.Cathedrals) == 1;
+                        local isWarehouse = Logic.GetEntityType(_BuildingID) == Entities.B_StoreHouse;
+                        if isWarehouse or isCathedral then
+                            Quests[i].Objectives[j].Data[1].SuccessfullyStohlen = true;
+                        else
+                            for k=1, #Quests[i].Objectives[j].Data[1].RobberList do
+                                local stohlen = Quests[i].Objectives[j].Data[1].RobberList[k];
+                                if stohlen[1] == _BuildingID and stohlen[2] == _ThiefID then
+                                    found = true;
+                                    break;
+                                end
+                            end
+                        end
+                        if not found then
+                            table.insert(Quests[i].Objectives[j].Data[1].RobberList, {_BuildingID, _ThiefID});
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+function ModuleBehaviorCollection.Global:OnThiefDeliverEarnings(_ThiefID, _PlayerID, _BuildingID, _BuildingPlayerID, _GoldAmount)
+    for i=1, Quests[0] do
+        if Quests[i] and Quests[i].State == QuestState.Active and Quests[i].ReceivingPlayer == _PlayerID then
+            for j=1, Quests[i].Objectives[0] do
+                if Quests[i].Objectives[j].Type == Objective.Custom2 then
+                    if Quests[i].Objectives[j].Data[1].Name == "Goal_StealFromBuilding" then
+                        for k=1, #Quests[i].Objectives[j].Data[1].RobberList do
+                            local stohlen = Quests[i].Objectives[j].Data[1].RobberList[k];
+                            if stohlen[1] == GetID(Quests[i].Objectives[j].Data[1].Building) and stohlen[2] == _ThiefID then
+                                Quests[i].Objectives[j].Data[1].SuccessfullyStohlen = true;
+                                break;
+                            end
+                        end
+
+                    elseif Quests[i].Objectives[j].Data[1].Name == "Goal_StealGold" then
+                        local CurrentObjective = Quests[i].Objectives[j].Data[1];
+                        if CurrentObjective.Target == -1 or CurrentObjective.Target == _BuildingPlayerID then
+                            Quests[i].Objectives[j].Data[1].StohlenGold = Quests[i].Objectives[j].Data[1].StohlenGold + _GoldAmount;
+                            if CurrentObjective.Printout then
+                                API.Note(string.format(
+                                    "%d/%d %s",
+                                    CurrentObjective.StohlenGold,
+                                    CurrentObjective.Amount,
+                                    API.Localize({de = "Talern gestohlen",en = "gold stolen",})
+                                ));
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+function ModuleBehaviorCollection.Global:OnEntityKilled(_KilledEntityID, _KilledPlayerID, _KillerEntityID, _KillerPlayerID)
+    if _KilledPlayerID ~= 0 and _KillerPlayerID ~= 0 then
+        self.SoldierKillsCounter[_KillerPlayerID][_KilledPlayerID] = self.SoldierKillsCounter[_KillerPlayerID][_KilledPlayerID] or 0
+        if Logic.IsEntityInCategory(_KilledEntityID, EntityCategories.Soldier) == 1 then
+            self.SoldierKillsCounter[_KillerPlayerID][_KilledPlayerID] = self.SoldierKillsCounter[_KillerPlayerID][_KilledPlayerID] +1
+        end
+    end
+end
+
+function ModuleBehaviorCollection.Global:GetEnemySoldierKillsOfPlayer(_PlayerID1, _PlayerID2)
+    return self.SoldierKillsCounter[_PlayerID1][_PlayerID2] or 0;
+end
+
+-- Local -------------------------------------------------------------------- --
+
+function ModuleBehaviorCollection.Local:OnGameStart()
+    self:DisplayQuestObjective();
+    self:GetEntitiesOrTerritoryList();
+    self:OverrideSaveQuestEntityTypes();
+end
+
+function ModuleBehaviorCollection.Local:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    end
+end
+
+function ModuleBehaviorCollection.Local:DisplayQuestObjective()
+    GUI_Interaction.DisplayQuestObjective_Orig_NewBehavior = GUI_Interaction.DisplayQuestObjective;
+    GUI_Interaction.DisplayQuestObjective = function(_QuestIndex, _MessageKey)
+        local QuestIndexTemp = tonumber(_QuestIndex);
+        if QuestIndexTemp then
+            _QuestIndex = QuestIndexTemp;
+        end
+        local Quest, QuestType = GUI_Interaction.GetPotentialSubQuestAndType(_QuestIndex);
+        local QuestObjectivesPath = "/InGame/Root/Normal/AlignBottomLeft/Message/QuestObjectives";
+        XGUIEng.ShowAllSubWidgets("/InGame/Root/Normal/AlignBottomLeft/Message/QuestObjectives", 0);
+
+        if QuestType == Objective.DestroyEntities and Quest.Objectives[1].Data[1] == 3 then
+            local QuestObjectiveContainer = QuestObjectivesPath .. "/GroupEntityType";
+            local QuestTypeCaption = Wrapped_GetStringTableText(_QuestIndex, "UI_Texts/QuestDestroy");
+            local EntitiesList = GUI_Interaction.GetEntitiesOrTerritoryListForQuest( Quest, QuestType );
+            local EntitiesAmount = #EntitiesList;
+            if not Quest.Objectives[1].Data[5] and #EntitiesList == 0 then
+                EntitiesAmount = Quest.Objectives[1].Data[2][0] * Quest.Objectives[1].Data[3];
+            end
+
+            XGUIEng.ShowWidget(QuestObjectiveContainer .. "/AdditionalCaption", 0);
+            XGUIEng.ShowWidget(QuestObjectiveContainer .. "/AdditionalCondition", 0);
+            SetIcon(QuestObjectiveContainer .. "/Icon", Quest.Objectives[1].Data[6]);
+            XGUIEng.SetText(QuestObjectiveContainer .. "/Number", "{center}" .. EntitiesAmount);
+
+            XGUIEng.SetText(QuestObjectiveContainer .. "/Caption", "{center}" .. QuestTypeCaption);
+            XGUIEng.ShowWidget(QuestObjectiveContainer, 1);
+            GUI_Interaction.SetQuestTypeIcon(QuestObjectiveContainer .. "/QuestTypeIcon", _QuestIndex);
+            if Quest.State == QuestState.Over then
+                if Quest.Result == QuestResult.Success then
+                    XGUIEng.ShowWidget(QuestObjectivesPath .. "/QuestOverSuccess", 1);
+                elseif Quest.Result == QuestResult.Failure then
+                    XGUIEng.ShowWidget(QuestObjectivesPath .. "/QuestOverFailure", 1);
+                end
+            end
+            return;
+        end
+        GUI_Interaction.DisplayQuestObjective_Orig_NewBehavior(_QuestIndex, _MessageKey);
+    end
+end
+
+function ModuleBehaviorCollection.Local:GetEntitiesOrTerritoryList()
+    GUI_Interaction.GetEntitiesOrTerritoryListForQuest_Orig_NewBehavior = GUI_Interaction.GetEntitiesOrTerritoryListForQuest;
+    GUI_Interaction.GetEntitiesOrTerritoryListForQuest = function(_Quest, _QuestType)
+        local IsEntity = true;
+        local EntityOrTerritoryList = {};
+        if _QuestType == Objective.DestroyEntities then
+            if _Quest.Objectives[1].Data and _Quest.Objectives[1].Data[1] == 3 then
+                for i=1, _Quest.Objectives[1].Data[2][0], 1 do
+                    local ID = GetID(_Quest.Objectives[1].Data[2][i]);
+                    EntityOrTerritoryList = Array_Append(EntityOrTerritoryList, {Logic.GetSpawnedEntities(ID)});
+                end
+                return EntityOrTerritoryList, IsEntity;
+            end
+        end
+        return GUI_Interaction.GetEntitiesOrTerritoryListForQuest_Orig_NewBehavior(_Quest, _QuestType);
+    end
+end
+
+function ModuleBehaviorCollection.Local:OverrideSaveQuestEntityTypes()
+    GUI_Interaction.SaveQuestEntityTypes_Orig_NewBehavior = GUI_Interaction.SaveQuestEntityTypes;
+    GUI_Interaction.SaveQuestEntityTypes = function(_QuestIndex)
+        if g_Interaction.SavedQuestEntityTypes[_QuestIndex] ~= nil then
+            return;
+        end
+        local Quest, QuestType = GUI_Interaction.GetPotentialSubQuestAndType(_QuestIndex);
+        if QuestType == Objective.DestroyEntities and Quest.Objectives[1].Data[1] == 3 then
+            local EntitiesList = GUI_Interaction.GetEntitiesOrTerritoryListForQuest(Quest, QuestType);
+            EntitiesList[0] = #EntitiesList;
+            if EntitiesList ~= nil then
+                g_Interaction.SavedQuestEntityTypes[_QuestIndex] = {};
+                for i = 1, EntitiesList[0], 1 do
+                    if Logic.IsEntityAlive(EntitiesList[i]) then
+                        local EntityType = Logic.GetEntityType(GetID(EntitiesList[i]));
+                        table.insert(g_Interaction.SavedQuestEntityTypes[_QuestIndex], i, EntityType);
+                    end
+                end
+                return;
+            end
+        end
+        GUI_Interaction.SaveQuestEntityTypes_Orig_NewBehavior(_QuestIndex)
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+
+Revision:RegisterModule(ModuleBehaviorCollection);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+--
+-- Dieses Modul fügt neue Behavior für den Editor hinzu.
+--
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
+-- <li><a href="QSB_1_GUI.api.html">(1) Benutzerschnittstelle</a></li>
+-- <li><a href="QSB_1_Entity.api.html">(1) Entitätensteuerung</a></li>
+-- </ul>
+--
+-- @within Beschreibung
+-- @set sort=true
+--
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Die neuen Behavior für den Editor.
+--
+-- @set sort=true
+--
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Ein Entity muss sich zu einem Ziel bewegen und eine Distanz unterschreiten.
+--
+-- Optional kann das Ziel mit einem Marker markiert werden.
+--
+-- @param[type=string]  _ScriptName Skriptname des Entity
+-- @param[type=string]  _Target     Skriptname des Ziels
+-- @param[type=number]  _Distance   Entfernung
+-- @param[type=boolean] _UseMarker  Ziel markieren
+--
+-- @within Goal
+--
+function Goal_MoveToPosition(...)
+    return B_Goal_MoveToPosition:new(...);
+end
+
+B_Goal_MoveToPosition = {
+    Name = "Goal_MoveToPosition",
+    Description = {
+        en = "Goal: A entity have to moved as close as the distance to another entity. The target can be marked with a static marker.",
+        de = "Ziel: Ein Entity muss sich einer anderen bis auf eine bestimmte Distanz nähern. Die Lupe wird angezeigt, das Ziel kann markiert werden.",
+        fr = "Objectif: une entité doit s'approcher d'une autre à une distance donnée. La loupe est affichée, la cible peut être marquée.",
+    },
+    Parameter = {
+        { ParameterType.ScriptName, en = "Entity",   de = "Entity",         fr = "Entité" },
+        { ParameterType.ScriptName, en = "Target",   de = "Ziel",           fr = "Cible" },
+        { ParameterType.Number,     en = "Distance", de = "Entfernung",     fr = "Distance" },
+        { ParameterType.Custom,     en = "Marker",   de = "Ziel markieren", fr = "Marquer la cible" },
+    },
+}
+
+function B_Goal_MoveToPosition:GetGoalTable()
+    return {Objective.Distance, self.Entity, self.Target, self.Distance, self.Marker}
+end
+
+function B_Goal_MoveToPosition:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.Entity = _Parameter
+    elseif (_Index == 1) then
+        self.Target = _Parameter
+    elseif (_Index == 2) then
+        self.Distance = _Parameter * 1
+    elseif (_Index == 3) then
+        self.Marker = API.ToBoolean(_Parameter)
+    end
+end
+
+function B_Goal_MoveToPosition:GetCustomData( _Index )
+    local Data = {};
+    if _Index == 3 then
+        Data = {"true", "false"}
+    end
+    return Data
+end
+
+Revision:RegisterBehavior(B_Goal_MoveToPosition);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Der Spieler muss einen bestimmten Quest abschließen.
+--
+-- @param[type=string] _QuestName Name des Quest
+--
+-- @within Goal
+--
+function Goal_WinQuest(...)
+    return B_Goal_WinQuest:new(...);
+end
+
+B_Goal_WinQuest = {
+    Name = "Goal_WinQuest",
+    Description = {
+        en = "Goal: The player has to win a given quest.",
+        de = "Ziel: Der Spieler muss eine angegebene Quest erfolgreich abschliessen.",
+        fr = "Objectif: Le joueur doit réussir une quête indiquée.",
+    },
+    Parameter = {
+        { ParameterType.QuestName, en = "Quest Name",  de = "Questname", fr = "Nom de la quête" },
+    },
+}
+
+function B_Goal_WinQuest:GetGoalTable()
+    return {Objective.Custom2, {self, self.CustomFunction}};
+end
+
+function B_Goal_WinQuest:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.Quest = _Parameter;
+    end
+end
+
+function B_Goal_WinQuest:CustomFunction(_Quest)
+    local quest = Quests[GetQuestID(self.Quest)];
+    if quest then
+        if quest.Result == QuestResult.Failure then
+            return false;
+        end
+        if quest.Result == QuestResult.Success then
+            return true;
+        end
+    end
+    return nil;
+end
+
+function B_Goal_WinQuest:Debug(_Quest)
+    if Quests[GetQuestID(self.Quest)] == nil then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": Quest '"..self.Quest.."' does not exist!");
+        return true;
+    end
+    return false;
+end
+
+Revision:RegisterBehavior(B_Goal_WinQuest);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Es muss eine Menge an Munition in der Kriegsmaschine erreicht werden.
+--
+-- <u>Relationen</u>
+-- <ul>
+-- <li>>= - Anzahl als Mindestmenge</li>
+-- <li>< - Weniger als Anzahl</li>
+-- </ul>
+--
+-- @param[type=string] _ScriptName  Name des Kriegsgerät
+-- @param[type=string] _Relation    Mengenrelation
+-- @param[type=number] _Amount      Menge an Munition
+--
+-- @within Goal
+--
+function Goal_AmmunitionAmount(...)
+    return B_Goal_AmmunitionAmount:new(...);
+end
+
+B_Goal_AmmunitionAmount = {
+    Name = "Goal_AmmunitionAmount",
+    Description = {
+        en = "Goal: Reach a smaller or bigger value than the given amount of ammunition in a war machine.",
+        de = "Ziel: Über- oder unterschreite die angegebene Anzahl Munition in einem Kriegsgerät.",
+        fr = "Objectif : Dépasser ou ne pas dépasser le nombre de munitions indiqué dans un engin de guerre.",
+    },
+    Parameter = {
+        { ParameterType.ScriptName, en = "Script name", de = "Skriptname",  fr = "Nom de l'entité" },
+        { ParameterType.Custom,     en = "Relation",    de = "Relation",    fr = "Relation" },
+        { ParameterType.Number,     en = "Amount",      de = "Menge",       fr = "Quantité" },
+    },
+}
+
+function B_Goal_AmmunitionAmount:GetGoalTable()
+    return { Objective.Custom2, {self, self.CustomFunction} }
+end
+
+function B_Goal_AmmunitionAmount:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.Scriptname = _Parameter
+    elseif (_Index == 1) then
+        self.bRelSmallerThan = tostring(_Parameter) == "true" or _Parameter == "<"
+    elseif (_Index == 2) then
+        self.Amount = _Parameter * 1
+    end
+end
+
+function B_Goal_AmmunitionAmount:CustomFunction()
+    local EntityID = GetID(self.Scriptname);
+    if not IsExisting(EntityID) then
+        return false;
+    end
+    local HaveAmount = Logic.GetAmmunitionAmount(EntityID);
+    if ( self.bRelSmallerThan and HaveAmount < self.Amount ) or ( not self.bRelSmallerThan and HaveAmount >= self.Amount ) then
+        return true;
+    end
+    return nil;
+end
+
+function B_Goal_AmmunitionAmount:Debug(_Quest)
+    if self.Amount < 0 then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": Amount is negative");
+        return true
+    end
+end
+
+function B_Goal_AmmunitionAmount:GetCustomData( _Index )
+    if _Index == 1 then
+        return {"<", ">="};
+    end
+end
+
+Revision:RegisterBehavior(B_Goal_AmmunitionAmount);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Der Spieler muss mindestens den angegebenen Ruf erreichen. Der Ruf muss
+-- in Prozent angegeben werden (ohne %-Zeichen).
+--
+-- @param[type=number] _Reputation Benötigter Ruf
+--
+-- @within Goal
+--
+function Goal_CityReputation(...)
+    return B_Goal_CityReputation:new(...);
+end
+
+B_Goal_CityReputation = {
+    Name = "Goal_CityReputation",
+    Description = {
+        en = "Goal: The reputation of the quest receivers city must at least reach the desired hight.",
+        de = "Ziel: Der Ruf der Stadt des Empfängers muss mindestens so hoch sein, wie angegeben.",
+        fr = "Objectif: la réputation de la ville du receveur doit être au moins aussi élevée que celle indiquée.",
+    },
+    Parameter = {
+        { ParameterType.Number, en = "City reputation", de = "Ruf der Stadt", fr = "Réputation de la ville" },
+    },
+    Text = {
+        de = "RUF DER STADT{cr}{cr}Hebe den Ruf der Stadt durch weise Herrschaft an!{cr}Benötigter Ruf: %d",
+        en = "CITY REPUTATION{cr}{cr}Raise your reputation by fair rulership!{cr}Needed reputation: %d",
+        fr = "RÉPUTATION DE LA VILLE{cr}{cr} Augmente la réputation de la ville en la gouvernant sagement!{cr}Réputation requise : %d",
+    }
+}
+
+function B_Goal_CityReputation:GetGoalTable()
+    return {Objective.Custom2, {self, self.CustomFunction}};
+end
+
+function B_Goal_CityReputation:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.Reputation = _Parameter * 1;
+    end
+end
+
+function B_Goal_CityReputation:CustomFunction(_Quest)
+    self:SetCaption(_Quest);
+    local CityReputation = Logic.GetCityReputation(_Quest.ReceivingPlayer) * 100;
+    if CityReputation >= self.Reputation then
+        return true;
+    end
+end
+
+function B_Goal_CityReputation:SetCaption(_Quest)
+    if not _Quest.QuestDescription or _Quest.QuestDescription == "" then
+        local Text = string.format(API.Localize(self.Text), self.Reputation);
+        Revision.Quest:ChangeCustomQuestCaptionText(Text .."%", _Quest);
+    end
+end
+
+function B_Goal_CityReputation:GetIcon()
+    return {5, 14};
+end
+
+function B_Goal_CityReputation:Debug(_Quest)
+    if type(self.Reputation) ~= "number" or self.Reputation < 0 or self.Reputation > 100 then
+        error(_Quest.Identifier.. ": " ..self.Name.. ": Reputation must be between 0 and 100!");
+        return true;
+    end
+    return false;
+end
+
+Revision:RegisterBehavior(B_Goal_CityReputation);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Eine Menge an Entities des angegebenen Spawnpoint muss zerstört werden.
+--
+-- <b>Hinweis</b>: Eignet sich vor allem für Raubtiere!
+--
+-- Wenn die angegebene Anzahl zu Beginn des Quest nicht mit der Anzahl an
+-- bereits gespawnten Entities übereinstimmt, wird dies automatisch korrigiert.
+-- (Neue Entities gespawnt bzw. überschüssige gelöscht)
+--
+-- Wenn _Prefixed gesetzt ist, wird anstatt des Namen Entities mit einer
+-- fortlaufenden Nummer gesucht, welche mit dem Namen beginnen. Bei der
+-- ersten Nummer, zu der kein Entity existiert, wird abgebrochen.
+--
+-- @param[type=string] _SpawnPoint Skriptname des Spawnpoint
+-- @param[type=number] _Amount     Menge zu zerstörender Entities
+-- @param[type=number] _Prefixed   Skriptname ist Präfix
+--
+-- @within Goal
+--
+function Goal_DestroySpawnedEntities(...)
+    return B_Goal_DestroySpawnedEntities:new(...);
+end
+
+B_Goal_DestroySpawnedEntities = {
+    Name = "Goal_DestroySpawnedEntities",
+    Description = {
+        en = "Goal: Destroy all entities spawned at the spawnpoint.",
+        de = "Ziel: Zerstöre alle Entitäten, die bei dem Spawnpoint erzeugt wurde.",
+        fr = "Objectif: Détruire toutes les entités créées au point d'apparition.",
+    },
+    Parameter = {
+        { ParameterType.ScriptName, en = "Spawnpoint",       de = "Spawnpoint",         fr = "Point d'émergence" },
+        { ParameterType.Number,     en = "Amount",           de = "Menge",              fr = "Quantité" },
+        { ParameterType.Custom,     en = "Name is prefixed", de = "Name ist Präfix",    fr = "Le nom est un préfixe" },
+    },
+};
+
+function B_Goal_DestroySpawnedEntities:GetGoalTable()
+    -- Zur Erzeugungszeit Spawnpoint konvertieren
+    -- Hinweis: Entities müssen zu diesem Zeitpunkt existieren und müssen
+    -- Spawnpoints sein!
+    if self.Prefixed then
+        local Parameter = table.remove(self.SpawnPoint);
+        local i = 1;
+        while (IsExisting(Parameter .. i)) do
+            table.insert(self.SpawnPoint, Parameter .. i);
+            i = i +1;
+        end
+        -- Hard Error!
+        assert(#self.SpawnPoint > 0, "No spawnpoints found!");
+    end
+    -- Behavior zurückgeben
+    return {Objective.DestroyEntities, 3, self.SpawnPoint, self.Amount};
+end
+
+function B_Goal_DestroySpawnedEntities:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.SpawnPoint = {_Parameter};
+    elseif (_Index == 1) then
+        self.Amount = _Parameter * 1;
+    elseif (_Index == 2) then
+        _Parameter = _Parameter or "false";
+        self.Prefixed = API.ToBoolean(_Parameter);
+    end
+end
+
+function B_Goal_DestroySpawnedEntities:GetMsgKey()
+    local ID = GetID(self.SpawnPoint[1]);
+    if ID ~= 0 then
+        local TypeName = Logic.GetEntityTypeName(Logic.GetEntityType(ID));
+        if Logic.IsEntityTypeInCategory( ID, EntityCategories.AttackableBuilding ) == 1 then
+            return "Quest_Destroy_Leader";
+        elseif TypeName:find("Bear") or TypeName:find("Lion") or TypeName:find("Tiger") or TypeName:find("Wolf") then
+            return "Quest_DestroyEntities_Predators";
+        elseif TypeName:find("Military") or TypeName:find("Cart") then
+            return "Quest_DestroyEntities_Unit";
+        end
+    end
+    return "Quest_DestroyEntities";
+end
+
+function B_Goal_DestroySpawnedEntities:GetCustomData(_Index)
+    if _Index == 2 then
+        return {"false", "true"};
+    end
+end
+
+Revision:RegisterBehavior(B_Goal_DestroySpawnedEntities);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Der Spieler muss eine bestimmte Menge Gold mit Dieben stehlen.
+--
+-- Dabei ist es egal von welchem Spieler. Diebe können Gold nur aus
+-- Stadtgebäude stehlen und nur von feindlichen Spielern.
+--
+-- <b>Hinweis</b>: Es können nur Stadtgebäude mit einem Dieb um Gold
+-- erleichtert werden!
+--
+-- @param[type=number]  _Amount         Menge an Gold
+-- @param[type=number]  _TargetPlayerID Zielspieler (-1 für alle)
+-- @param[type=boolean] _CheatEarnings  Einnahmen generieren
+-- @param[type=boolean] _ShowProgress   Fortschritt ausgeben
+--
+-- @within Goal
+--
+function Goal_StealGold(...)
+    return B_Goal_StealGold:new(...)
+end
+
+B_Goal_StealGold = {
+    Name = "Goal_StealGold",
+    Description = {
+        en = "Goal: Steal an explicit amount of gold from a players or any players city buildings.",
+        de = "Ziel: Diebe sollen eine bestimmte Menge Gold aus feindlichen Stadtgebäuden stehlen.",
+        fr = "Objectif: les voleurs doivent dérober une certaine quantité d'or dans les bâtiments urbains ennemis.",
+    },
+    Parameter = {
+        { ParameterType.Number,   en = "Amount on Gold", de = "Zu stehlende Menge",             fr = "Quantité à voler" },
+        { ParameterType.Custom,   en = "Target player",  de = "Spieler von dem gestohlen wird", fr = "Joueur à qui l'on vole" },
+        { ParameterType.Custom,   en = "Cheat earnings", de = "Einnahmen generieren",           fr = "Générer des revenus" },
+        { ParameterType.Custom,   en = "Print progress", de = "Fortschritt ausgeben",           fr = "Afficher les progrès" },
+    },
+}
+
+function B_Goal_StealGold:GetGoalTable()
+    return {Objective.Custom2, {self, self.CustomFunction}};
+end
+
+function B_Goal_StealGold:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.Amount = _Parameter * 1;
+    elseif (_Index == 1) then
+        local PlayerID = tonumber(_Parameter) or -1;
+        self.Target = PlayerID * 1;
+    elseif (_Index == 2) then
+        _Parameter = _Parameter or "false"
+        self.CheatEarnings = API.ToBoolean(_Parameter);
+    elseif (_Index == 3) then
+        _Parameter = _Parameter or "true"
+        self.Printout = API.ToBoolean(_Parameter);
+    end
+    self.StohlenGold = 0;
+end
+
+function B_Goal_StealGold:GetCustomData(_Index)
+    if _Index == 1 then
+        return { "-", 1, 2, 3, 4, 5, 6, 7, 8 };
+    elseif _Index == 2 then
+        return { "true", "false" };
+    end
+end
+
+function B_Goal_StealGold:SetDescriptionOverwrite(_Quest)
+    local TargetPlayerName = API.Localize({
+        de = " anderen Spielern ",
+        en = " different parties ",
+        fr = " d'autres joueurs ",
+    });
+
+    if self.Target ~= -1 then
+        TargetPlayerName = API.GetPlayerName(self.Target);
+        if TargetPlayerName == nil or TargetPlayerName == "" then
+            TargetPlayerName = " PLAYER_NAME_MISSING ";
+        end
+    end
+
+    -- Cheat earnings
+    if self.CheatEarnings then
+        local PlayerIDs = {self.Target};
+        if self.Target == -1 then
+            PlayerIDs = {1, 2, 3, 4, 5, 6, 7, 8};
+        end
+        for i= 1, #PlayerIDs, 1 do
+            if i ~= _Quest.ReceivingPlayer and Logic.GetStoreHouse(i) ~= 0 then
+                local CityBuildings = {Logic.GetPlayerEntitiesInCategory(i, EntityCategories.CityBuilding)};
+                for j= 1, #CityBuildings, 1 do
+                    local CurrentEarnings = Logic.GetBuildingProductEarnings(CityBuildings[j]);
+                    if CurrentEarnings < 45 and Logic.GetTime() % 5 == 0 then
+                        Logic.SetBuildingEarnings(CityBuildings[j], CurrentEarnings +1);
+                    end
+                end
+            end
+        end
+    end
+
+    local amount = self.Amount - self.StohlenGold;
+    amount = (amount > 0 and amount) or 0;
+    local text = {
+        de = "Gold von %s stehlen {cr}{cr}Aus Stadtgebäuden zu stehlende Goldmenge: %d",
+        en = "Steal gold from %s {cr}{cr}Amount on gold to steal from city buildings: %d",
+        fr = "Voler l'or de %s {cr}{cr}Quantité d'or à voler dans les bâtiments de la ville : %d",
+    };
+    return "{center}" ..string.format(API.Localize(text), TargetPlayerName, amount);
+end
+
+function B_Goal_StealGold:CustomFunction(_Quest)
+    Revision.Quest:ChangeCustomQuestCaptionText(self:SetDescriptionOverwrite(_Quest), _Quest);
+    if self.StohlenGold >= self.Amount then
+        return true;
+    end
+    return nil;
+end
+
+function B_Goal_StealGold:GetIcon()
+    return {5,13};
+end
+
+function B_Goal_StealGold:Debug(_Quest)
+    if tonumber(self.Amount) == nil and self.Amount < 0 then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": amount can not be negative!");
+        return true;
+    end
+    return false;
+end
+
+function B_Goal_StealGold:Reset(_Quest)
+    self.StohlenGold = 0;
+end
+
+Revision:RegisterBehavior(B_Goal_StealGold)
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Der Spieler muss ein bestimmtes Stadtgebäude bestehlen.
+--
+-- Eine Kirche wird immer Sabotiert. Ein Lagerhaus verhält sich ähnlich zu
+-- einer Burg.
+--
+-- <b>Hinweis</b>: Ein Dieb kann nur von einem Spezialgebäude oder einem
+-- Stadtgebäude stehlen!
+--
+-- @param[type=string] _ScriptName Skriptname des Gebäudes
+-- @param[type=boolean] _CheatEarnings  Einnahmen generieren
+--
+-- @within Goal
+--
+function Goal_StealFromBuilding(...)
+    return B_Goal_StealFromBuilding:new(...)
+end
+
+B_Goal_StealFromBuilding = {
+    Name = "Goal_StealFromBuilding",
+    Description = {
+        en = "Goal: The player has to steal from a building. Not a castle and not a village storehouse!",
+        de = "Ziel: Der Spieler muss ein bestimmtes Gebäude bestehlen. Dies darf keine Burg und kein Dorflagerhaus sein!",
+        fr = "Objectif: Le joueur doit voler un bâtiment spécifique. Il ne peut s'agir ni d'un château ni d'un entrepôt de village !",
+    },
+    Parameter = {
+        { ParameterType.ScriptName, en = "Building",        de = "Gebäude",              fr = "Bâtiment" },
+        { ParameterType.Custom,     en = "Cheat earnings",  de = "Einnahmen generieren", fr = "Générer des revenus" },
+    },
+}
+
+function B_Goal_StealFromBuilding:GetGoalTable()
+    return {Objective.Custom2, {self, self.CustomFunction}};
+end
+
+function B_Goal_StealFromBuilding:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.Building = _Parameter
+    elseif (_Index == 1) then
+        _Parameter = _Parameter or "false"
+        self.CheatEarnings = API.ToBoolean(_Parameter);
+    end
+    self.RobberList = {};
+end
+
+function B_Goal_StealFromBuilding:GetCustomData(_Index)
+    if _Index == 1 then
+        return { "true", "false" };
+    end
+end
+
+function B_Goal_StealFromBuilding:SetDescriptionOverwrite(_Quest)
+    local isCathedral = Logic.IsEntityInCategory(GetID(self.Building), EntityCategories.Cathedrals) == 1;
+    local isWarehouse = Logic.GetEntityType(GetID(self.Building)) == Entities.B_StoreHouse;
+    local isCistern = Logic.GetEntityType(GetID(self.Building)) == Entities.B_Cistern;
+    local text;
+
+    if isCathedral then
+        text = {
+            de = "Sabotage {cr}{cr} Sendet einen Dieb und sabotiert die markierte Kirche.",
+            en = "Sabotage {cr}{cr} Send a thief to sabotage the marked chapel.",
+            fr = "Sabotage {cr}{cr} Envoyez un voleur pour saboter la chapelle marquée.",
+        };
+    elseif isWarehouse then
+        text = {
+            de = "Lagerhaus bestehlen {cr}{cr} Sendet einen Dieb in das markierte Lagerhaus.",
+            en = "Steal from storehouse {cr}{cr} Steal from the marked storehouse.",
+            fr = "Voler un entrepôt {cr}{cr} Envoie un voleur dans l'entrepôt marqué.",
+        };
+    elseif isCistern then
+        text = {
+            de = "Sabotage {cr}{cr} Sendet einen Dieb und sabotiert den markierten Brunnen.",
+            en = "Sabotage {cr}{cr} Send a thief and break the marked well of the enemy.",
+            fr = "Sabotage {cr}{cr} Envoie un voleur et sabote le puits marqué.",
+        };
+    else
+        text = {
+            de = "Gebäude bestehlen {cr}{cr} Sendet einen Dieb und bestehlt das markierte Gebäude.",
+            en = "Steal from building {cr}{cr} Send a thief to steal from the marked building.",
+            fr = "Voler un bâtiment {cr}{cr} Envoie un voleur et vole le bâtiment marqué.",
+        };
+    end
+    return "{center}" .. API.Localize(text);
+end
+
+function B_Goal_StealFromBuilding:CustomFunction(_Quest)
+    if not IsExisting(self.Building) then
+        if self.Marker then
+            Logic.DestroyEffect(self.Marker);
+        end
+        return false;
+    end
+
+    if not self.Marker then
+        local pos = GetPosition(self.Building);
+        self.Marker = Logic.CreateEffect(EGL_Effects.E_Questmarker, pos.X, pos.Y, 0);
+    end
+
+    -- Cheat earnings
+    if self.CheatEarnings then
+        local BuildingID = GetID(self.Building);        
+        local CurrentEarnings = Logic.GetBuildingProductEarnings(BuildingID);
+        if  Logic.IsEntityInCategory(BuildingID, EntityCategories.CityBuilding) == 1
+        and CurrentEarnings < 45 and Logic.GetTime() % 5 == 0 then
+            Logic.SetBuildingEarnings(BuildingID, CurrentEarnings +1);
+        end
+    end
+
+    if self.SuccessfullyStohlen then
+        Logic.DestroyEffect(self.Marker);
+        return true;
+    end
+    return nil;
+end
+
+function B_Goal_StealFromBuilding:GetIcon()
+    return {5,13};
+end
+
+function B_Goal_StealFromBuilding:Debug(_Quest)
+    local eTypeName = Logic.GetEntityTypeName(Logic.GetEntityType(GetID(self.Building)));
+    local IsHeadquarter = Logic.IsEntityInCategory(GetID(self.Building), EntityCategories.Headquarters) == 1;
+    if Logic.IsBuilding(GetID(self.Building)) == 0 then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": target is not a building");
+        return true;
+    elseif not IsExisting(self.Building) then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": target is destroyed :(");
+        return true;
+    elseif string.find(eTypeName, "B_NPC_BanditsHQ") or string.find(eTypeName, "B_NPC_Cloister") or string.find(eTypeName, "B_NPC_StoreHouse") then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": village storehouses are not allowed!");
+        return true;
+    elseif IsHeadquarter then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": use Goal_StealInformation for headquarters!");
+        return true;
+    end
+    return false;
+end
+
+function B_Goal_StealFromBuilding:Reset(_Quest)
+    self.SuccessfullyStohlen = false;
+    self.RobberList = {};
+    self.Marker = nil;
+end
+
+function B_Goal_StealFromBuilding:Interrupt(_Quest)
+    Logic.DestroyEffect(self.Marker);
+end
+
+Revision:RegisterBehavior(B_Goal_StealFromBuilding)
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Der Spieler muss ein Gebäude mit einem Dieb ausspoinieren.
+--
+-- Der Quest ist erfolgreich, sobald der Dieb in das Gebäude eindringt. Es
+-- muss sich um ein Gebäude handeln, das bestohlen werden kann (Burg, Lager,
+-- Kirche, Stadtgebäude mit Einnahmen)!
+--
+-- Optional kann der Dieb nach Abschluss gelöscht werden. Diese Option macht
+-- es einfacher ihn durch z.B. einen Abfahrenden U_ThiefCart zu "ersetzen".
+--
+-- <b>Hinweis</b>: Ein Dieb kann nur in Spezialgebäude oder Stadtgebäude
+-- eindringen!
+--
+-- @param[type=string]  _ScriptName  Skriptname des Gebäudes
+-- @param[type=boolean] _CheatEarnings  Einnahmen generieren
+-- @param[type=boolean] _DeleteThief Dieb nach Abschluss löschen
+--
+-- @within Goal
+--
+function Goal_SpyOnBuilding(...)
+    return B_Goal_SpyOnBuilding:new(...)
+end
+
+B_Goal_SpyOnBuilding = {
+    Name = "Goal_SpyOnBuilding",
+    IconOverwrite = {5,13},
+    Description = {
+        en = "Goal: Infiltrate a building with a thief. A thief must be able to steal from the target building.",
+        de = "Ziel: Infiltriere ein Gebäude mit einem Dieb. Nur mit Gebaueden möglich, die bestohlen werden koennen.",
+        fr = "Objectif: Infiltrer un bâtiment avec un voleur. Seulement possible avec des bâtiments qui peuvent être volés.",
+    },
+    Parameter = {
+        { ParameterType.ScriptName, en = "Target Building", de = "Zielgebäude",           fr = "Bâtiment cible" },
+        { ParameterType.Custom,     en = "Cheat earnings",  de = "Einnahmen generieren",  fr = "Générer des revenus" },
+        { ParameterType.Custom,     en = "Destroy Thief",   de = "Dieb löschen",          fr = "Supprimer le voleur" },
+    },
+}
+
+function B_Goal_SpyOnBuilding:GetGoalTable()
+    return {Objective.Custom2, {self, self.CustomFunction}};
+end
+
+function B_Goal_SpyOnBuilding:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.Building = _Parameter
+    elseif (_Index == 1) then
+        _Parameter = _Parameter or "false"
+        self.CheatEarnings = API.ToBoolean(_Parameter);
+    elseif (_Index == 2) then
+        _Parameter = _Parameter or "true"
+        self.Delete = API.ToBoolean(_Parameter)
+    end
+end
+
+function B_Goal_SpyOnBuilding:GetCustomData(_Index)
+    if _Index == 1 then
+        return { "true", "false" };
+    end
+end
+
+function B_Goal_SpyOnBuilding:SetDescriptionOverwrite(_Quest)
+    if not _Quest.QuestDescription then
+        local text = {
+            de = "Gebäude infriltrieren {cr}{cr}Spioniere das markierte Gebäude mit einem Dieb aus!",
+            en = "Infiltrate building {cr}{cr}Spy on the highlighted buildings with a thief!",
+            fr = "Infiltrer un bâtiment {cr}{cr}Espionner le bâtiment marqué avec un voleur!",
+        };
+        return API.Localize(text);
+    else
+        return _Quest.QuestDescription;
+    end
+end
+
+function B_Goal_SpyOnBuilding:CustomFunction(_Quest)
+    if not IsExisting(self.Building) then
+        if self.Marker then
+            Logic.DestroyEffect(self.Marker);
+        end
+        return false;
+    end
+
+    if not self.Marker then
+        local pos = GetPosition(self.Building);
+        self.Marker = Logic.CreateEffect(EGL_Effects.E_Questmarker, pos.X, pos.Y, 0);
+    end
+
+    -- Cheat earnings
+    if self.CheatEarnings then
+        local BuildingID = GetID(self.Building);
+        if  Logic.IsEntityInCategory(BuildingID, EntityCategories.CityBuilding) == 1
+        and Logic.GetBuildingEarnings(BuildingID) < 5 then
+            Logic.SetBuildingEarnings(BuildingID, 5);
+        end
+    end
+
+    if self.Infiltrated then
+        Logic.DestroyEffect(self.Marker);
+        return true;
+    end
+    return nil;
+end
+
+function B_Goal_SpyOnBuilding:GetIcon()
+    return self.IconOverwrite;
+end
+
+function B_Goal_SpyOnBuilding:Debug(_Quest)
+    if Logic.IsBuilding(GetID(self.Building)) == 0 then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": target is not a building");
+        return true;
+    elseif not IsExisting(self.Building) then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": target is destroyed :(");
+        return true;
+    end
+    return false;
+end
+
+function B_Goal_SpyOnBuilding:Reset(_Quest)
+    self.Infiltrated = false;
+    self.Marker = nil;
+end
+
+function B_Goal_SpyOnBuilding:Interrupt(_Quest)
+    Logic.DestroyEffect(self.Marker);
+end
+
+Revision:RegisterBehavior(B_Goal_SpyOnBuilding);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Der Spieler muss eine Anzahl an Gegenständen finden, die bei den angegebenen
+-- Positionen platziert werden.
+--
+-- @param[type=string] _Positions Präfix aller durchnummerierten Enttities
+-- @param[type=string] _Model     Model für alle Gegenstände
+-- @param[type=number] _Distance  Aktivierungsdistanz (0 = Default = 300)
+--
+-- @within Goal
+--
+function Goal_FetchItems(...)
+    return B_Goal_FetchItems:new(...);
+end
+
+B_Goal_FetchItems = {
+    Name = "Goal_FetchItems",
+    Description = {
+        en = "Goal: ",
+        de = "Ziel: ",
+        fr = "Objectif: ",
+    },
+    Parameter = {
+        { ParameterType.Default, en = "Search points",          de = "Suchpunkte",              fr = "Points de recherche" },
+        { ParameterType.Custom,  en = "Shared model",           de = "Gemeinsames Modell",      fr = "Modèle commun" },
+        { ParameterType.Number,  en = "Distance (0 = Default)", de = "Enternung (0 = Default)", fr = "Distance (0 = Default)" },
+    },
+
+    Text = {
+        {
+            de = "%d/%d Gegenstände gefunden",
+            en = "%d/%d Items gefunden",
+            fr = "%d/%d objets trouvés",
+        },
+        {
+            de = "GEGENSTÄNDE FINDEN {br}{br}Findet die verloren gegangenen Gegenstände.",
+            en = "FIND VALUABLES {br}{br}Find the missing items and return them.",
+            fr = "TROUVER LES OBJETS {br}{br}Trouve les objets perdus.",
+        },
+    },
+
+    Tools = {
+        Models.Doodads_D_X_Sacks,
+        Models.Tools_T_BowNet01,
+        Models.Tools_T_Hammer02,
+        Models.Tools_T_Cushion01,
+        Models.Tools_T_Knife02,
+        Models.Tools_T_Scythe01,
+        Models.Tools_T_SiegeChest01,
+    },
+
+    Distance = 300,
+    Finished = false,
+    Positions = {},
+    Marker = {},
+}
+
+function B_Goal_FetchItems:GetGoalTable()
+    return {Objective.Custom2, {self, self.CustomFunction}};
+end
+
+function B_Goal_FetchItems:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.SearchPositions = _Parameter;
+    elseif (_Index == 1) then
+        self.Model = _Parameter;
+    elseif (_Index == 2) then
+        if _Parameter == nil then
+            _Parameter = self.Distance;
+        end
+        self.Distance = _Parameter * 1;
+        if self.Distance == 0 then
+            self.Distance = 300;
+        end
+    end
+end
+
+function B_Goal_FetchItems:CustomFunction(_Quest)
+    Revision.Quest:ChangeCustomQuestCaptionText("{center}" ..API.Localize(self.Text[2]), _Quest);
+    if not self.Finished then
+        self:GetPositions(_Quest);
+        self:CreateMarker(_Quest);
+        self:CheckPositions(_Quest);
+        if #self.Marker > 0 then
+            return;
+        end
+        self.Finished = true;
+    end
+    return true;
+end
+
+function B_Goal_FetchItems:GetPositions(_Quest)
+    if #self.Positions == 0 then
+        -- Position is a table (script only feature)
+        if type(self.SearchPositions) == "table" then
+            self.Positions = self.SearchPositions;
+        -- Search positions by prefix
+        else
+            local Index = 1;
+            while (IsExisting(self.SearchPositions .. Index)) do
+                table.insert(self.Positions, GetPosition(self.SearchPositions .. Index));
+                Index = Index +1;
+            end
+        end
+    end
+end
+
+function B_Goal_FetchItems:CreateMarker(_Quest)
+    if #self.Marker == 0 then
+        for i= 1, #self.Positions, 1 do
+            local ID = Logic.CreateEntityOnUnblockedLand(Entities.XD_ScriptEntity, self.Positions[i].X, self.Positions[i].Y, 0, 0);
+            if self.Model ~= nil and self.Model ~= "-" then
+                Logic.SetModel(ID, Models[self.Model]);
+            else
+                Logic.SetModel(ID, self.Tools[math.random(1, #self.Tools)]);
+            end
+            Logic.SetVisible(ID, true);
+            table.insert(self.Marker, ID);
+        end
+    end
+end
+
+function B_Goal_FetchItems:CheckPositions(_Quest)
+    local Heroes = {};
+    Logic.GetKnights(_Quest.ReceivingPlayer, Heroes);
+    for i= #self.Marker, 1, -1 do
+        for j= 1, #Heroes, 1 do
+            if IsNear(self.Marker[i], Heroes[j], self.Distance) then
+                DestroyEntity(table.remove(self.Marker, i));
+                local Max = #self.Positions;
+                local Now = Max - #self.Marker;
+                API.Note(string.format(API.Localize(self.Text[1]), Now, Max));
+                break;
+            end
+        end
+    end
+end
+
+function B_Goal_FetchItems:Reset(_Quest)
+    self:Interrupt(_Quest);
+end
+
+function B_Goal_FetchItems:Interrupt(_Quest)
+    self.Finished = false;
+    self.Positions = {};
+    for i= 1, #self.Marker, 1 do
+        DestroyEntity(self.Marker[i]);
+    end
+    self.Marker = {};
+end
+
+function B_Goal_FetchItems:GetCustomData(_Index)
+    if _Index == 1 then
+        local Data = ModuleBehaviorCollection.Global:GetPossibleModels();
+        table.insert(Data, 1, "-");
+        return Data;
+    end
+end
+
+function B_Goal_FetchItems:Debug(_Quest)
+    return false;
+end
+
+Revision:RegisterBehavior(B_Goal_FetchItems);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Ein beliebiger Spieler muss Soldaten eines anderen Spielers zerstören.
+--
+-- Dieses Behavior kann auch in versteckten Quests bentutzt werden, wenn die
+-- Menge an zerstörten Soldaten durch einen Feind des Spielers gefragt ist oder
+-- wenn ein Verbündeter oder Feind nach X Verlusten aufgeben soll.
+--
+-- @param _PlayerA Angreifende Partei
+-- @param _PlayerB Zielpartei
+-- @param _Amount Menga an Soldaten
+--
+-- @within Goal
+--
+function Goal_DestroySoldiers(...)
+    return B_Goal_DestroySoldiers:new(...);
+end
+
+B_Goal_DestroySoldiers = {
+    Name = "Goal_DestroySoldiers",
+    Description = {
+        en = "Goal: Destroy a given amount of enemy soldiers",
+        de = "Ziel: Zerstöre eine Anzahl gegnerischer Soldaten",
+        fr = "Objectif: Détruire un certain nombre de soldats ennemis",
+    },
+    Parameter = {
+        {ParameterType.PlayerID, en = "Attacking Player",   de = "Angreifer",   fr = "Attaquant", },
+        {ParameterType.PlayerID, en = "Defending Player",   de = "Verteidiger", fr = "Défenseur", },
+        {ParameterType.Number,   en = "Amount",             de = "Anzahl",      fr = "Quantité", },
+    },
+
+    Text = {
+        de = "{center}SOLDATEN ZERSTÖREN {cr}{cr}von der Partei: %s{cr}{cr}Anzahl: %d",
+        en = "{center}DESTROY SOLDIERS {cr}{cr}from faction: %s{cr}{cr}Amount: %d",
+        fr = "{center}DESTRUIRE DES SOLDATS {cr}{cr}de la faction: %s{cr}{cr}Nombre : %d",
+    }
+}
+
+function B_Goal_DestroySoldiers:GetGoalTable()
+    return {Objective.Custom2, {self, self.CustomFunction} }
+end
+
+function B_Goal_DestroySoldiers:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.AttackingPlayer = _Parameter * 1
+    elseif (_Index == 1) then
+        self.AttackedPlayer = _Parameter * 1
+    elseif (_Index == 2) then
+        self.KillsNeeded = _Parameter * 1
+    end
+end
+
+function B_Goal_DestroySoldiers:CustomFunction(_Quest)
+    if not _Quest.QuestDescription or _Quest.QuestDescription == "" then
+        local PlayerName = GetPlayerName(self.AttackedPlayer) or ("Player " ..self.AttackedPlayer);
+        Revision.Quest:ChangeCustomQuestCaptionText(
+            string.format(
+                Revision.Text:Localize(self.Text),
+                PlayerName, self.KillsNeeded
+            ),
+            _Quest
+        );
+    end
+    if self.KillsNeeded <= ModuleBehaviorCollection.Global:GetEnemySoldierKillsOfPlayer(self.AttackingPlayer, self.AttackedPlayer) then
+        return true;
+    end
+end
+
+function B_Goal_DestroySoldiers:Debug(_Quest)
+    if Logic.GetStoreHouse(self.AttackingPlayer) == 0 then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": Player " .. self.AttackinPlayer .. " is dead :-(")
+        return true
+    elseif Logic.GetStoreHouse(self.AttackedPlayer) == 0 then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": Player " .. self.AttackedPlayer .. " is dead :-(")
+        return true
+    elseif self.KillsNeeded < 0 then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": Amount negative")
+        return true
+    end
+end
+
+function B_Goal_DestroySoldiers:GetIcon()
+    return {7,12}
+end
+
+Revision:RegisterBehavior(B_Goal_DestroySoldiers);
+
+-- -------------------------------------------------------------------------- --
+-- Reprisals                                                                  --
+-- -------------------------------------------------------------------------- --
+
+---
+-- Ändert die Position eines Siedlers oder eines Gebäudes.
+--
+-- Optional kann das Entity in einem bestimmten Abstand zum Ziel platziert
+-- werden und das Ziel anschauen. Die Entfernung darf nicht kleiner sein als 50!
+--
+-- @param[type=string]  _ScriptName Skriptname des Entity
+-- @param[type=string]  _Target     Skriptname des Ziels
+-- @param[type=boolean] _LookAt     Gegenüberstellen
+-- @param[type=number]  _Distance   Relative Entfernung (nur mit _LookAt)
+--
+-- @within Reprisal
+--
+function Reprisal_SetPosition(...)
+    return B_Reprisal_SetPosition:new(...);
+end
+
+B_Reprisal_SetPosition = {
+    Name = "Reprisal_SetPosition",
+    Description = {
+        en = "Reprisal: Places an entity relative to the position of another. The entity can look the target.",
+        de = "Vergeltung: Setzt eine Entity relativ zur Position einer anderen. Die Entity kann zum Ziel ausgerichtet werden.",
+        fr = "Rétribution: place une Entity vis-à-vis de l'emplacement d'une autre. L'entité peut être orientée vers la cible.",
+    },
+    Parameter = {
+        { ParameterType.ScriptName, en = "Entity",          de = "Entity",          fr = "Entité", },
+        { ParameterType.ScriptName, en = "Target position", de = "Zielposition",    fr = "Position cible", },
+        { ParameterType.Custom,     en = "Face to face",    de = "Ziel ansehen",    fr = "Voir la cible", },
+        { ParameterType.Number,     en = "Distance",        de = "Zielentfernung",  fr = "Distance de la cible", },
+    },
+}
+
+function B_Reprisal_SetPosition:GetReprisalTable()
+    return { Reprisal.Custom, { self, self.CustomFunction } }
+end
+
+function B_Reprisal_SetPosition:AddParameter( _Index, _Parameter )
+    if (_Index == 0) then
+        self.Entity = _Parameter;
+    elseif (_Index == 1) then
+        self.Target = _Parameter;
+    elseif (_Index == 2) then
+        self.FaceToFace = API.ToBoolean(_Parameter)
+    elseif (_Index == 3) then
+        self.Distance = (_Parameter ~= nil and tonumber(_Parameter)) or 100;
+    end
+end
+
+function B_Reprisal_SetPosition:CustomFunction(_Quest)
+    if not IsExisting(self.Entity) or not IsExisting(self.Target) then
+        return;
+    end
+
+    local entity = GetID(self.Entity);
+    local target = GetID(self.Target);
+    local x,y,z = Logic.EntityGetPos(target);
+    if Logic.IsBuilding(target) == 1 then
+        x,y = Logic.GetBuildingApproachPosition(target);
+    end
+    local ori = Logic.GetEntityOrientation(target)+90;
+
+    if self.FaceToFace then
+        x = x + self.Distance * math.cos( math.rad(ori) );
+        y = y + self.Distance * math.sin( math.rad(ori) );
+        Logic.DEBUG_SetSettlerPosition(entity, x, y);
+        LookAt(self.Entity, self.Target);
+    else
+        if Logic.IsBuilding(target) == 1 then
+            x,y = Logic.GetBuildingApproachPosition(target);
+        end
+        Logic.DEBUG_SetSettlerPosition(entity, x, y);
+    end
+end
+
+function B_Reprisal_SetPosition:GetCustomData(_Index)
+    if _Index == 2 then
+        return { "true", "false" }
+    end
+end
+
+function B_Reprisal_SetPosition:Debug(_Quest)
+    if self.FaceToFace then
+        if tonumber(self.Distance) == nil or self.Distance < 50 then
+            error(_Quest.Identifier.. ": " ..self.Name.. ": Distance is nil or to short!");
+            return true;
+        end
+    end
+    if not IsExisting(self.Entity) or not IsExisting(self.Target) then
+        error(_Quest.Identifier.. ": " ..self.Name.. ": Mover entity or target entity does not exist!");
+        return true;
+    end
+    return false;
+end
+
+Revision:RegisterBehavior(B_Reprisal_SetPosition);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Ändert den Eigentümer des Entity oder des Battalions.
+--
+-- @param[type=string] _ScriptName Skriptname des Entity
+-- @param[type=number] _NewOwner   PlayerID des Eigentümers
+--
+-- @within Reprisal
+--
+function Reprisal_ChangePlayer(...)
+    return B_Reprisal_ChangePlayer:new(...)
+end
+
+B_Reprisal_ChangePlayer = {
+    Name = "Reprisal_ChangePlayer",
+    Description = {
+        en = "Reprisal: Changes the owner of the entity or a battalion.",
+        de = "Vergeltung: Aendert den Besitzer einer Entity oder eines Battalions.",
+        fr = "Rétribution : Change le propriétaire d'une entité ou d'un bataillon.",
+    },
+    Parameter = {
+        { ParameterType.ScriptName, en = "Entity",     de = "Entity",   fr = "Entité", },
+        { ParameterType.Custom,     en = "Player",     de = "Spieler",  fr = "Joueur", },
+    },
+}
+
+function B_Reprisal_ChangePlayer:GetReprisalTable()
+    return { Reprisal.Custom, { self, self.CustomFunction } }
+end
+
+function B_Reprisal_ChangePlayer:AddParameter( _Index, _Parameter )
+    if (_Index == 0) then
+        self.Entity = _Parameter;
+    elseif (_Index == 1) then
+        self.Player = tostring(_Parameter);
+    end
+end
+
+function B_Reprisal_ChangePlayer:CustomFunction(_Quest)
+    if not IsExisting(self.Entity) then
+        return;
+    end
+    local eID = GetID(self.Entity);
+    if Logic.IsLeader(eID) == 1 then
+        Logic.ChangeSettlerPlayerID(eID, self.Player);
+    else
+        Logic.ChangeEntityPlayerID(eID, self.Player);
+    end
+end
+
+function B_Reprisal_ChangePlayer:GetCustomData(_Index)
+    if _Index == 1 then
+        return {"0", "1", "2", "3", "4", "5", "6", "7", "8"}
+    end
+end
+
+function B_Reprisal_ChangePlayer:Debug(_Quest)
+    if not IsExisting(self.Entity) then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": entity '"..  self.Entity .. "' does not exist!");
+        return true;
+    end
+    return false;
+end
+
+Revision:RegisterBehavior(B_Reprisal_ChangePlayer);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Ändert die Sichtbarkeit eines Entity.
+--
+-- @param[type=string]  _ScriptName Skriptname des Entity
+-- @param[type=boolean] _Visible    Sichtbarkeit an/aus
+--
+-- @within Reprisal
+--
+function Reprisal_SetVisible(...)
+    return B_Reprisal_SetVisible:new(...)
+end
+
+B_Reprisal_SetVisible = {
+    Name = "Reprisal_SetVisible",
+    Description = {
+        en = "Reprisal: Changes the visibility of an entity. If the entity is a spawner the spawned entities will be affected.",
+        de = "Vergeltung: Setzt die Sichtbarkeit einer Entity. Handelt es sich um einen Spawner werden auch die gespawnten Entities beeinflusst.",
+        fr = "Rétribution: fixe la visibilité d'une Entité. S'il s'agit d'un spawn, les Entities spawnées sont également affectées.",
+    },
+    Parameter = {
+        { ParameterType.ScriptName, en = "Entity",      de = "Entity",   fr = "Entité", },
+        { ParameterType.Custom,     en = "Visible",     de = "Sichtbar", fr = "Visible", },
+    },
+}
+
+function B_Reprisal_SetVisible:GetReprisalTable()
+    return { Reprisal.Custom, { self, self.CustomFunction } }
+end
+
+function B_Reprisal_SetVisible:AddParameter( _Index, _Parameter )
+    if (_Index == 0) then
+        self.Entity = _Parameter;
+    elseif (_Index == 1) then
+        self.Visible = API.ToBoolean(_Parameter)
+    end
+end
+
+function B_Reprisal_SetVisible:CustomFunction(_Quest)
+    if not IsExisting(self.Entity) then
+        return;
+    end
+
+    local eID = GetID(self.Entity);
+    local pID = Logic.EntityGetPlayer(eID);
+    local eType = Logic.GetEntityType(eID);
+    local tName = Logic.GetEntityTypeName(eType);
+
+    if string.find(tName, "^S_") or string.find(tName, "^B_NPC_Bandits")
+    or string.find(tName, "^B_NPC_Barracks") then
+        local spawned = {Logic.GetSpawnedEntities(eID)};
+        for i=1, #spawned do
+            if Logic.IsLeader(spawned[i]) == 1 then
+                local soldiers = {Logic.GetSoldiersAttachedToLeader(spawned[i])};
+                for j=2, #soldiers do
+                    Logic.SetVisible(soldiers[j], self.Visible);
+                end
+            else
+                Logic.SetVisible(spawned[i], self.Visible);
+            end
+        end
+    else
+        if Logic.IsLeader(eID) == 1 then
+            local soldiers = {Logic.GetSoldiersAttachedToLeader(eID)};
+            for j=2, #soldiers do
+                Logic.SetVisible(soldiers[j], self.Visible);
+            end
+        else
+            Logic.SetVisible(eID, self.Visible);
+        end
+    end
+end
+
+function B_Reprisal_SetVisible:GetCustomData(_Index)
+    if _Index == 1 then
+        return { "true", "false" }
+    end
+end
+
+function B_Reprisal_SetVisible:Debug(_Quest)
+    if not IsExisting(self.Entity) then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": entity '"..  self.Entity .. "' does not exist!");
+        return true;
+    end
+    return false;
+end
+
+Revision:RegisterBehavior(B_Reprisal_SetVisible);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Macht das Entity verwundbar oder unverwundbar.
+--
+-- Bei einem Battalion wirkt sich das Behavior auf alle Soldaten und den
+-- (unsichtbaren) Leader aus. Wird das Behavior auf ein Spawner Entity 
+-- angewendet, werden die gespawnten Entities genommen.
+--
+-- @param[type=string]  _ScriptName Skriptname des Entity
+-- @param[type=boolean] _Vulnerable Verwundbarkeit an/aus
+--
+-- @within Reprisal
+--
+function Reprisal_SetVulnerability(...)
+    return B_Reprisal_SetVulnerability:new(...);
+end
+
+B_Reprisal_SetVulnerability = {
+    Name = "Reprisal_SetVulnerability",
+    Description = {
+        en = "Reprisal: Changes the vulnerability of the entity. If the entity is a spawner the spawned entities will be affected.",
+        de = "Vergeltung: Macht eine Entity verwundbar oder unverwundbar. Handelt es sich um einen Spawner, sind die gespawnten Entities betroffen.",
+        fr = "Rétribution: rend une Entité vulnérable ou invulnérable. S'il s'agit d'un spawn, les Entities spawnées sont affectées.",
+    },
+    Parameter = {
+        { ParameterType.ScriptName, en = "Entity",             de = "Entity",     fr = "Entité", },
+        { ParameterType.Custom,     en = "Vulnerability",      de = "Verwundbar", fr = "Vulnérabilité", },
+    },
+}
+
+function B_Reprisal_SetVulnerability:GetReprisalTable()
+    return { Reprisal.Custom, { self, self.CustomFunction } }
+end
+
+function B_Reprisal_SetVulnerability:AddParameter( _Index, _Parameter )
+    if (_Index == 0) then
+        self.Entity = _Parameter;
+    elseif (_Index == 1) then
+        self.Vulnerability = API.ToBoolean(_Parameter)
+    end
+end
+
+function B_Reprisal_SetVulnerability:CustomFunction(_Quest)
+    if not IsExisting(self.Entity) then
+        return;
+    end
+    local eID = GetID(self.Entity);
+    local eType = Logic.GetEntityType(eID);
+    local tName = Logic.GetEntityTypeName(eType);
+    local EntitiesToCheck = {eID};
+    if string.find(tName, "S_") or string.find(tName, "B_NPC_Bandits")
+    or string.find(tName, "B_NPC_Barracks") then
+        EntitiesToCheck = {Logic.GetSpawnedEntities(eID)};
+    end
+    local MethodToUse = "MakeInvulnerable";
+    if self.Vulnerability then
+        MethodToUse = "MakeVulnerable";
+    end
+    for i= 1, #EntitiesToCheck, 1 do
+        if Logic.IsLeader(EntitiesToCheck[i]) == 1 then
+            local Soldiers = {Logic.GetSoldiersAttachedToLeader(EntitiesToCheck[i])};
+            for j=2, #Soldiers, 1 do
+                _G[MethodToUse](Soldiers[j]);
+            end
+        end
+        _G[MethodToUse](EntitiesToCheck[i]);
+    end
+end
+
+function B_Reprisal_SetVulnerability:GetCustomData(_Index)
+    if _Index == 1 then
+        return { "true", "false" }
+    end
+end
+
+function B_Reprisal_SetVulnerability:Debug(_Quest)
+    if not IsExisting(self.Entity) then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": entity '"..  self.Entity .. "' does not exist!");
+        return true;
+    end
+    return false;
+end
+
+Revision:RegisterBehavior(B_Reprisal_SetVulnerability);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Ändert das Model eines Entity.
+--
+-- In Verbindung mit Reward_SetVisible oder Reprisal_SetVisible können
+-- Script Entites ein neues Model erhalten und sichtbar gemacht werden.
+-- Das hat den Vorteil, das Script Entities nicht überbaut werden können.
+--
+-- @param[type=string] _ScriptName Skriptname des Entity
+-- @param[type=string] _Model      Neues Model
+--
+-- @within Reprisal
+--
+function Reprisal_SetModel(...)
+    return B_Reprisal_SetModel:new(...);
+end
+
+B_Reprisal_SetModel = {
+    Name = "Reprisal_SetModel",
+    Description = {
+        en = "Reprisal: Changes the model of the entity. Be careful, some models crash the game.",
+        de = "Vergeltung: Ändert das Model einer Entity. Achtung: Einige Modelle führen zum Absturz.",
+        fr = "Rétribution: modifie le modèle d'une entité. Attention: certains modèles entraînent un crash.",
+    },
+    Parameter = {
+        { ParameterType.ScriptName, en = "Entity",    de = "Entity", fr = "Entité", },
+        { ParameterType.Custom,     en = "Model",     de = "Model",  fr = "Modèle", },
+    },
+}
+
+function B_Reprisal_SetModel:GetReprisalTable()
+    return { Reprisal.Custom, { self, self.CustomFunction } }
+end
+
+function B_Reprisal_SetModel:AddParameter( _Index, _Parameter )
+    if (_Index == 0) then
+        self.Entity = _Parameter;
+    elseif (_Index == 1) then
+        self.Model = _Parameter;
+    end
+end
+
+function B_Reprisal_SetModel:CustomFunction(_Quest)
+    if not IsExisting(self.Entity) then
+        return;
+    end
+    local eID = GetID(self.Entity);
+    Logic.SetModel(eID, Models[self.Model]);
+end
+
+-- Hinweis: Kann nicht durch Aufruf der Methode von B_Goal_FetchItems
+-- vereinfacht werden, weil man im Editor keine Methoden aufrufen kann!
+function B_Reprisal_SetModel:GetCustomData(_Index)
+    if _Index == 1 then
+        return ModuleBehaviorCollection.Global:GetPossibleModels();
+    end
+end
+
+function B_Reprisal_SetModel:Debug(_Quest)
+    if not IsExisting(self.Entity) then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": entity '"..  self.Entity .. "' does not exist!");
+        return true;
+    end
+    if not Models[self.Model] then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": model '"..  self.Entity .. "' does not exist!");
+        return true;
+    end
+    return false;
+end
+
+Revision:RegisterBehavior(B_Reprisal_SetModel);
+
+-- -------------------------------------------------------------------------- --
+-- Rewards                                                                    --
+-- -------------------------------------------------------------------------- --
+
+---
+-- Ändert die Position eines Siedlers oder eines Gebäudes.
+--
+-- Optional kann das Entity in einem bestimmten Abstand zum Ziel platziert
+-- werden und das Ziel anschauen. Die Entfernung darf nicht kleiner sein
+-- als 50!
+--
+-- @param[type=string] _ScriptName Skriptname des Entity
+-- @param[type=string] _Target     Skriptname des Ziels
+-- @param[type=number] _LookAt     Gegenüberstellen
+-- @param[type=number] _Distance   Relative Entfernung (nur mit _LookAt)
+--
+-- @within Reward
+--
+function Reward_SetPosition(...)
+    return B_Reward_SetPosition:new(...);
+end
+
+B_Reward_SetPosition = Revision.LuaBase:CopyTable(B_Reprisal_SetPosition);
+B_Reward_SetPosition.Name = "Reward_SetPosition";
+B_Reward_SetPosition.Description.en = "Reward: Places an entity relative to the position of another. The entity can look the target.";
+B_Reward_SetPosition.Description.de = "Lohn: Setzt eine Entity relativ zur Position einer anderen. Die Entity kann zum Ziel ausgerichtet werden.";
+B_Reward_SetPosition.Description.fr = "Récompense: Définit une Entity vis-à-vis de la position d'une autre. L'entité peut être orientée vers la cible.";
+B_Reward_SetPosition.GetReprisalTable = nil;
+
+B_Reward_SetPosition.GetRewardTable = function(self, _Quest)
+    return { Reward.Custom, { self, self.CustomFunction } };
+end
+
+Revision:RegisterBehavior(B_Reward_SetPosition);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Ändert den Eigentümer des Entity oder des Battalions.
+--
+-- @param[type=string] _ScriptName Skriptname des Entity
+-- @param[type=number] _NewOwner   PlayerID des Eigentümers
+--
+-- @within Reward
+--
+function Reward_ChangePlayer(...)
+    return B_Reward_ChangePlayer:new(...);
+end
+
+B_Reward_ChangePlayer = Revision.LuaBase:CopyTable(B_Reprisal_ChangePlayer);
+B_Reward_ChangePlayer.Name = "Reward_ChangePlayer";
+B_Reward_ChangePlayer.Description.en = "Reward: Changes the owner of the entity or a battalion.";
+B_Reward_ChangePlayer.Description.de = "Lohn: Ändert den Besitzer einer Entity oder eines Battalions.";
+B_Reward_ChangePlayer.Description.fr = "Récompense: Change le propriétaire d'une entité ou d'un bataillon.";
+B_Reward_ChangePlayer.GetReprisalTable = nil;
+
+B_Reward_ChangePlayer.GetRewardTable = function(self, _Quest)
+    return { Reward.Custom, { self, self.CustomFunction } };
+end
+
+Revision:RegisterBehavior(B_Reward_ChangePlayer);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Bewegt einen Siedler relativ zu einem Zielpunkt.
+--
+-- Der Siedler wird sich zum Ziel ausrichten und in der angegeben Distanz
+-- und dem angegebenen Winkel Position beziehen.
+--
+-- <p><b>Hinweis:</b> Funktioniert ähnlich wie MoveEntityToPositionToAnotherOne.
+-- </p>
+--
+-- @param[type=string] _ScriptName  Skriptname des Entity
+-- @param[type=string] _Destination Skriptname des Ziels
+-- @param[type=number] _Distance    Entfernung
+-- @param[type=number] _Angle       Winkel
+--
+-- @within Reward
+--
+function Reward_MoveToPosition(...)
+    return B_Reward_MoveToPosition:new(...);
+end
+
+B_Reward_MoveToPosition = {
+    Name = "Reward_MoveToPosition",
+    Description = {
+        en = "Reward: Moves an entity relative to another entity. If angle is zero the entities will be standing directly face to face.",
+        de = "Lohn: Bewegt eine Entity relativ zur Position einer anderen. Wenn Winkel 0 ist, stehen sich die Entities direkt gegenüber.",
+        fr = "Récompense: Déplace une entité par rapport à la position d'une autre. Si l'angle est égal à 0, les entités sont directement opposées.",
+    },
+    Parameter = {
+        { ParameterType.ScriptName, en = "Settler",     de = "Siedler",     fr = "Settler" },
+        { ParameterType.ScriptName, en = "Destination", de = "Ziel",        fr = "Destination" },
+        { ParameterType.Number,     en = "Distance",    de = "Entfernung",  fr = "Distance" },
+        { ParameterType.Number,     en = "Angle",       de = "Winkel",      fr = "Angle" },
+    },
+}
+
+function B_Reward_MoveToPosition:GetRewardTable()
+    return { Reward.Custom, {self, self.CustomFunction} }
+end
+
+function B_Reward_MoveToPosition:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.Entity = _Parameter;
+    elseif (_Index == 1) then
+        self.Target = _Parameter;
+    elseif (_Index == 2) then
+        self.Distance = _Parameter * 1;
+    elseif (_Index == 3) then
+        self.Angle = _Parameter * 1;
+    end
+end
+
+function B_Reward_MoveToPosition:CustomFunction(_Quest)
+    if not IsExisting(self.Entity) or not IsExisting(self.Target) then
+        return;
+    end
+    self.Angle = self.Angle or 0;
+
+    local entity = GetID(self.Entity);
+    local target = GetID(self.Target);
+    local orientation = Logic.GetEntityOrientation(target);
+    local x,y,z = Logic.EntityGetPos(target);
+    if Logic.IsBuilding(target) == 1 then
+        x, y = Logic.GetBuildingApproachPosition(target);
+        orientation = orientation -90;
+    end
+    x = x + self.Distance * math.cos( math.rad(orientation+self.Angle) );
+    y = y + self.Distance * math.sin( math.rad(orientation+self.Angle) );
+    Logic.MoveSettler(entity, x, y);
+    self.EntityMovingJob = API.StartJob( function(_entityID, _targetID)
+        if Logic.IsEntityMoving(_entityID) == false then
+            LookAt(_entityID, _targetID);
+            return true;
+        end
+    end, entity, target);
+end
+
+function B_Reward_MoveToPosition:Reset(_Quest)
+    if self.EntityMovingJob then
+        API.EndJob(self.EntityMovingJob);
+    end
+end
+
+function B_Reward_MoveToPosition:Debug(_Quest)
+    if tonumber(self.Distance) == nil or self.Distance < 50 then
+        error(_Quest.Identifier.. ": " ..self.Name.. ": Distance is nil or to short!");
+        return true;
+    elseif not IsExisting(self.Entity) or not IsExisting(self.Target) then
+        error(_Quest.Identifier.. ": " ..self.Name.. ": Mover entity or target entity does not exist!");
+        return true;
+    end
+    return false;
+end
+
+Revision:RegisterBehavior(B_Reward_MoveToPosition);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Der Spieler gewinnt das Spiel mit einem animierten Siegesfest.
+--
+-- Wenn nach dem Sieg weiter gespielt wird, wird das Fest gelöscht.
+--
+-- <h5>Multiplayer</h5>
+-- Nicht für Multiplayer geeignet.
+--
+-- @within Reward
+--
+function Reward_VictoryWithParty()
+    return B_Reward_VictoryWithParty:new();
+end
+
+B_Reward_VictoryWithParty = {
+    Name = "Reward_VictoryWithParty",
+    Description = {
+        en = "Reward: (Singleplayer) The player wins the game with an animated festival on the market. Continue playing deleates the festival.",
+        de = "Lohn: (Einzelspieler) Der Spieler gewinnt das Spiel mit einer animierten Siegesfeier. Bei weiterspielen wird das Fest gelöscht.",
+        fr = "Récompense: (Joueur unique) Le joueur gagne la partie avec une fête de la victoire animée. Si le joueur continue à jouer, la fête est effacée.",
+    },
+    Parameter = {}
+};
+
+function B_Reward_VictoryWithParty:GetRewardTable()
+    return {Reward.Custom, {self, self.CustomFunction}};
+end
+
+function B_Reward_VictoryWithParty:AddParameter(_Index, _Parameter)
+end
+
+function B_Reward_VictoryWithParty:CustomFunction(_Quest)
+    if Framework.IsNetworkGame() then
+        error(_Quest.Identifier.. ": " ..self.Name.. ": Can not be used in multiplayer!");
+        return;
+    end
+    Victory(g_VictoryAndDefeatType.VictoryMissionComplete);
+    local pID = _Quest.ReceivingPlayer;
+
+    local market = Logic.GetMarketplace(pID);
+    if IsExisting(market) then
+        local pos = GetPosition(market)
+        Logic.CreateEffect(EGL_Effects.FXFireworks01,pos.X,pos.Y,0);
+        Logic.CreateEffect(EGL_Effects.FXFireworks02,pos.X,pos.Y,0);
+
+        local Generated = self:GenerateParty(pID);
+        ModuleBehaviorCollection.Global.VictoryWithPartyEntities[pID] = Generated;
+
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[
+            if IsExisting(%d) then
+                CameraAnimation.AllowAbort = false
+                CameraAnimation.QueueAnimation(CameraAnimation.SetCameraToEntity, %d)
+                CameraAnimation.QueueAnimation(CameraAnimation.StartCameraRotation, 5)
+                CameraAnimation.QueueAnimation(CameraAnimation.Stay ,9999)
+            end
+
+            GUI_Window.ContinuePlayingClicked_Orig_Reward_VictoryWithParty = GUI_Window.ContinuePlayingClicked
+            GUI_Window.ContinuePlayingClicked = function()
+                GUI_Window.ContinuePlayingClicked_Orig_Reward_VictoryWithParty()
+                
+                local PlayerID = GUI.GetPlayerID()
+                GUI.SendScriptCommand("B_Reward_VictoryWithParty:ClearParty(" ..PlayerID.. ")")
+
+                CameraAnimation.AllowAbort = true
+                CameraAnimation.Abort()
+            end
+            ]],
+            market,
+            market
+        ));
+    end
+end
+
+function B_Reward_VictoryWithParty:ClearParty(_PlayerID)
+    if ModuleBehaviorCollection.Global.VictoryWithPartyEntities[_PlayerID] then
+        for k, v in pairs(ModuleBehaviorCollection.Global.VictoryWithPartyEntities[_PlayerID]) do
+            DestroyEntity(v);
+        end
+        ModuleBehaviorCollection.Global.VictoryWithPartyEntities[_PlayerID] = nil;
+    end
+end
+
+function B_Reward_VictoryWithParty:GenerateParty(_PlayerID)
+    local GeneratedEntities = {};
+    local Marketplace = Logic.GetMarketplace(_PlayerID);
+    if Marketplace ~= nil and Marketplace ~= 0 then
+        local MarketX, MarketY = Logic.GetEntityPosition(Marketplace);
+        local ID = Logic.CreateEntity(Entities.D_X_Garland, MarketX, MarketY, 0, _PlayerID)
+        table.insert(GeneratedEntities, ID);
+        for j=1, 10 do
+            for k=1,10 do
+                local SettlersX = MarketX -700+ (j*150);
+                local SettlersY = MarketY -700+ (k*150);
+                
+                local rand = Logic.GetRandom(100);
+                
+                if rand > 70 then
+                    local SettlerType = API.GetRandomSettlerType();
+                    local Orientation = Logic.GetRandom(360);
+                    local WorkerID = Logic.CreateEntityOnUnblockedLand(SettlerType, SettlersX, SettlersY, Orientation, _PlayerID);
+                    Logic.SetTaskList(WorkerID, TaskLists.TL_WORKER_FESTIVAL_APPLAUD_SPEECH);
+                    table.insert(GeneratedEntities, WorkerID);
+                end
+            end
+        end
+    end
+    return GeneratedEntities;
+end
+
+function B_Reward_VictoryWithParty:Debug(_Quest)
+    return false;
+end
+
+Revision:RegisterBehavior(B_Reward_VictoryWithParty);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Ändert die Sichtbarkeit eines Entity.
+--
+-- @param[type=string]  _ScriptName Skriptname des Entity
+-- @param[type=boolean] _Visible    Sichtbarkeit an/aus
+--
+-- @within Reprisal
+--
+function Reward_SetVisible(...)
+    return B_Reward_SetVisible:new(...)
+end
+
+B_Reward_SetVisible = Revision.LuaBase:CopyTable(B_Reprisal_SetVisible);
+B_Reward_SetVisible.Name = "Reward_SetVisible";
+B_Reward_SetVisible.Description.en = "Reward: Changes the visibility of an entity. If the entity is a spawner the spawned entities will be affected.";
+B_Reward_SetVisible.Description.de = "Lohn: Setzt die Sichtbarkeit einer Entity. Handelt es sich um einen Spawner werden auch die gespawnten Entities beeinflusst.";
+B_Reward_SetVisible.Description.fr = "Récompense: Définit la visibilité d'une Entity. S'il s'agit d'un spawn, les entités spawnées sont également influencées.";
+B_Reward_SetVisible.GetReprisalTable = nil;
+
+B_Reward_SetVisible.GetRewardTable = function(self, _Quest)
+    return { Reward.Custom, { self, self.CustomFunction } }
+end
+
+Revision:RegisterBehavior(B_Reward_SetVisible);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Macht das Entity verwundbar oder unverwundbar.
+--
+-- Bei einem Battalion wirkt sich das Behavior auf alle Soldaten und den
+-- (unsichtbaren) Leader aus. Wird das Behavior auf ein Spawner Entity 
+-- angewendet, werden die gespawnten Entities genommen.
+--
+-- @param[type=string]  _ScriptName Skriptname des Entity
+-- @param[type=boolean] _Vulnerable Verwundbarkeit an/aus
+--
+-- @within Reward
+--
+function Reward_SetVulnerability(...)
+    return B_Reward_SetVulnerability:new(...);
+end
+
+B_Reward_SetVulnerability = Revision.LuaBase:CopyTable(B_Reprisal_SetVulnerability);
+B_Reward_SetVulnerability.Name = "Reward_SetVulnerability";
+B_Reward_SetVulnerability.Description.en = "Reward: Changes the vulnerability of the entity. If the entity is a spawner the spawned entities will be affected.";
+B_Reward_SetVulnerability.Description.de = "Lohn: Macht eine Entity verwundbar oder unverwundbar. Handelt es sich um einen Spawner, sind die gespawnten Entities betroffen.";
+B_Reward_SetVulnerability.Description.fr = "Récompense: Rend une Entité vulnérable ou invulnérable. S'il s'agit d'un spawn, les entités spawnées sont affectées.";
+B_Reward_SetVulnerability.GetReprisalTable = nil;
+
+B_Reward_SetVulnerability.GetRewardTable = function(self, _Quest)
+    return { Reward.Custom, { self, self.CustomFunction } }
+end
+
+Revision:RegisterBehavior(B_Reward_SetVulnerability);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Ändert das Model eines Entity.
+--
+-- In Verbindung mit Reward_SetVisible oder Reprisal_SetVisible können
+-- Script Entites ein neues Model erhalten und sichtbar gemacht werden.
+-- Das hat den Vorteil, das Script Entities nicht überbaut werden können.
+--
+-- @param[type=string] _ScriptName Skriptname des Entity
+-- @param[type=string] _Model      Neues Model
+--
+-- @within Reward
+--
+function Reward_SetModel(...)
+    return B_Reward_SetModel:new(...);
+end
+
+B_Reward_SetModel = Revision.LuaBase:CopyTable(B_Reprisal_SetModel);
+B_Reward_SetModel.Name = "Reward_SetModel";
+B_Reward_SetModel.Description.en = "Reward: Changes the model of the entity. Be careful, some models crash the game.";
+B_Reward_SetModel.Description.de = "Lohn: Ändert das Model einer Entity. Achtung: Einige Modelle führen zum Absturz.";
+B_Reward_SetModel.Description.fr = "Récompense: Modifie le modèle d'une entité. Attention : certains modèles entraînent un plantage.";
+B_Reward_SetModel.GetReprisalTable = nil;
+
+B_Reward_SetModel.GetRewardTable = function(self, _Quest)
+    return { Reward.Custom, { self, self.CustomFunction } }
+end
+
+Revision:RegisterBehavior(B_Reward_SetModel);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Gibt oder entzieht einem KI-Spieler die Kontrolle über ein Entity.
+--
+-- @param[type=string]  _ScriptName Skriptname des Entity
+-- @param[type=boolean] _Controlled Durch KI kontrollieren an/aus
+--
+-- @within Reward
+--
+function Reward_AI_SetEntityControlled(...)
+    return B_Reward_AI_SetEntityControlled:new(...);
+end
+
+B_Reward_AI_SetEntityControlled = {
+    Name = "Reward_AI_SetEntityControlled",
+    Description = {
+        en = "Reward: Bind or Unbind an entity or a battalion to/from an AI player. The AI player must be activated!",
+        de = "Lohn: Die KI kontrolliert die Entity oder der KI die Kontrolle entziehen. Die KI muss aktiv sein!",
+        fr = "Récompense: L'IA contrôle l'entité ou retirer le contrôle à l'IA. L'IA doit être active !",
+    },
+    Parameter = {
+        { ParameterType.ScriptName, en = "Entity",            de = "Entity",                 fr = "Entité", },
+        { ParameterType.Custom,     en = "AI control entity", de = "KI kontrolliert Entity", fr = "L'IA contrôle l'entité", },
+    },
+}
+
+function B_Reward_AI_SetEntityControlled:GetRewardTable()
+    return { Reward.Custom, { self, self.CustomFunction } }
+end
+
+function B_Reward_AI_SetEntityControlled:AddParameter( _Index, _Parameter )
+    if (_Index == 0) then
+        self.Entity = _Parameter;
+    elseif (_Index == 1) then
+        self.Hidden = API.ToBoolean(_Parameter)
+    end
+end
+
+function B_Reward_AI_SetEntityControlled:CustomFunction(_Quest)
+    if not IsExisting(self.Entity) then
+        return;
+    end
+    local eID = GetID(self.Entity);
+    local pID = Logic.EntityGetPlayer(eID);
+    local eType = Logic.GetEntityType(eID);
+    local tName = Logic.GetEntityTypeName(eType);
+    if string.find(tName, "S_") or string.find(tName, "B_NPC_Bandits")
+    or string.find(tName, "B_NPC_Barracks") then
+        local spawned = {Logic.GetSpawnedEntities(eID)};
+        for i=1, #spawned do
+            if Logic.IsLeader(spawned[i]) == 1 then
+                AICore.HideEntityFromAI(pID, spawned[i], not self.Hidden);
+            end
+        end
+    else
+        AICore.HideEntityFromAI(pID, eID, not self.Hidden);
+    end
+end
+
+function B_Reward_AI_SetEntityControlled:GetCustomData(_Index)
+    if _Index == 1 then
+        return { "false", "true" }
+    end
+end
+
+function B_Reward_AI_SetEntityControlled:Debug(_Quest)
+    if not IsExisting(self.Entity) then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": entity '"..  self.Entity .. "' does not exist!");
+        return true;
+    end
+    return false;
+end
+
+Revision:RegisterBehavior(B_Reward_AI_SetEntityControlled);
+
+-- -------------------------------------------------------------------------- --
+-- Trigger                                                                    --
+-- -------------------------------------------------------------------------- --
+
+---
+-- Startet den Quest, sobald mindestens X von Y Quests fehlgeschlagen sind.
+--
+-- @param[type=number] _MinAmount Mindestens zu verlieren (max. 5)
+-- @param[type=number] _QuestAmount Anzahl geprüfter Quests (max. 5 und >= _MinAmount)
+-- @param[type=string] _Quest1      Name des 1. Quest
+-- @param[type=string] _Quest2      Name des 2. Quest
+-- @param[type=string] _Quest3      Name des 3. Quest
+-- @param[type=string] _Quest4      Name des 4. Quest
+-- @param[type=string] _Quest5      Name des 5. Quest
+--
+-- @within Trigger
+--
+function Trigger_OnAtLeastXOfYQuestsFailed(...)
+    return B_Trigger_OnAtLeastXOfYQuestsFailed:new(...);
+end
+
+B_Trigger_OnAtLeastXOfYQuestsFailed = {
+    Name = "Trigger_OnAtLeastXOfYQuestsFailed",
+    Description = {
+        en = "Trigger: if at least X of Y given quests has been finished successfully.",
+        de = "Auslöser: wenn X von Y angegebener Quests fehlgeschlagen sind.",
+        fr = "Déclencheur: lorsque X des Y quêtes indiquées ont échoué.",
+    },
+    Parameter = {
+        { ParameterType.Custom,    en = "Least Amount", de = "Mindest Anzahl",  fr = "Nombre minimum" },
+        { ParameterType.Custom,    en = "Quest Amount", de = "Quest Anzahl",    fr = "Nombre de quêtes" },
+        { ParameterType.QuestName, en = "Quest name 1", de = "Questname 1",     fr = "Nom de la quête 1" },
+        { ParameterType.QuestName, en = "Quest name 2", de = "Questname 2",     fr = "Nom de la quête 2" },
+        { ParameterType.QuestName, en = "Quest name 3", de = "Questname 3",     fr = "Nom de la quête 3" },
+        { ParameterType.QuestName, en = "Quest name 4", de = "Questname 4",     fr = "Nom de la quête 4" },
+        { ParameterType.QuestName, en = "Quest name 5", de = "Questname 5",     fr = "Nom de la quête 5" },
+    },
+}
+
+function B_Trigger_OnAtLeastXOfYQuestsFailed:GetTriggerTable()
+    return { Triggers.Custom2,{self, self.CustomFunction} }
+end
+
+function B_Trigger_OnAtLeastXOfYQuestsFailed:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.LeastAmount = tonumber(_Parameter)
+    elseif (_Index == 1) then
+        self.QuestAmount = tonumber(_Parameter)
+    elseif (_Index == 2) then
+        self.QuestName1 = _Parameter
+    elseif (_Index == 3) then
+        self.QuestName2 = _Parameter
+    elseif (_Index == 4) then
+        self.QuestName3 = _Parameter
+    elseif (_Index == 5) then
+        self.QuestName4 = _Parameter
+    elseif (_Index == 6) then
+        self.QuestName5 = _Parameter
+    end
+end
+
+function B_Trigger_OnAtLeastXOfYQuestsFailed:CustomFunction()
+    local least = 0
+    for i = 1, self.QuestAmount do
+		local QuestID = GetQuestID(self["QuestName"..i]);
+        if IsValidQuest(QuestID) then
+			if (Quests[QuestID].Result == QuestResult.Failure) then
+				least = least + 1
+				if least >= self.LeastAmount then
+					return true
+				end
+			end
+        end
+    end
+    return false
+end
+
+function B_Trigger_OnAtLeastXOfYQuestsFailed:Debug(_Quest)
+    local leastAmount = self.LeastAmount
+    local questAmount = self.QuestAmount
+    if leastAmount <= 0 or leastAmount >5 then
+        error(_Quest.Identifier .. ":" .. self.Name .. ": LeastAmount is wrong")
+        return true
+    elseif questAmount <= 0 or questAmount > 5 then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": QuestAmount is wrong")
+        return true
+    elseif leastAmount > questAmount then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": LeastAmount is greater than QuestAmount")
+        return true
+    end
+    for i = 1, questAmount do
+        if not IsValidQuest(self["QuestName"..i]) then
+            error(_Quest.Identifier.. ": " ..self.Name .. ": Quest ".. self["QuestName"..i] .. " not found")
+            return true
+        end
+    end
+    return false
+end
+
+function B_Trigger_OnAtLeastXOfYQuestsFailed:GetCustomData(_Index)
+    if (_Index == 0) or (_Index == 1) then
+        return {"1", "2", "3", "4", "5"}
+    end
+end
+
+Revision:RegisterBehavior(B_Trigger_OnAtLeastXOfYQuestsFailed)
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Startet den Quest, sobald die Munition in der Kriegsmaschine erschöpft ist.
+--
+-- @param[type=string] _ScriptName Skriptname des Entity
+--
+-- @within Trigger
+--
+function Trigger_AmmunitionDepleted(...)
+    return B_Trigger_AmmunitionDepleted:new(...);
+end
+
+B_Trigger_AmmunitionDepleted = {
+    Name = "Trigger_AmmunitionDepleted",
+    Description = {
+        en = "Trigger: if the ammunition of the entity is depleted.",
+        de = "Auslöser: wenn die Munition der Entity aufgebraucht ist.",
+        fr = "Déclencheur: lorsque les munitions de l'entité sont épuisées.",
+    },
+    Parameter = {
+        { ParameterType.Scriptname, en = "Script name", de = "Skriptname", fr = "Nom de l'entité" },
+    },
+}
+
+function B_Trigger_AmmunitionDepleted:GetTriggerTable()
+    return { Triggers.Custom2,{self, self.CustomFunction} }
+end
+
+function B_Trigger_AmmunitionDepleted:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.Scriptname = _Parameter
+    end
+end
+
+function B_Trigger_AmmunitionDepleted:CustomFunction()
+    if not IsExisting(self.Scriptname) then
+        return false;
+    end
+
+    local EntityID = GetID(self.Scriptname);
+    if Logic.GetAmmunitionAmount(EntityID) > 0 then
+        return false;
+    end
+
+    return true;
+end
+
+function B_Trigger_AmmunitionDepleted:Debug(_Quest)
+    if not IsExisting(self.Scriptname) then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": '"..self.Scriptname.."' is destroyed!");
+        return true
+    end
+    return false
+end
+
+Revision:RegisterBehavior(B_Trigger_AmmunitionDepleted)
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Startet den Quest, wenn exakt einer von beiden Quests erfolgreich ist.
+--
+-- @param[type=string] _QuestName1 Name des ersten Quest
+-- @param[type=string] _QuestName2 Name des zweiten Quest
+--
+-- @within Trigger
+--
+function Trigger_OnExactOneQuestIsWon(...)
+    return B_Trigger_OnExactOneQuestIsWon:new(...);
+end
+
+B_Trigger_OnExactOneQuestIsWon = {
+    Name = "Trigger_OnExactOneQuestIsWon",
+    Description = {
+        en = "Trigger: if one of two given quests has been finished successfully, but NOT both.",
+        de = "Auslöser: wenn eine von zwei angegebenen Quests (aber NICHT beide) erfolgreich abgeschlossen wurde.",
+        fr = "Déclencheur: lorsque l'une des deux quêtes indiquées (mais PAS les deux) a été accomplie avec succès.",
+    },
+    Parameter = {
+        { ParameterType.QuestName, en = "Quest Name 1", de = "Questname 1", fr = "Nom de la quête 1", },
+        { ParameterType.QuestName, en = "Quest Name 2", de = "Questname 2", fr = "Nom de la quête 2", },
+    },
+}
+
+function B_Trigger_OnExactOneQuestIsWon:GetTriggerTable()
+    return {Triggers.Custom2, {self, self.CustomFunction}};
+end
+
+function B_Trigger_OnExactOneQuestIsWon:AddParameter(_Index, _Parameter)
+    self.QuestTable = {};
+
+    if (_Index == 0) then
+        self.Quest1 = _Parameter;
+    elseif (_Index == 1) then
+        self.Quest2 = _Parameter;
+    end
+end
+
+function B_Trigger_OnExactOneQuestIsWon:CustomFunction(_Quest)
+    local Quest1 = Quests[GetQuestID(self.Quest1)];
+    local Quest2 = Quests[GetQuestID(self.Quest2)];
+    if Quest2 and Quest1 then
+        local Quest1Succeed = (Quest1.State == QuestState.Over and Quest1.Result == QuestResult.Success);
+        local Quest2Succeed = (Quest2.State == QuestState.Over and Quest2.Result == QuestResult.Success);
+        if (Quest1Succeed and not Quest2Succeed) or (not Quest1Succeed and Quest2Succeed) then
+            return true;
+        end
+    end
+    return false;
+end
+
+function B_Trigger_OnExactOneQuestIsWon:Debug(_Quest)
+    if self.Quest1 == self.Quest2 then
+        error(_Quest.Identifier.. ": " ..self.Name..": Both quests are identical!");
+        return true;
+    elseif not IsValidQuest(self.Quest1) then
+        error(_Quest.Identifier.. ": " ..self.Name..": Quest '"..self.Quest1.."' does not exist!");
+        return true;
+    elseif not IsValidQuest(self.Quest2) then
+        error(_Quest.Identifier.. ": " ..self.Name..": Quest '"..self.Quest2.."' does not exist!");
+        return true;
+    end
+    return false;
+end
+
+Revision:RegisterBehavior(B_Trigger_OnExactOneQuestIsWon);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Startet den Quest, wenn exakt einer von beiden Quests fehlgeschlagen ist.
+--
+-- @param[type=string] _QuestName1 Name des ersten Quest
+-- @param[type=string] _QuestName2 Name des zweiten Quest
+--
+-- @within Trigger
+--
+function Trigger_OnExactOneQuestIsLost(...)
+    return B_Trigger_OnExactOneQuestIsLost:new(...);
+end
+
+B_Trigger_OnExactOneQuestIsLost = {
+    Name = "Trigger_OnExactOneQuestIsLost",
+    Description = {
+        en = "Trigger: If one of two given quests has been lost, but NOT both.",
+        de = "Auslöser: Wenn einer von zwei angegebenen Quests (aber NICHT beide) fehlschlägt.",
+        fr = "Déclencheur: Si l'une des deux quêtes indiquées (mais PAS les deux) échoue.",
+    },
+    Parameter = {
+        { ParameterType.QuestName, en = "Quest Name 1", de = "Questname 1", fr = "Nom de la quête 1", },
+        { ParameterType.QuestName, en = "Quest Name 2", de = "Questname 2", fr = "Nom de la quête 2", },
+    },
+}
+
+function B_Trigger_OnExactOneQuestIsLost:GetTriggerTable()
+    return {Triggers.Custom2, {self, self.CustomFunction}};
+end
+
+function B_Trigger_OnExactOneQuestIsLost:AddParameter(_Index, _Parameter)
+    self.QuestTable = {};
+
+    if (_Index == 0) then
+        self.Quest1 = _Parameter;
+    elseif (_Index == 1) then
+        self.Quest2 = _Parameter;
+    end
+end
+
+function B_Trigger_OnExactOneQuestIsLost:CustomFunction(_Quest)
+    local Quest1 = Quests[GetQuestID(self.Quest1)];
+    local Quest2 = Quests[GetQuestID(self.Quest2)];
+    if Quest2 and Quest1 then
+        local Quest1Succeed = (Quest1.State == QuestState.Over and Quest1.Result == QuestResult.Failure);
+        local Quest2Succeed = (Quest2.State == QuestState.Over and Quest2.Result == QuestResult.Failure);
+        if (Quest1Succeed and not Quest2Succeed) or (not Quest1Succeed and Quest2Succeed) then
+            return true;
+        end
+    end
+    return false;
+end
+
+function B_Trigger_OnExactOneQuestIsLost:Debug(_Quest)
+    if self.Quest1 == self.Quest2 then
+        error(_Quest.Identifier.. ": " ..self.Name..": Both quests are identical!");
+        return true;
+    elseif not IsValidQuest(self.Quest1) then
+        error(_Quest.Identifier.. ": " ..self.Name..": Quest '"..self.Quest1.."' does not exist!");
+        return true;
+    elseif not IsValidQuest(self.Quest2) then
+        error(_Quest.Identifier.. ": " ..self.Name..": Quest '"..self.Quest2.."' does not exist!");
+        return true;
+    end
+    return false;
+end
+
+Revision:RegisterBehavior(B_Trigger_OnExactOneQuestIsLost);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
 ModuleLifestockBreeding = {
     Properties = {
         Name = "ModuleLifestockBreeding",
@@ -26434,395 +30023,6 @@ function API.ConfigureSheepBreeding(_Data)
         ModuleLifestockBreeding.Global.Sheep.GrothTimer = _Data.GrothTimer;
     end
 end
-
---[[
-Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
-
-This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
-You may use and modify this file unter the terms of the MIT licence.
-(See https://en.wikipedia.org/wiki/MIT_License)
-]]
-
--- -------------------------------------------------------------------------- --
-
-ModuleTypewriter = {
-    Properties = {
-        Name = "ModuleTypewriter",
-        Version = "4.0.0 (ALPHA 1.0.0)",
-    },
-
-    Global = {
-        TypewriterEventData = {},
-        TypewriterEventCounter = 0,
-    },
-    Local = {},
-
-    Shared = {};
-}
-
-QSB.CinematicElementTypes.Typewriter = 1;
-
--- Global Script ---------------------------------------------------------------
-
-function ModuleTypewriter.Global:OnGameStart()
-    QSB.ScriptEvents.TypewriterStarted = API.RegisterScriptEvent("Event_TypewriterStarted");
-    QSB.ScriptEvents.TypewriterEnded = API.RegisterScriptEvent("Event_TypewriterEnded");
-
-    API.StartHiResJob(function()
-        ModuleTypewriter.Global:ControlTypewriter();
-    end);
-end
-
-function ModuleTypewriter.Global:OnEvent(_ID, ...)
-    if _ID == QSB.ScriptEvents.LoadscreenClosed then
-        self.LoadscreenClosed = true;
-    end
-end
-
-function ModuleTypewriter.Global:StartTypewriter(_Data)
-    self.TypewriterEventCounter = self.TypewriterEventCounter +1;
-    local EventName = "CinematicElement_Typewriter" ..self.TypewriterEventCounter;
-    _Data.Name = EventName;
-    if not self.LoadscreenClosed or API.IsCinematicElementActive(_Data.PlayerID) then
-        ModuleGUI.Global:PushCinematicElementToQueue(
-            _Data.PlayerID,
-            QSB.CinematicElementTypes.Typewriter,
-            EventName,
-            _Data
-        );
-        return _Data.Name;
-    end
-    return self:PlayTypewriter(_Data);
-end
-
-function ModuleTypewriter.Global:PlayTypewriter(_Data)
-    local ID = API.StartCinematicElement(_Data.Name, _Data.PlayerID);
-    _Data.ID = ID;
-    _Data.TextTokens = self:TokenizeText(_Data);
-    self.TypewriterEventData[_Data.PlayerID] = _Data;
-    Logic.ExecuteInLuaLocalState(string.format(
-        [[
-        if GUI.GetPlayerID() == %d then
-            API.ActivateImageScreen(GUI.GetPlayerID(), "%s", %d, %d, %d, %d)
-            API.DeactivateNormalInterface(GUI.GetPlayerID())
-            API.DeactivateBorderScroll(GUI.GetPlayerID(), %d)
-            Input.CutsceneMode()
-            GUI.ClearNotes()
-        end
-        ]],
-        _Data.PlayerID,
-        _Data.Image,
-        _Data.Color.R or 0,
-        _Data.Color.G or 0,
-        _Data.Color.B or 0,
-        _Data.Color.A or 255,
-        _Data.TargetEntity
-    ));
-
-    API.SendScriptEvent(QSB.ScriptEvents.TypewriterStarted, _Data.PlayerID, _Data);
-    Logic.ExecuteInLuaLocalState(string.format(
-        [[API.SendScriptEvent(QSB.ScriptEvents.TypewriterStarted, %d, %s)]],
-        _Data.PlayerID,
-        table.tostring(_Data)
-    ));
-    return _Data.Name;
-end
-
-function ModuleTypewriter.Global:FinishTypewriter(_PlayerID)
-    if self.TypewriterEventData[_PlayerID] then
-        local EventData = table.copy(self.TypewriterEventData[_PlayerID]);
-        local EventPlayer = self.TypewriterEventData[_PlayerID].PlayerID;
-        Logic.ExecuteInLuaLocalState(string.format(
-            [[
-            if GUI.GetPlayerID() == %d then
-                ModuleGUI.Local:ResetFarClipPlane()
-                API.DeactivateImageScreen(GUI.GetPlayerID())
-                API.ActivateNormalInterface(GUI.GetPlayerID())
-                API.ActivateBorderScroll(GUI.GetPlayerID())
-                Input.GameMode()
-                GUI.ClearNotes()
-            end
-            ]],
-            _PlayerID
-        ));
-        API.SendScriptEvent(QSB.ScriptEvents.TypewriterEnded, EventPlayer, EventData);
-        Logic.ExecuteInLuaLocalState(string.format(
-            [[API.SendScriptEvent(QSB.ScriptEvents.TypewriterEnded, %d, %s)]],
-            EventPlayer,
-            table.tostring(EventData)
-        ));
-        self.TypewriterEventData[_PlayerID]:Callback();
-        API.FinishCinematicElement(EventData.Name, EventPlayer);
-        self.TypewriterEventData[_PlayerID] = nil;
-    end
-end
-
-function ModuleTypewriter.Global:TokenizeText(_Data)
-    local TextTokens = {};
-    local TempTokens = {};
-    local Text = API.ConvertPlaceholders(_Data.Text);
-    Text = Text:gsub("%s+", " ");
-    while (true) do
-        local s1, e1 = Text:find("{");
-        local s2, e2 = Text:find("}");
-        if not s1 or not s2 then
-            table.insert(TempTokens, Text);
-            break;
-        end
-        if s1 > 1 then
-            table.insert(TempTokens, Text:sub(1, s1 -1));
-        end
-        table.insert(TempTokens, Text:sub(s1, e2));
-        Text = Text:sub(e2 +1);
-    end
-
-    local LastWasPlaceholder = false;
-    for i= 1, #TempTokens, 1 do
-        if TempTokens[i]:find("{") then
-            local Index = #TextTokens;
-            if LastWasPlaceholder then
-                TextTokens[Index] = TextTokens[Index] .. TempTokens[i];
-            else
-                table.insert(TextTokens, Index+1, TempTokens[i]);
-            end
-            LastWasPlaceholder = true;
-        else
-            local Index = 1;
-            while (Index <= #TempTokens[i]) do
-                if string.byte(TempTokens[i]:sub(Index, Index)) == 195 then
-                    table.insert(TextTokens, TempTokens[i]:sub(Index, Index+1));
-                    Index = Index +1;
-                else
-                    table.insert(TextTokens, TempTokens[i]:sub(Index, Index));
-                end
-                Index = Index +1;
-            end
-            LastWasPlaceholder = false;
-        end
-    end
-    return TextTokens;
-end
-
-function ModuleTypewriter.Global:ControlTypewriter()
-    -- Check queue for next event
-    for i= 1, 8 do
-        if self.LoadscreenClosed and not API.IsCinematicElementActive(i) then
-            local Next = ModuleGUI.Global:LookUpCinematicInQueue(i);
-            if Next and Next[1] == QSB.CinematicElementTypes.Typewriter then
-                local Data = ModuleGUI.Global:PopCinematicElementFromQueue(i);
-                self:PlayTypewriter(Data[3]);
-            end
-        end
-    end
-
-    -- Perform active events
-    for k, v in pairs(self.TypewriterEventData) do
-        if self.TypewriterEventData[k].Delay > 0 then
-            self.TypewriterEventData[k].Delay = self.TypewriterEventData[k].Delay -1;
-            -- Just my paranoia...
-            Logic.ExecuteInLuaLocalState(string.format(
-                [[if GUI.GetPlayerID() == %d then GUI.ClearNotes() end]],
-                self.TypewriterEventData[k].PlayerID
-            ));
-        end
-        if self.TypewriterEventData[k].Delay == 0 then
-            self.TypewriterEventData[k].Index = v.Index + v.CharSpeed;
-            if v.Index > #self.TypewriterEventData[k].TextTokens then
-                self.TypewriterEventData[k].Index = #self.TypewriterEventData[k].TextTokens;
-            end
-            local Index = math.floor(v.Index + 0.5);
-            local Text = "";
-            for i= 1, Index, 1 do
-                Text = Text .. self.TypewriterEventData[k].TextTokens[i];
-            end
-            Logic.ExecuteInLuaLocalState(string.format(
-                [[
-                if GUI.GetPlayerID() == %d then
-                    GUI.ClearNotes()
-                    GUI.AddNote("]] ..Text.. [[");
-                end
-                ]],
-                self.TypewriterEventData[k].PlayerID
-            ));
-            if Index == #self.TypewriterEventData[k].TextTokens then
-                self.TypewriterEventData[k].Waittime = v.Waittime -1;
-                if v.Waittime <= 0 then
-                    self:FinishTypewriter(k);
-                end
-            end
-        end
-    end
-end
-
--- Local Script ----------------------------------------------------------------
-
-function ModuleTypewriter.Local:OnGameStart()
-    QSB.ScriptEvents.TypewriterStarted = API.RegisterScriptEvent("Event_TypewriterStarted");
-    QSB.ScriptEvents.TypewriterEnded = API.RegisterScriptEvent("Event_TypewriterEnded");
-end
-
-function ModuleTypewriter.Local:OnEvent(_ID, ...)
-    if _ID == QSB.ScriptEvents.LoadscreenClosed then
-        self.LoadscreenClosed = true;
-    end
-end
-
--- -------------------------------------------------------------------------- --
-
-Revision:RegisterModule(ModuleTypewriter);
-
---[[
-Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
-
-This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
-You may use and modify this file unter the terms of the MIT licence.
-(See https://en.wikipedia.org/wiki/MIT_License)
-]]
-
--- -------------------------------------------------------------------------- --
-
----
--- Ermöglicht die Anzeige eines fortlaufend getippten Text auf dem Bildschirm.
---
--- Der Text kann mit oder ohne schwarzem Hintergrund angezeigt werden.
---
--- <b>Vorausgesetzte Module:</b>
--- <ul>
--- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
--- <li><a href="QSB_1_GUI.api.html">(1) Interface</a></li>
--- </ul>
---
--- @within Beschreibung
--- @set sort=true
---
-
----
--- Events, auf die reagiert werden kann.
---
--- @field TypewriterStarted Ein Schreibmaschineneffekt beginnt (Parameter: PlayerID, DataTable)
--- @field TypewriterEnded   Ein Schreibmaschineneffekt endet (Parameter: PlayerID, DataTable)
---
--- @within Event
---
-QSB.ScriptEvents = QSB.ScriptEvents or {};
-
----
--- Blendet einen Text Zeichen für Zeichen ein.
---
--- Der Effekt startet erst, nachdem die Map geladen ist. Wenn ein anderes
--- Cinematic Event läuft, wird gewartet, bis es beendet ist. Wärhend der Effekt
--- läuft, können wiederrum keine Cinematic Events starten.
---
--- Mögliche Werte:
--- <table border="1">
--- <tr>
--- <td><b>Feldname</b></td>
--- <td><b>Typ</b></td>
--- <td><b>Beschreibung</b></td>
--- </tr>
--- <tr>
--- <td>Text</td>
--- <td>string|table</td>
--- <td>Der anzuzeigene Text</td>
--- </tr>
--- <tr>
--- <td>PlayerID</td>
--- <td>number</td>
--- <td>(Optional) Spieler, dem der Effekt angezeigt wird (Default: Menschlicher Spieler)</td>
--- </tr>
--- <tr>
--- <td>Callback</td>
--- <td>function</td>
--- <td>(Optional) Funktion nach Abschluss der Textanzeige (Default: nil)</td>
--- </tr>
--- <tr>
--- <td>TargetEntity</td>
--- <td>string|number</td>
--- <td>(Optional) TargetEntity der Kamera (Default: nil)</td>
--- </tr>
--- <tr>
--- <td>CharSpeed</td>
--- <td>number</td>
--- <td>(Optional) Die Schreibgeschwindigkeit (Default: 1.0)</td>
--- </tr>
--- <tr>
--- <td>Waittime</td>
--- <td>number</td>
--- <td>(Optional) Initiale Wartezeigt bevor der Effekt startet</td>
--- </tr>
--- <tr>
--- <td>Opacity</td>
--- <td>number</td>
--- <td>(Optional) Durchsichtigkeit des Hintergrund (Default: 1)</td>
--- </tr>
--- <tr>
--- <td>Color</td>
--- <td>table</td>
--- <td>(Optional) Farbe des Hintergrund (Default: {R= 0, G= 0, B= 0}}</td>
--- </tr>
--- <tr>
--- <td>Image</td>
--- <td>string</td>
--- <td>(Optional) Pfad zur anzuzeigenden Grafik</td>
--- </tr>
--- </table>
---
--- <b>Hinweis</b>: Steuerzeichen wie {cr} oder {@color} werden als ein Token
--- gewertet und immer sofort eingeblendet. Steht z.B. {cr}{cr} im Text, werden
--- die Zeichen atomar behandelt, als seien sie ein einzelnes Zeichen.
--- Gibt es mehr als 1 Leerzeichen hintereinander, werden alle zusammenhängenden
--- Leerzeichen (vom Spiel) auf ein Leerzeichen reduziert!
---
--- @param[type=table] _Data Konfiguration
--- @return[type=string] Name des zugeordneten Event
---
--- @usage
--- local EventName = API.StartTypewriter {
---     PlayerID = 1,
---     Text     = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, "..
---                "sed diam nonumy eirmod tempor invidunt ut labore et dolore"..
---                "magna aliquyam erat, sed diam voluptua. At vero eos et"..
---                " accusam et justo duo dolores et ea rebum. Stet clita kasd"..
---                " gubergren, no sea takimata sanctus est Lorem ipsum dolor"..
---                " sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing"..
---                " elitr, sed diam nonumy eirmod tempor invidunt ut labore et"..
---                " dolore magna aliquyam erat, sed diam voluptua. At vero eos"..
---                " et accusam et justo duo dolores et ea rebum. Stet clita"..
---                " kasd gubergren, no sea takimata sanctus est Lorem ipsum"..
---                " dolor sit amet.",
---     Callback = function(_Data)
---         -- Hier kann was passieren
---     end
--- };
--- @within Anwenderfunktionen
---
-function API.StartTypewriter(_Data)
-    if Framework.IsNetworkGame() ~= true then
-        _Data.PlayerID = _Data.PlayerID or QSB.HumanPlayerID;
-    end
-    if _Data.PlayerID == nil or (_Data.PlayerID < 1 or _Data.PlayerID > 8) then
-        return;
-    end
-    _Data.Text = API.Localize(_Data.Text or "");
-    _Data.Callback = _Data.Callback or function() end;
-    _Data.CharSpeed = _Data.CharSpeed or 1;
-    _Data.Waittime = (_Data.Waittime or 8) * 10;
-    _Data.TargetEntity = GetID(_Data.TargetEntity or 0);
-    _Data.Image = _Data.Image or "";
-    _Data.Color = _Data.Color or {
-        R = (_Data.Image and _Data.Image ~= "" and 255) or 0,
-        G = (_Data.Image and _Data.Image ~= "" and 255) or 0,
-        B = (_Data.Image and _Data.Image ~= "" and 255) or 0,
-        A = 255
-    };
-    if _Data.Opacity and _Data.Opacity >= 0 and _Data.Opacity then
-        _Data.Color.A = math.floor((255 * _Data.Opacity) + 0.5);
-    end
-    _Data.Delay = 15;
-    _Data.Index = 0;
-    return ModuleTypewriter.Global:StartTypewriter(_Data);
-end
-API.SimpleTypewriter = API.StartTypewriter;
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
