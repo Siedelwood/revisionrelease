@@ -11,6 +11,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ModuleLifestockBreeding = {
     Properties = {
         Name = "ModuleLifestockBreeding",
+        Version = "4.0.0 (ALPHA 1.0.0)",
     },
 
     Global = {
@@ -475,9 +476,9 @@ You may use and modify this file unter the terms of the MIT licence.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
--- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
--- <li><a href="QSB_1_GUI.api.html">(1) Interface</a></li>
--- <li><a href="QSB_2_BuildingButtons.api.html">(1) Gebäudeschalter</a></li>
+-- <li><a href="qsb.html">(0) Basismodul</a></li>
+-- <li><a href="modules.QSB_1_GuiControl.QSB_1_GuiControl.html">(1) Ankeigekontrolle</a></li>
+-- <li><a href="modules.QSB_2_BuildingUI.QSB_2_BuildingUI.html">(1) Gebäudeschalter</a></li>
 -- </ul>
 --
 -- @within Beschreibung

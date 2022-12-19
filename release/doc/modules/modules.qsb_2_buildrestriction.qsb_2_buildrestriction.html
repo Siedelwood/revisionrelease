@@ -34,26 +34,29 @@
 
 <h2>Contents</h2>
 <ul>
-<li><a href="#Functions">Functions</a></li>
+<li><a href="#Baubeschr__nkung">Baubeschränkung</a></li>
+<li><a href="#Abrissbeschr__nkung">Abrissbeschränkung</a></li>
 </ul>
 
 
 <h2>Modules</h2>
 <ul class="nowrap">
   <li><a href="../modules/modules.qsb_1_entity.qsb_1_entity.html">(1) Entitätensteuerung</a></li>
-  <li><a href="../modules/modules.qsb_1_gui.qsb_1_gui.html">(1) Benutzerschnittstelle</a></li>
+  <li><a href="../modules/modules.qsb_1_guicontrol.qsb_1_guicontrol.html">(1) Anzeigesteuerung</a></li>
+  <li><a href="../modules/modules.qsb_1_guieffects.qsb_1_guieffects.html">(1) Anzeigeeffekte</a></li>
   <li><a href="../modules/modules.qsb_1_movement.qsb_1_movement.html">(1) Bewegung</a></li>
   <li><a href="../modules/modules.qsb_1_requester.qsb_1_requester.html">(1) Dialogfenster</a></li>
   <li><a href="../modules/modules.qsb_1_sound.qsb_1_sound.html">(1) Sound</a></li>
   <li><a href="../modules/modules.qsb_1_trade.qsb_1_trade.html">(1) Handelserweiterung</a></li>
   <li><a href="../modules/modules.qsb_2_buildingui.qsb_2_buildingui.html">(2) Gebäudeschalter</a></li>
+  <li><strong>(2) Baubeschränkung</strong></li>
+  <li><a href="../modules/modules.qsb_2_newbehavior.qsb_2_newbehavior.html">(2) Neue Behavior</a></li>
   <li><a href="../modules/modules.qsb_2_npc.qsb_2_npc.html">(2) Ansprechbare Siedler</a></li>
   <li><a href="../modules/modules.qsb_2_objects.qsb_2_objects.html">(2) Interaktive Objekte</a></li>
   <li><a href="../modules/modules.qsb_2_promotion.qsb_2_promotion.html">(2) Aufstiegsbedingungen</a></li>
   <li><a href="../modules/modules.qsb_2_quest.qsb_2_quest.html">(2) Aufträge</a></li>
-  <li><strong>(3) Baubeschränkung</strong></li>
+  <li><a href="../modules/modules.qsb_2_selection.qsb_2_selection.html">(2) Selektion</a></li>
   <li><a href="../modules/modules.qsb_3_lifestock.qsb_3_lifestock.html">(3) Viehzucht</a></li>
-  <li><a href="../modules/modules.qsb_3_newbehavior.qsb_3_newbehavior.html">(3) Neue Behavior</a></li>
   <li><a href="../modules/modules.qsb_5_weather.qsb_5_weather.html">(5) Wetter</a></li>
   <li><a href="../modules/qsb.html">(0) Basismodul</a></li>
 </ul>
@@ -62,7 +65,7 @@
 
 <div id="content">
 
-<h1>Module <code>(3) Baubeschränkung</code></h1>
+<h1>Module <code>(2) Baubeschränkung</code></h1>
 <p>Ermöglicht Abriss und Bau für den Spieler einzuschränken.</p>
 <p>
 
@@ -89,44 +92,16 @@
  </ol>
 <p> <b>Vorausgesetzte Module:</b>
  <ul>
- <li><a href="QSB_1_GUI.api.html">(1) Benutzerschnittstelle</a></li>
+ <li><a href="modules.QSB_1_GuiControl.QSB_1_GuiControl.html">(1) Anzeigekontrolle</a></li>
  </ul>
 </p>
 
 
-<h2><a href="#Functions">Functions</a></h2>
+<h2><a href="#Baubeschr__nkung">Baubeschränkung</a></h2>
 <table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#API.DeleteProtection">API.DeleteProtection (_ID)</a></td>
-	<td class="summary">Löscht einen Abrissschutz mit der angegebenen ID.</td>
-	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.DeleteRestriction">API.DeleteRestriction (_ID)</a></td>
 	<td class="summary">Löscht eine Baueinschränkung mit der angegebenen ID.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ProtectBuildingCategoryInArea">API.ProtectBuildingCategoryInArea (_PlayerID, _Category, _Position, _Area)</a></td>
-	<td class="summary">Verhindert den Abriss aller Gebäude in der Kategorie innerhalb des Gebiets.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ProtectBuildingCategoryInTerritory">API.ProtectBuildingCategoryInTerritory (_PlayerID, _Category, _Territory)</a></td>
-	<td class="summary">Verhindert den Abriss aller Gebäude in der Kategorie in dem Territorium.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ProtectBuildingCustomFunction">API.ProtectBuildingCustomFunction (_PlayerID, _Function, _Message)</a></td>
-	<td class="summary">Verhindert den Abriss von Gebäuden anhand der übergebenen Funktion.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ProtectBuildingTypeInArea">API.ProtectBuildingTypeInArea (_PlayerID, _Type, _Position, _Area)</a></td>
-	<td class="summary">Verhindert den Abriss aller Gebäude des Typs innerhalb des Gebiets.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ProtectBuildingTypeInTerritory">API.ProtectBuildingTypeInTerritory (_PlayerID, _Type, _Territory)</a></td>
-	<td class="summary">Verhindert den Abriss aller Gebäude des Typs in dem Territorium.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.ProtectNamedBuilding">API.ProtectNamedBuilding (_ScriptName)</a></td>
-	<td class="summary">Verhindert den Abriss eines benannten Gebäudes.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.RestrictBuildingCategoryInArea">API.RestrictBuildingCategoryInArea (_PlayerID, _Category, _Position, _Area)</a></td>
@@ -169,41 +144,45 @@
 	<td class="summary">Verhindert den Bau von Pfaden in dem Territorium.</td>
 	</tr>
 </table>
+<h2><a href="#Abrissbeschr__nkung">Abrissbeschränkung</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#API.DeleteProtection">API.DeleteProtection (_ID)</a></td>
+	<td class="summary">Löscht einen Abrissschutz mit der angegebenen ID.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.ProtectBuildingCategoryInArea">API.ProtectBuildingCategoryInArea (_PlayerID, _Category, _Position, _Area)</a></td>
+	<td class="summary">Verhindert den Abriss aller Gebäude in der Kategorie innerhalb des Gebiets.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.ProtectBuildingCategoryInTerritory">API.ProtectBuildingCategoryInTerritory (_PlayerID, _Category, _Territory)</a></td>
+	<td class="summary">Verhindert den Abriss aller Gebäude in der Kategorie in dem Territorium.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.ProtectBuildingCustomFunction">API.ProtectBuildingCustomFunction (_PlayerID, _Function, _Message)</a></td>
+	<td class="summary">Verhindert den Abriss von Gebäuden anhand der übergebenen Funktion.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.ProtectBuildingTypeInArea">API.ProtectBuildingTypeInArea (_PlayerID, _Type, _Position, _Area)</a></td>
+	<td class="summary">Verhindert den Abriss aller Gebäude des Typs innerhalb des Gebiets.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.ProtectBuildingTypeInTerritory">API.ProtectBuildingTypeInTerritory (_PlayerID, _Type, _Territory)</a></td>
+	<td class="summary">Verhindert den Abriss aller Gebäude des Typs in dem Territorium.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.ProtectNamedBuilding">API.ProtectNamedBuilding (_ScriptName)</a></td>
+	<td class="summary">Verhindert den Abriss eines benannten Gebäudes.</td>
+	</tr>
+</table>
 
 <br/>
 <br/>
 
 
-    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+    <h2 class="section-header "><a name="Baubeschr__nkung"></a>Baubeschränkung</h2>
 
     <dl class="function">
-    <dt>
-    <a name = "API.DeleteProtection"></a>
-    <strong>API.DeleteProtection (_ID)</strong>
-    </dt>
-    <dd>
-    Löscht einen Abrissschutz mit der angegebenen ID.
-<p> <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_ID</span>
-            <span class="types"><span class="type">number</span></span>
-         ID der Protektion
-        </li>
-    </ul>
-
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">API.DeleteProtection(MyProtectionID);</pre>
-    </ul>
-
-</dd>
     <dt>
     <a name = "API.DeleteRestriction"></a>
     <strong>API.DeleteRestriction (_ID)</strong>
@@ -228,259 +207,6 @@
     <h3>Beispiel:</h3>
     <ul>
         <pre class="example">API.DeleteRestriction(MyRestrictionID);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.ProtectBuildingCategoryInArea"></a>
-    <strong>API.ProtectBuildingCategoryInArea (_PlayerID, _Category, _Position, _Area)</strong>
-    </dt>
-    <dd>
-    Verhindert den Abriss aller Gebäude in der Kategorie innerhalb des Gebiets.
-<p> <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-            <span class="types"><span class="type">number</span></span>
-          ID des Spielers
-        </li>
-        <li><span class="parameter">_Category</span>
-            <span class="types"><span class="type">number</span></span>
-          Entity-Kategorie
-        </li>
-        <li><span class="parameter">_Position</span>
-          Position oder Skriptname
-        </li>
-        <li><span class="parameter">_Area</span>
-            <span class="types"><span class="type">number</span></span>
-              Größe des Gebiets
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        ID der Protektion
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">MyProtectionID = API.ProtectBuildingCategoryInArea(<span class="number">1</span>, EntityCategories.CityBuilding, <span class="string">"AreaCenter"</span>, <span class="number">3000</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.ProtectBuildingCategoryInTerritory"></a>
-    <strong>API.ProtectBuildingCategoryInTerritory (_PlayerID, _Category, _Territory)</strong>
-    </dt>
-    <dd>
-    Verhindert den Abriss aller Gebäude in der Kategorie in dem Territorium.
-<p> <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-            <span class="types"><span class="type">number</span></span>
-          ID des Spielers
-        </li>
-        <li><span class="parameter">_Category</span>
-            <span class="types"><span class="type">number</span></span>
-          Entity-Kategorie
-        </li>
-        <li><span class="parameter">_Territory</span>
-         ID oder Name des Territorium
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        ID der Protektion
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">MyProtectionID = API.ProtectBuildingCategoryInTerritory(<span class="number">1</span>, EntityCategories.CityBuilding, <span class="number">1</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.ProtectBuildingCustomFunction"></a>
-    <strong>API.ProtectBuildingCustomFunction (_PlayerID, _Function, _Message)</strong>
-    </dt>
-    <dd>
-    Verhindert den Abriss von Gebäuden anhand der übergebenen Funktion.
-<p> <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
-<p> Die angegebene Funktion muss eine Funktion im lokalen Skript sein. Es ist
- möglich Funktionen innerhalb Tables anzugeben. Die self-Referenz wird
- allerdings nicht unterstützt.
-<p> Eine Funktion muss true zurückgeben, wenn der Abriss geblockt werden soll.
- Die gleiche Funktion kann für alle Spieler benutzt werden, wenn als PlayerID
- -1 angegeben wird. Für welchen Spieler sie ausgeführt wird, wird stets als
- Parameter übergeben.
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-            <span class="types"><span class="type">number</span></span>
-         ID des Spielers
-        </li>
-        <li><span class="parameter">_Function</span>
-            <span class="types"><span class="type">function</span></span>
-         Funktion im lokalen Skript
-        </li>
-        <li><span class="parameter">_Message</span>
-          (Optional) Nachricht für Abriss gesperrt (String, Table)
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        ID der Protektion
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> MyCustomProtection = <span class="keyword">function</span>(_PlayerID, _BuildingID, _X, _Y)
-   <span class="keyword">if</span> AnythingIWant <span class="keyword">then</span>
-       <span class="keyword">return</span> <span class="keyword">true</span>;
-   <span class="keyword">end</span>
-<span class="keyword">end</span>
-MyProtectionID = API.ProtectBuildingCustomFunction(<span class="number">1</span>, MyCustomProtection);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.ProtectBuildingTypeInArea"></a>
-    <strong>API.ProtectBuildingTypeInArea (_PlayerID, _Type, _Position, _Area)</strong>
-    </dt>
-    <dd>
-    Verhindert den Abriss aller Gebäude des Typs innerhalb des Gebiets.
-<p> <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-            <span class="types"><span class="type">number</span></span>
-          ID des Spielers
-        </li>
-        <li><span class="parameter">_Type</span>
-            <span class="types"><span class="type">number</span></span>
-              Entity-Typ
-        </li>
-        <li><span class="parameter">_Position</span>
-          Position oder Skriptname
-        </li>
-        <li><span class="parameter">_Area</span>
-            <span class="types"><span class="type">number</span></span>
-              Größe des Gebiets
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        ID der Protektion
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">MyProtectionID = API.ProtectBuildingTypeInArea(<span class="number">1</span>, Entities.B_Bakery, <span class="string">"AreaCenter"</span>, <span class="number">3000</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.ProtectBuildingTypeInTerritory"></a>
-    <strong>API.ProtectBuildingTypeInTerritory (_PlayerID, _Type, _Territory)</strong>
-    </dt>
-    <dd>
-    Verhindert den Abriss aller Gebäude des Typs in dem Territorium.
-<p> <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_PlayerID</span>
-            <span class="types"><span class="type">number</span></span>
-          ID des Spielers
-        </li>
-        <li><span class="parameter">_Type</span>
-            <span class="types"><span class="type">number</span></span>
-              Entity-Typ
-        </li>
-        <li><span class="parameter">_Territory</span>
-         ID oder Name des Territorium
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        ID der Protektion
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">MyProtectionID = API.ProtectBuildingTypeInTerritory(<span class="number">1</span>, Entities.B_Bakery, <span class="number">1</span>);</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "API.ProtectNamedBuilding"></a>
-    <strong>API.ProtectNamedBuilding (_ScriptName)</strong>
-    </dt>
-    <dd>
-    Verhindert den Abriss eines benannten Gebäudes.
-<p> <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
-
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">_ScriptName</span>
-            <span class="types"><span class="type">String</span></span>
-         Skriptname des Entity
-        </li>
-    </ul>
-
-    <h3>Rückgabe:</h3>
-    <ol>
-
-           <span class="types"><span class="type">number</span></span>
-        ID der Protektion
-    </ol>
-
-
-
-    <h3>Beispiel:</h3>
-    <ul>
-        <pre class="example">MyProtectionID = API.ProtectNamedBuilding(<span class="number">1</span>, <span class="string">"Denkmalschutz"</span>);</pre>
     </ul>
 
 </dd>
@@ -909,13 +635,297 @@ MyRestrictionID = API.RestrictRoadCustomFunction(<span class="number">1</span>, 
 
 </dd>
 </dl>
+    <h2 class="section-header "><a name="Abrissbeschr__nkung"></a>Abrissbeschränkung</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "API.DeleteProtection"></a>
+    <strong>API.DeleteProtection (_ID)</strong>
+    </dt>
+    <dd>
+    Löscht einen Abrissschutz mit der angegebenen ID.
+<p> <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_ID</span>
+            <span class="types"><span class="type">number</span></span>
+         ID der Protektion
+        </li>
+    </ul>
+
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">API.DeleteProtection(MyProtectionID);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.ProtectBuildingCategoryInArea"></a>
+    <strong>API.ProtectBuildingCategoryInArea (_PlayerID, _Category, _Position, _Area)</strong>
+    </dt>
+    <dd>
+    Verhindert den Abriss aller Gebäude in der Kategorie innerhalb des Gebiets.
+<p> <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+            <span class="types"><span class="type">number</span></span>
+          ID des Spielers
+        </li>
+        <li><span class="parameter">_Category</span>
+            <span class="types"><span class="type">number</span></span>
+          Entity-Kategorie
+        </li>
+        <li><span class="parameter">_Position</span>
+          Position oder Skriptname
+        </li>
+        <li><span class="parameter">_Area</span>
+            <span class="types"><span class="type">number</span></span>
+              Größe des Gebiets
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        ID der Protektion
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">MyProtectionID = API.ProtectBuildingCategoryInArea(<span class="number">1</span>, EntityCategories.CityBuilding, <span class="string">"AreaCenter"</span>, <span class="number">3000</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.ProtectBuildingCategoryInTerritory"></a>
+    <strong>API.ProtectBuildingCategoryInTerritory (_PlayerID, _Category, _Territory)</strong>
+    </dt>
+    <dd>
+    Verhindert den Abriss aller Gebäude in der Kategorie in dem Territorium.
+<p> <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+            <span class="types"><span class="type">number</span></span>
+          ID des Spielers
+        </li>
+        <li><span class="parameter">_Category</span>
+            <span class="types"><span class="type">number</span></span>
+          Entity-Kategorie
+        </li>
+        <li><span class="parameter">_Territory</span>
+         ID oder Name des Territorium
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        ID der Protektion
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">MyProtectionID = API.ProtectBuildingCategoryInTerritory(<span class="number">1</span>, EntityCategories.CityBuilding, <span class="number">1</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.ProtectBuildingCustomFunction"></a>
+    <strong>API.ProtectBuildingCustomFunction (_PlayerID, _Function, _Message)</strong>
+    </dt>
+    <dd>
+    Verhindert den Abriss von Gebäuden anhand der übergebenen Funktion.
+<p> <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
+<p> Die angegebene Funktion muss eine Funktion im lokalen Skript sein. Es ist
+ möglich Funktionen innerhalb Tables anzugeben. Die self-Referenz wird
+ allerdings nicht unterstützt.
+<p> Eine Funktion muss true zurückgeben, wenn der Abriss geblockt werden soll.
+ Die gleiche Funktion kann für alle Spieler benutzt werden, wenn als PlayerID
+ -1 angegeben wird. Für welchen Spieler sie ausgeführt wird, wird stets als
+ Parameter übergeben.
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+            <span class="types"><span class="type">number</span></span>
+         ID des Spielers
+        </li>
+        <li><span class="parameter">_Function</span>
+            <span class="types"><span class="type">function</span></span>
+         Funktion im lokalen Skript
+        </li>
+        <li><span class="parameter">_Message</span>
+          (Optional) Nachricht für Abriss gesperrt (String, Table)
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        ID der Protektion
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> MyCustomProtection = <span class="keyword">function</span>(_PlayerID, _BuildingID, _X, _Y)
+   <span class="keyword">if</span> AnythingIWant <span class="keyword">then</span>
+       <span class="keyword">return</span> <span class="keyword">true</span>;
+   <span class="keyword">end</span>
+<span class="keyword">end</span>
+MyProtectionID = API.ProtectBuildingCustomFunction(<span class="number">1</span>, MyCustomProtection);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.ProtectBuildingTypeInArea"></a>
+    <strong>API.ProtectBuildingTypeInArea (_PlayerID, _Type, _Position, _Area)</strong>
+    </dt>
+    <dd>
+    Verhindert den Abriss aller Gebäude des Typs innerhalb des Gebiets.
+<p> <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+            <span class="types"><span class="type">number</span></span>
+          ID des Spielers
+        </li>
+        <li><span class="parameter">_Type</span>
+            <span class="types"><span class="type">number</span></span>
+              Entity-Typ
+        </li>
+        <li><span class="parameter">_Position</span>
+          Position oder Skriptname
+        </li>
+        <li><span class="parameter">_Area</span>
+            <span class="types"><span class="type">number</span></span>
+              Größe des Gebiets
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        ID der Protektion
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">MyProtectionID = API.ProtectBuildingTypeInArea(<span class="number">1</span>, Entities.B_Bakery, <span class="string">"AreaCenter"</span>, <span class="number">3000</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.ProtectBuildingTypeInTerritory"></a>
+    <strong>API.ProtectBuildingTypeInTerritory (_PlayerID, _Type, _Territory)</strong>
+    </dt>
+    <dd>
+    Verhindert den Abriss aller Gebäude des Typs in dem Territorium.
+<p> <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_PlayerID</span>
+            <span class="types"><span class="type">number</span></span>
+          ID des Spielers
+        </li>
+        <li><span class="parameter">_Type</span>
+            <span class="types"><span class="type">number</span></span>
+              Entity-Typ
+        </li>
+        <li><span class="parameter">_Territory</span>
+         ID oder Name des Territorium
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        ID der Protektion
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">MyProtectionID = API.ProtectBuildingTypeInTerritory(<span class="number">1</span>, Entities.B_Bakery, <span class="number">1</span>);</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "API.ProtectNamedBuilding"></a>
+    <strong>API.ProtectNamedBuilding (_ScriptName)</strong>
+    </dt>
+    <dd>
+    Verhindert den Abriss eines benannten Gebäudes.
+<p> <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">_ScriptName</span>
+            <span class="types"><span class="type">String</span></span>
+         Skriptname des Entity
+        </li>
+    </ul>
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        ID der Protektion
+    </ol>
+
+
+
+    <h3>Beispiel:</h3>
+    <ul>
+        <pre class="example">MyProtectionID = API.ProtectNamedBuilding(<span class="number">1</span>, <span class="string">"Denkmalschutz"</span>);</pre>
+    </ul>
+
+</dd>
+</dl>
 
 
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-12-18 19:51:22 </i>
+<i style="float:right;">Last updated 2022-12-19 11:43:17 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 

@@ -8,9 +8,10 @@ You may use and modify this file unter the terms of the MIT licence.
 
 -- -------------------------------------------------------------------------- --
 
-ModuleEntitySurveillance = {
+ModuleEntity = {
     Properties = {
-        Name = "ModuleEntitySurveillance",
+        Name = "ModuleEntity",
+        Version = "4.0.0 (ALPHA 1.0.0)",
     },
 
     Global = {
@@ -68,7 +69,7 @@ ModuleEntitySurveillance = {
 
 -- Global ------------------------------------------------------------------- --
 
-function ModuleEntitySurveillance.Global:OnGameStart()
+function ModuleEntity.Global:OnGameStart()
     QSB.ScriptEvents.SettlerAttracted = API.RegisterScriptEvent("Event_SettlerAttracted");
     QSB.ScriptEvents.EntitySpawned = API.RegisterScriptEvent("Event_EntitySpawned");
     QSB.ScriptEvents.EntityDestroyed = API.RegisterScriptEvent("Event_EntityDestroyed");
@@ -88,7 +89,7 @@ function ModuleEntitySurveillance.Global:OnGameStart()
     self:OverrideLogic();
 end
 
-function ModuleEntitySurveillance.Global:OnEvent(_ID, ...)
+function ModuleEntity.Global:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     elseif _ID == QSB.ScriptEvents.SaveGameLoaded then
@@ -98,7 +99,7 @@ function ModuleEntitySurveillance.Global:OnEvent(_ID, ...)
     end
 end
 
-function ModuleEntitySurveillance.Global:TriggerEntityOnwershipChangedEvent(_OldID, _OldOwnerID, _NewID, _NewOwnerID)
+function ModuleEntity.Global:TriggerEntityOnwershipChangedEvent(_OldID, _OldOwnerID, _NewID, _NewOwnerID)
     _OldID = (type(_OldID) ~= "table" and {_OldID}) or _OldID;
     _NewID = (type(_NewID) ~= "table" and {_NewID}) or _NewID;
     assert(#_OldID == #_NewID, "Sums of entities with changed owner does not add up!");
@@ -111,11 +112,11 @@ function ModuleEntitySurveillance.Global:TriggerEntityOnwershipChangedEvent(_Old
     end
 end
 
-function ModuleEntitySurveillance.Global:OnSaveGameLoaded()
+function ModuleEntity.Global:OnSaveGameLoaded()
     self:OverrideLogic();
 end
 
-function ModuleEntitySurveillance.Global:CleanTaggedAndDeadEntities()
+function ModuleEntity.Global:CleanTaggedAndDeadEntities()
     -- check if entity should no longer be considered attacked
     for k,v in pairs(self.AttackedEntities) do
         self.AttackedEntities[k][2] = v[2] - 1;
@@ -143,17 +144,17 @@ function ModuleEntitySurveillance.Global:CleanTaggedAndDeadEntities()
     end
 end
 
-function ModuleEntitySurveillance.Global:OverrideCallback()
+function ModuleEntity.Global:OverrideCallback()
     GameCallback_SettlerSpawned_Orig_QSB_EntityCore = GameCallback_SettlerSpawned;
     GameCallback_SettlerSpawned = function(_PlayerID, _EntityID)
         GameCallback_SettlerSpawned_Orig_QSB_EntityCore(_PlayerID, _EntityID);
-        ModuleEntitySurveillance.Global:TriggerSettlerArrivedEvent(_PlayerID, _EntityID);
+        ModuleEntity.Global:TriggerSettlerArrivedEvent(_PlayerID, _EntityID);
     end
 
     GameCallback_OnBuildingConstructionComplete_Orig_QSB_EntityCore = GameCallback_OnBuildingConstructionComplete;
     GameCallback_OnBuildingConstructionComplete = function(_PlayerID, _EntityID)
         GameCallback_OnBuildingConstructionComplete_Orig_QSB_EntityCore(_PlayerID, _EntityID);
-        ModuleEntitySurveillance.Global:TriggerConstructionCompleteEvent(_PlayerID, _EntityID);
+        ModuleEntity.Global:TriggerConstructionCompleteEvent(_PlayerID, _EntityID);
     end
 
     GameCallback_FarmAnimalChangedPlayerID_Orig_QSB_EntityCore = GameCallback_FarmAnimalChangedPlayerID;
@@ -161,54 +162,54 @@ function ModuleEntitySurveillance.Global:OverrideCallback()
         GameCallback_FarmAnimalChangedPlayerID_Orig_QSB_EntityCore(_PlayerID, _NewEntityID, _OldEntityID);
         local OldPlayerID = Logic.EntityGetPlayer(_OldEntityID);
         local NewPlayerID = Logic.EntityGetPlayer(_NewEntityID);
-        ModuleEntitySurveillance.Global:TriggerEntityOnwershipChangedEvent(_OldEntityID, OldPlayerID, _NewEntityID, NewPlayerID);
+        ModuleEntity.Global:TriggerEntityOnwershipChangedEvent(_OldEntityID, OldPlayerID, _NewEntityID, NewPlayerID);
     end
 
     GameCallback_EntityCaptured_Orig_QSB_EntityCore = GameCallback_EntityCaptured;
     GameCallback_EntityCaptured = function(_OldEntityID, _OldEntityPlayerID, _NewEntityID, _NewEntityPlayerID)
         GameCallback_EntityCaptured_Orig_QSB_EntityCore(_OldEntityID, _OldEntityPlayerID, _NewEntityID, _NewEntityPlayerID)
-        ModuleEntitySurveillance.Global:TriggerEntityOnwershipChangedEvent(_OldEntityID, _OldEntityPlayerID, _NewEntityID, _NewEntityPlayerID);
+        ModuleEntity.Global:TriggerEntityOnwershipChangedEvent(_OldEntityID, _OldEntityPlayerID, _NewEntityID, _NewEntityPlayerID);
     end
 
     GameCallback_CartFreed_Orig_QSB_EntityCore = GameCallback_CartFreed;
     GameCallback_CartFreed = function(_OldEntityID, _OldEntityPlayerID, _NewEntityID, _NewEntityPlayerID)
         GameCallback_CartFreed_Orig_QSB_EntityCore(_OldEntityID, _OldEntityPlayerID, _NewEntityID, _NewEntityPlayerID);
-        ModuleEntitySurveillance.Global:TriggerEntityOnwershipChangedEvent(_OldEntityID, _OldEntityPlayerID, _NewEntityID, _NewEntityPlayerID);
+        ModuleEntity.Global:TriggerEntityOnwershipChangedEvent(_OldEntityID, _OldEntityPlayerID, _NewEntityID, _NewEntityPlayerID);
     end
 
     GameCallback_OnThiefDeliverEarnings_Orig_QSB_EntityCore = GameCallback_OnThiefDeliverEarnings;
     GameCallback_OnThiefDeliverEarnings = function(_ThiefPlayerID, _ThiefID, _BuildingID, _GoodAmount)
         GameCallback_OnThiefDeliverEarnings_Orig_QSB_EntityCore(_ThiefPlayerID, _ThiefID, _BuildingID, _GoodAmount);
         local BuildingPlayerID = Logic.EntityGetPlayer(_BuildingID);
-        ModuleEntitySurveillance.Global:TriggerThiefDeliverEarningsEvent(_ThiefID, _ThiefPlayerID, _BuildingID, BuildingPlayerID, _GoodAmount);
+        ModuleEntity.Global:TriggerThiefDeliverEarningsEvent(_ThiefID, _ThiefPlayerID, _BuildingID, BuildingPlayerID, _GoodAmount);
     end
 
     GameCallback_OnThiefStealBuilding_Orig_QSB_EntityCore = GameCallback_OnThiefStealBuilding;
     GameCallback_OnThiefStealBuilding = function(_ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID)
-        ModuleEntitySurveillance.Global:TriggerThiefStealFromBuildingEvent(_ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID);
+        ModuleEntity.Global:TriggerThiefStealFromBuildingEvent(_ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID);
     end
 
     GameCallback_OnBuildingUpgraded_Orig_QSB_EntityCore = GameCallback_OnBuildingUpgradeFinished;
 	GameCallback_OnBuildingUpgradeFinished = function(_PlayerID, _EntityID, _NewUpgradeLevel)
 		GameCallback_OnBuildingUpgraded_Orig_QSB_EntityCore(_PlayerID, _EntityID, _NewUpgradeLevel);
-        ModuleEntitySurveillance.Global:TriggerUpgradeCompleteEvent(_PlayerID, _EntityID, _NewUpgradeLevel);
+        ModuleEntity.Global:TriggerUpgradeCompleteEvent(_PlayerID, _EntityID, _NewUpgradeLevel);
     end
 
     GameCallback_OnUpgradeLevelCollapsed_Orig_QSB_EntityCore = GameCallback_OnUpgradeLevelCollapsed;
     GameCallback_OnUpgradeLevelCollapsed = function(_PlayerID, _BuildingID, _NewUpgradeLevel)
         GameCallback_OnUpgradeLevelCollapsed_Orig_QSB_EntityCore(_PlayerID, _BuildingID, _NewUpgradeLevel);
-        ModuleEntitySurveillance.Global:TriggerUpgradeCollapsedEvent(_PlayerID, _BuildingID, _NewUpgradeLevel);
+        ModuleEntity.Global:TriggerUpgradeCollapsedEvent(_PlayerID, _BuildingID, _NewUpgradeLevel);
     end
 end
 
-function ModuleEntitySurveillance.Global:OverrideLogic()
+function ModuleEntity.Global:OverrideLogic()
     self.Logic_ChangeEntityPlayerID = Logic.ChangeEntityPlayerID;
     Logic.ChangeEntityPlayerID = function(...)
         local OldID = {arg[1]};
         local OldPlayerID = Logic.EntityGetPlayer(arg[1]);
         local NewID = {self.Logic_ChangeEntityPlayerID(unpack(arg))};
         local NewPlayerID = Logic.EntityGetPlayer(NewID[1]);
-        ModuleEntitySurveillance.Global:TriggerEntityOnwershipChangedEvent(OldID, OldPlayerID, NewID, NewPlayerID);
+        ModuleEntity.Global:TriggerEntityOnwershipChangedEvent(OldID, OldPlayerID, NewID, NewPlayerID);
         return NewID;
     end
 
@@ -230,12 +231,12 @@ function ModuleEntitySurveillance.Global:OverrideLogic()
             end
         end
         local NewPlayerID = Logic.EntityGetPlayer(NewID[1]);
-        ModuleEntitySurveillance.Global:TriggerEntityOnwershipChangedEvent(OldID, OldPlayerID, NewID, NewPlayerID);
+        ModuleEntity.Global:TriggerEntityOnwershipChangedEvent(OldID, OldPlayerID, NewID, NewPlayerID);
         return NewID[1];
     end
 end
 
-function ModuleEntitySurveillance.Global:TriggerThiefDeliverEarningsEvent(_ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID, _GoodAmount)
+function ModuleEntity.Global:TriggerThiefDeliverEarningsEvent(_ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID, _GoodAmount)
     API.SendScriptEvent(QSB.ScriptEvents.ThiefDeliverEarnings, _ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID, _GoodAmount);
     Logic.ExecuteInLuaLocalState(string.format(
         "API.SendScriptEvent(QSB.ScriptEvents.ThiefDeliverEarnings, %d, %d, %d, %d, %d)",
@@ -243,7 +244,7 @@ function ModuleEntitySurveillance.Global:TriggerThiefDeliverEarningsEvent(_Thief
     ));
 end
 
-function ModuleEntitySurveillance.Global:TriggerThiefStealFromBuildingEvent(_ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID)
+function ModuleEntity.Global:TriggerThiefStealFromBuildingEvent(_ThiefID, _ThiefPlayerID, _BuildingID, _BuildingPlayerID)
     local HeadquartersID = Logic.GetHeadquarters(_BuildingPlayerID);
     local CathedralID = Logic.GetCathedral(_BuildingPlayerID);
     local StorehouseID = Logic.GetStoreHouse(_BuildingPlayerID);
@@ -277,7 +278,7 @@ function ModuleEntitySurveillance.Global:TriggerThiefStealFromBuildingEvent(_Thi
     ));
 end
 
-function ModuleEntitySurveillance.Global:TriggerEntitySpawnedEvent(_EntityID, _SpawnerID)
+function ModuleEntity.Global:TriggerEntitySpawnedEvent(_EntityID, _SpawnerID)
     local PlayerID = Logic.EntityGetPlayer(_EntityID);
     API.SendScriptEvent(QSB.ScriptEvents.EntitySpawned, _EntityID, PlayerID, _SpawnerID);
     Logic.ExecuteInLuaLocalState(string.format(
@@ -286,7 +287,7 @@ function ModuleEntitySurveillance.Global:TriggerEntitySpawnedEvent(_EntityID, _S
     ));
 end
 
-function ModuleEntitySurveillance.Global:TriggerSettlerArrivedEvent(_PlayerID, _EntityID)
+function ModuleEntity.Global:TriggerSettlerArrivedEvent(_PlayerID, _EntityID)
     API.SendScriptEvent(QSB.ScriptEvents.SettlerAttracted, _EntityID, _PlayerID);
     Logic.ExecuteInLuaLocalState(string.format(
         "API.SendScriptEvent(QSB.ScriptEvents.SettlerAttracted, %d, %d)",
@@ -294,7 +295,7 @@ function ModuleEntitySurveillance.Global:TriggerSettlerArrivedEvent(_PlayerID, _
     ));
 end
 
-function ModuleEntitySurveillance.Global:TriggerEntityDestroyedEvent(_EntityID, _PlayerID)
+function ModuleEntity.Global:TriggerEntityDestroyedEvent(_EntityID, _PlayerID)
     API.SendScriptEvent(QSB.ScriptEvents.EntityDestroyed, _EntityID, _PlayerID);
     Logic.ExecuteInLuaLocalState(string.format(
         "API.SendScriptEvent(QSB.ScriptEvents.EntityDestroyed, %d, %d)",
@@ -302,7 +303,7 @@ function ModuleEntitySurveillance.Global:TriggerEntityDestroyedEvent(_EntityID, 
     ));
 end
 
-function ModuleEntitySurveillance.Global:TriggerEntityKilledEvent(_EntityID1, _PlayerID1, _EntityID2, _PlayerID2)
+function ModuleEntity.Global:TriggerEntityKilledEvent(_EntityID1, _PlayerID1, _EntityID2, _PlayerID2)
     API.SendScriptEvent(QSB.ScriptEvents.EntityKilled, _EntityID1, _PlayerID1, _EntityID2, _PlayerID2);
     Logic.ExecuteInLuaLocalState(string.format(
         "API.SendScriptEvent(QSB.ScriptEvents.EntityKilled, %d, %d, %d, %d)",
@@ -310,7 +311,7 @@ function ModuleEntitySurveillance.Global:TriggerEntityKilledEvent(_EntityID1, _P
     ));
 end
 
-function ModuleEntitySurveillance.Global:TriggerConstructionCompleteEvent(_PlayerID, _EntityID)
+function ModuleEntity.Global:TriggerConstructionCompleteEvent(_PlayerID, _EntityID)
     API.SendScriptEvent(QSB.ScriptEvents.BuildingConstructed, _EntityID, _PlayerID);
     Logic.ExecuteInLuaLocalState(string.format(
         "API.SendScriptEvent(QSB.ScriptEvents.BuildingConstructed, %d, %d)",
@@ -318,7 +319,7 @@ function ModuleEntitySurveillance.Global:TriggerConstructionCompleteEvent(_Playe
     ));
 end
 
-function ModuleEntitySurveillance.Global:TriggerUpgradeCompleteEvent(_PlayerID, _EntityID, _NewUpgradeLevel)
+function ModuleEntity.Global:TriggerUpgradeCompleteEvent(_PlayerID, _EntityID, _NewUpgradeLevel)
     API.SendScriptEvent(QSB.ScriptEvents.BuildingUpgraded, _EntityID, _PlayerID, _NewUpgradeLevel);
     Logic.ExecuteInLuaLocalState(string.format(
         "API.SendScriptEvent(QSB.ScriptEvents.BuildingUpgraded, %d, %d, %d)",
@@ -326,7 +327,7 @@ function ModuleEntitySurveillance.Global:TriggerUpgradeCompleteEvent(_PlayerID, 
     ));
 end
 
-function ModuleEntitySurveillance.Global:TriggerUpgradeCollapsedEvent(_PlayerID, _EntityID, _NewUpgradeLevel)
+function ModuleEntity.Global:TriggerUpgradeCollapsedEvent(_PlayerID, _EntityID, _NewUpgradeLevel)
     API.SendScriptEvent(QSB.ScriptEvents.BuildingUpgradeCollapsed, _EntityID, _PlayerID, _NewUpgradeLevel);
     Logic.ExecuteInLuaLocalState(string.format(
         "API.SendScriptEvent(QSB.ScriptEvents.BuildingUpgradeCollapsed, %d, %d, %d)",
@@ -334,11 +335,11 @@ function ModuleEntitySurveillance.Global:TriggerUpgradeCollapsedEvent(_PlayerID,
     ));
 end
 
-function ModuleEntitySurveillance.Global:StartTriggers()
+function ModuleEntity.Global:StartTriggers()
     API.StartHiResJob(function()
         if Logic.GetCurrentTurn() > 0 then
-            ModuleEntitySurveillance.Global:CleanTaggedAndDeadEntities();
-            ModuleEntitySurveillance.Global:CheckOnSpawnerEntities();
+            ModuleEntity.Global:CleanTaggedAndDeadEntities();
+            ModuleEntity.Global:CheckOnSpawnerEntities();
         end
     end);
 
@@ -370,12 +371,12 @@ function ModuleEntitySurveillance.Global:StartTriggers()
         function()
             local EntityID1 = Event.GetEntityID();
             local PlayerID1 = Logic.EntityGetPlayer(EntityID1);
-            ModuleEntitySurveillance.Global:TriggerEntityDestroyedEvent(EntityID1, PlayerID1);
-            if ModuleEntitySurveillance.Global.AttackedEntities[EntityID1] ~= nil then
-                local EntityID2 = ModuleEntitySurveillance.Global.AttackedEntities[EntityID1][1];
+            ModuleEntity.Global:TriggerEntityDestroyedEvent(EntityID1, PlayerID1);
+            if ModuleEntity.Global.AttackedEntities[EntityID1] ~= nil then
+                local EntityID2 = ModuleEntity.Global.AttackedEntities[EntityID1][1];
                 local PlayerID2 = Logic.EntityGetPlayer(EntityID2);
-                ModuleEntitySurveillance.Global.AttackedEntities[EntityID1] = nil;
-                ModuleEntitySurveillance.Global:TriggerEntityKilledEvent(EntityID1, PlayerID1, EntityID2, PlayerID2);
+                ModuleEntity.Global.AttackedEntities[EntityID1] = nil;
+                ModuleEntity.Global:TriggerEntityKilledEvent(EntityID1, PlayerID1, EntityID2, PlayerID2);
             end
         end
     );
@@ -397,7 +398,7 @@ function ModuleEntitySurveillance.Global:StartTriggers()
     );
 end
 
-function ModuleEntitySurveillance.Global:CheckOnSpawnerEntities()
+function ModuleEntity.Global:CheckOnSpawnerEntities()
     -- Get spawners
     local SpawnerEntities = {};
     for i= 1, #self.DynamicSpawnerTypes do
@@ -432,7 +433,7 @@ end
 
 -- Local -------------------------------------------------------------------- --
 
-function ModuleEntitySurveillance.Local:OnGameStart()
+function ModuleEntity.Local:OnGameStart()
     QSB.ScriptEvents.SettlerAttracted = API.RegisterScriptEvent("Event_SettlerAttracted");
     QSB.ScriptEvents.EntitySpawned = API.RegisterScriptEvent("Event_EntitySpawned");
     QSB.ScriptEvents.EntityDestroyed = API.RegisterScriptEvent("Event_EntityDestroyed");
@@ -448,7 +449,7 @@ function ModuleEntitySurveillance.Local:OnGameStart()
     QSB.ScriptEvents.BuildingUpgraded = API.RegisterScriptEvent("Event_BuildingUpgraded");
 end
 
-function ModuleEntitySurveillance.Local:OnEvent(_ID, ...)
+function ModuleEntity.Local:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
     end
@@ -456,7 +457,7 @@ end
 
 -- Shared ------------------------------------------------------------------- --
 
-function ModuleEntitySurveillance.Shared:IterateOverEntities(_Filter, _TypeList)
+function ModuleEntity.Shared:IterateOverEntities(_Filter, _TypeList)
     _TypeList = _TypeList or Entities;
     local ResultList = {};
     for _, v in pairs(_TypeList) do
@@ -472,7 +473,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleEntitySurveillance);
+Revision:RegisterModule(ModuleEntity);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
@@ -496,7 +497,7 @@ You may use and modify this file unter the terms of the MIT licence.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
--- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
+-- <li><a href="qsb.html">(0) Basismodul</a></li>
 -- </ul>
 --
 -- @within Beschreibung
@@ -734,7 +735,7 @@ function API.CommenceEntitySearch(_Filter)
     _Filter = _Filter or function(_ID)
         return true;
     end
-    return ModuleEntitySurveillance.Shared:IterateOverEntities(_Filter);
+    return ModuleEntity.Shared:IterateOverEntities(_Filter);
 end
 
 -- Compatibility option
@@ -779,7 +780,7 @@ end
 -- API.ThiefDisableStorehouseEffect(false);
 --
 function API.ThiefDisableStorehouseEffect(_Flag)
-    ModuleEntitySurveillance.Global.DisableThiefStorehouseHeist = _Flag == true;
+    ModuleEntity.Global.DisableThiefStorehouseHeist = _Flag == true;
 end
 
 ---
@@ -798,7 +799,7 @@ end
 -- API.ThiefDisableCathedralEffect(false);
 --
 function API.ThiefDisableCathedralEffect(_Flag)
-    ModuleEntitySurveillance.Global.DisableThiefCathedralSabotage = _Flag == true;
+    ModuleEntity.Global.DisableThiefCathedralSabotage = _Flag == true;
 end
 
 ---
@@ -816,6 +817,6 @@ end
 -- API.ThiefDisableCisternEffect(false);
 --
 function API.ThiefDisableCisternEffect(_Flag)
-    ModuleEntitySurveillance.Global.DisableThiefCisternSabotage = _Flag == true;
+    ModuleEntity.Global.DisableThiefCisternSabotage = _Flag == true;
 end
 

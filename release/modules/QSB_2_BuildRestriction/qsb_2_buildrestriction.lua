@@ -11,6 +11,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ModuleBuildRestriction = {
     Properties = {
         Name = "ModuleBuildRestriction",
+        Version = "4.0.0 (ALPHA 1.0.0)",
     },
 
     Global = {},
@@ -462,7 +463,7 @@ You may use and modify this file unter the terms of the MIT licence.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
--- <li><a href="QSB_1_GUI.api.html">(1) Benutzerschnittstelle</a></li>
+-- <li><a href="modules.QSB_1_GuiControl.QSB_1_GuiControl.html">(1) Anzeigekontrolle</a></li>
 -- </ul>
 --
 -- @within Beschreibung
@@ -487,6 +488,7 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @param[type=function] _Function Funktion im lokalen Skript
 -- @param                _Message  (Optional) Nachricht für Bau gesperrt (String, Table)
 -- @return[type=number] ID der Einschränkung
+-- @within Baubeschränkung
 --
 -- @usage
 -- local MyCustomRestriction = function(_PlayerID, _Type, _X, _Y)
@@ -516,6 +518,7 @@ end
 -- @param[type=number] _Type      Entity-Typ
 -- @param              _Territory ID oder Name des Territorium
 -- @return[type=number] ID der Einschränkung
+-- @within Baubeschränkung
 --
 -- @usage
 -- MyRestrictionID = API.RestrictBuildingTypeInTerritory(1, Entities.B_Bakery, 1);
@@ -544,6 +547,7 @@ end
 -- @param              _Position  Position oder Skriptname
 -- @param[type=number] _Area      Größe des Gebiets
 -- @return[type=number] ID der Einschränkung
+-- @within Baubeschränkung
 --
 -- @usage
 -- MyRestrictionID = API.RestrictBuildingTypeInArea(1, Entities.B_Bakery, "GiveMeMeatInstead", 3000);
@@ -569,6 +573,7 @@ end
 -- @param[type=number] _Category  Entity-Kategorie
 -- @param              _Territory ID oder Name des Territorium
 -- @return[type=number] ID der Einschränkung
+-- @within Baubeschränkung
 --
 -- @usage
 -- MyRestrictionID = API.RestrictBuildingCategoryInTerritory(1, EntityCategories.CityBuilding, 1);
@@ -597,6 +602,7 @@ end
 -- @param              _Position  Position oder Skriptname
 -- @param[type=number] _Area      Größe des Gebiets
 -- @return[type=number] ID der Einschränkung
+-- @within Baubeschränkung
 --
 -- @usage
 -- MyRestrictionID = API.RestrictBuildingCategoryInArea(1, EntityCategories.OuterRimBuilding, "NoOuterRim", 3000);
@@ -631,6 +637,7 @@ end
 -- @param[type=function] _Function Funktion im lokalen Skript
 -- @param                _Message  (Optional) Nachricht für Bau gesperrt (String, Table)
 -- @return[type=number] ID der Einschränkung
+-- @within Baubeschränkung
 --
 -- @usage
 -- local MyCustomRestriction = function(_PlayerID, _IsTrail, _X, _Y)
@@ -659,6 +666,7 @@ end
 -- @param[type=number] _PlayerID  ID des Spielers
 -- @param              _Territory ID oder Name des Territorium
 -- @return[type=number] ID der Einschränkung
+-- @within Baubeschränkung
 --
 -- @usage
 -- MyRestrictionID = API.RestrictTrailInTerritory(1, 1);
@@ -685,6 +693,7 @@ end
 -- @param              _Position  Position oder Skriptname
 -- @param[type=number] _Area      Größe des Gebiets
 -- @return[type=number] ID der Einschränkung
+-- @within Baubeschränkung
 --
 -- @usage
 -- MyRestrictionID = API.RestrictTrailInArea(1, "NoMansLand", 3000);
@@ -708,6 +717,7 @@ end
 -- @param[type=number] _PlayerID  ID des Spielers
 -- @param              _Territory ID oder Name des Territorium
 -- @return[type=number] ID der Einschränkung
+-- @within Baubeschränkung
 --
 -- @usage
 -- MyRestrictionID = API.RestrictStreetInTerritory(1, 1);
@@ -734,6 +744,7 @@ end
 -- @param              _Position  Position oder Skriptname
 -- @param[type=number] _Area      Größe des Gebiets
 -- @return[type=number] ID der Einschränkung
+-- @within Baubeschränkung
 --
 -- @usage
 -- MyRestrictionID = API.RestrictStreetInArea(1, "NoMansLand", 3000);
@@ -755,6 +766,7 @@ end
 -- <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
 --
 -- @param[type=number] _ID  ID der Einschränkung
+-- @within Baubeschränkung
 --
 -- @usage
 -- API.DeleteRestriction(MyRestrictionID);
@@ -784,6 +796,7 @@ end
 -- @param[type=function] _Function Funktion im lokalen Skript
 -- @param                _Message  (Optional) Nachricht für Abriss gesperrt (String, Table)
 -- @return[type=number] ID der Protektion
+-- @within Abrissbeschränkung
 --
 -- @usage
 -- local MyCustomProtection = function(_PlayerID, _BuildingID, _X, _Y)
@@ -813,6 +826,7 @@ end
 -- @param[type=number] _Type      Entity-Typ
 -- @param              _Territory ID oder Name des Territorium
 -- @return[type=number] ID der Protektion
+-- @within Abrissbeschränkung
 --
 -- @usage
 -- MyProtectionID = API.ProtectBuildingTypeInTerritory(1, Entities.B_Bakery, 1);
@@ -841,6 +855,7 @@ end
 -- @param              _Position  Position oder Skriptname
 -- @param[type=number] _Area      Größe des Gebiets
 -- @return[type=number] ID der Protektion
+-- @within Abrissbeschränkung
 --
 -- @usage
 -- MyProtectionID = API.ProtectBuildingTypeInArea(1, Entities.B_Bakery, "AreaCenter", 3000);
@@ -866,6 +881,7 @@ end
 -- @param[type=number] _Category  Entity-Kategorie
 -- @param              _Territory ID oder Name des Territorium
 -- @return[type=number] ID der Protektion
+-- @within Abrissbeschränkung
 --
 -- @usage
 -- MyProtectionID = API.ProtectBuildingCategoryInTerritory(1, EntityCategories.CityBuilding, 1);
@@ -894,6 +910,7 @@ end
 -- @param              _Position  Position oder Skriptname
 -- @param[type=number] _Area      Größe des Gebiets
 -- @return[type=number] ID der Protektion
+-- @within Abrissbeschränkung
 --
 -- @usage
 -- MyProtectionID = API.ProtectBuildingCategoryInArea(1, EntityCategories.CityBuilding, "AreaCenter", 3000);
@@ -917,6 +934,7 @@ end
 --
 -- @param[type=String] _ScriptName Skriptname des Entity
 -- @return[type=number] ID der Protektion
+-- @within Abrissbeschränkung
 --
 -- @usage
 -- MyProtectionID = API.ProtectNamedBuilding(1, "Denkmalschutz");
@@ -937,6 +955,7 @@ end
 -- <b>Hinweis:</b> Die Funktion kann nur im lokalen Skript verwendet werden!
 --
 -- @param[type=number] _ID ID der Protektion
+-- @within Abrissbeschränkung
 --
 -- @usage
 -- API.DeleteProtection(MyProtectionID);

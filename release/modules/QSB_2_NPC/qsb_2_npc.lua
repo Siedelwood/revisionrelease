@@ -11,6 +11,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ModuleNpcInteraction = {
     Properties = {
         Name = "ModuleNpcInteraction",
+        Version = "4.0.0 (ALPHA 1.0.0)",
     },
 
     Global = {
@@ -226,7 +227,8 @@ function ModuleNpcInteraction.Global:AdjustHeroTalkingDistance(_Distance)
         Logic.MoveSettler(QSB.Npc.LastHeroEntityID, x3, y3);
         API.StartHiResJob( function(_HeroID, _NPCID, _Time)
             if Logic.GetTime() > _Time +0.5 and Logic.IsEntityMoving(_HeroID) == false then
-                API.Confront(_HeroID, _NPCID);
+                API.LookAt(_HeroID, _NPCID);
+                API.LookAt(_NPCID, _HeroID);
                 return true;
             end
         end, QSB.Npc.LastHeroEntityID, QSB.Npc.LastNpcEntityID, Logic.GetTime());
@@ -355,8 +357,8 @@ end
 function ModuleNpcInteraction.Global:ShowMarker(_ScriptName)
     if self.NPC[_ScriptName] then
         if self.NPC[_ScriptName].UseMarker == true and IsExisting(self.NPC[_ScriptName].MarkerID) then
-            local Size = API.GetEntityScale(_ScriptName);
-            API.SetEntityScale(self.NPC[_ScriptName].MarkerID, Size);
+            local Size = API.GetFloat(_ScriptName, QSB.ScriptingValue.Size);
+            API.SetFloat(self.NPC[_ScriptName].MarkerID, QSB.ScriptingValue.Size, Size);
             Logic.SetModel(self.NPC[_ScriptName].MarkerID, Models.Effects_E_Wealth);
             Logic.SetVisible(self.NPC[_ScriptName].MarkerID, true);
         end
@@ -395,7 +397,8 @@ end
 function ModuleNpcInteraction.Global:InteractableMarkerController()
     for k, v in pairs(self.NPC) do
         if v.Active then
-            if v.UseMarker and IsExisting(v.MarkerID) and API.IsEntityVisible(v.MarkerID) then
+            if  v.UseMarker and IsExisting(v.MarkerID)
+            and API.GetInteger(v.MarkerID, QSB.ScriptingValue.Visible) == 801280 then
                 self:HideMarker(k);
             else
                 self:ShowMarker(k);
@@ -531,8 +534,8 @@ You may use and modify this file unter the terms of the MIT licence.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
--- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
--- <li><a href="QSB_1_GUI.api.html">(1) Benutzerschnittstelle</a></li>
+-- <li><a href="qsb.html">(0) Basismodul</a></li>
+-- <li><a href="modules.QSB_1_GuiControl.QSB_1_GuiControl.html">(1) Anzeigekontrolle</a></li>
 -- </ul>
 --
 -- @within Beschreibung

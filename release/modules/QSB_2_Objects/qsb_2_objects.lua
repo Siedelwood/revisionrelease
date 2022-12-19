@@ -434,7 +434,7 @@ function ModuleObjectInteraction.Local:OverrideGameFunctions()
                 local StoreHouseID = Logic.GetStoreHouse(PlayerID);
                 local CastleID     = Logic.GetHeadquarters(PlayerID);
                 if StoreHouseID == nil or StoreHouseID == 0 or CastleID == nil or CastleID == 0 then
-                    API.Note("DEBUG: Player needs special buildings when using activation costs!");
+                    GUI.AddNote("DEBUG: Player needs special buildings when using activation costs!");
                     return;
                 end
             end
@@ -447,7 +447,7 @@ function ModuleObjectInteraction.Local:OverrideGameFunctions()
             local KnightIDs = {};
             Logic.GetKnights(PlayerID, KnightIDs);
             local KnightID = API.GetClosestToTarget(EntityID, KnightIDs);
-            API.SendScriptEventToGlobal(QSB.ScriptEvents.ObjectClicked, ScriptName, KnightID, PlayerID);
+            API.SendScriptEventToGlobal("ObjectClicked", ScriptName, KnightID, PlayerID);
             API.SendScriptEvent(QSB.ScriptEvents.ObjectClicked, ScriptName, KnightID, PlayerID);
         end
     end
@@ -738,8 +738,8 @@ You may use and modify this file unter the terms of the MIT licence.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
--- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
--- <li><a href="QSB_1_GUI.api.html">(1) Benutzerschnittstelle</a></li>
+-- <li><a href="qsb.html">(0) Basismodul</a></li>
+-- <li><a href="modules.QSB_1_GuiControl.QSB_1_GuiControl.html">(1) Anzeigekontrolle</a></li>
 -- </ul>
 --
 -- @within Beschreibung

@@ -138,7 +138,7 @@ end
 function ModuleQuest.Global:AbortAllQuestSegments(_QuestName)
     for i= 1, #self.SegmentsOfQuest[_QuestName], 1 do
         local SegmentName = self.SegmentsOfQuest[_QuestName][i].Name;
-        if API.IsValidQuest(_QuestName) and Quests[GetQuestID(SegmentName)].State ~= QuestState.Over then
+        if API.IsValidQuest(_QuestName) and Quests[API.GetQuestID(SegmentName)].State ~= QuestState.Over then
             API.StopQuest(SegmentName, true);
         end
     end
@@ -150,7 +150,7 @@ function ModuleQuest.Global:OverrideKernelQuestApi()
         -- Fail segments of quest fist
         if ModuleQuest.Global.SegmentsOfQuest[_QuestName] then
             for k, v in pairs(ModuleQuest.Global.SegmentsOfQuest[_QuestName]) do
-                if API.IsValidQuest(v.Name) and Quests[GetQuestID(v.Name)].State ~= QuestState.Over then
+                if API.IsValidQuest(v.Name) and Quests[API.GetQuestID(v.Name)].State ~= QuestState.Over then
                     API.FailQuest_Orig_ModuleQuest(v.Name, true);
                 end
             end
@@ -179,7 +179,7 @@ function ModuleQuest.Global:OverrideKernelQuestApi()
         -- Start segments of quest first
         if ModuleQuest.Global.SegmentsOfQuest[_QuestName] then
             for k, v in pairs(ModuleQuest.Global.SegmentsOfQuest[_QuestName]) do
-                if API.IsValidQuest(v.Name) and Quests[GetQuestID(v.Name)].State ~= QuestState.Over then
+                if API.IsValidQuest(v.Name) and Quests[API.GetQuestID(v.Name)].State ~= QuestState.Over then
                     API.StartQuest_Orig_ModuleQuest(v.Name, true);
                 end
             end
@@ -193,7 +193,7 @@ function ModuleQuest.Global:OverrideKernelQuestApi()
         -- Stop segments of quest first
         if ModuleQuest.Global.SegmentsOfQuest[_QuestName] then
             for k, v in pairs(ModuleQuest.Global.SegmentsOfQuest[_QuestName]) do
-                if API.IsValidQuest(v.Name) and Quests[GetQuestID(v.Name)].State ~= QuestState.Over then
+                if API.IsValidQuest(v.Name) and Quests[API.GetQuestID(v.Name)].State ~= QuestState.Over then
                     API.StopQuest_Orig_ModuleQuest(v.Name, true);
                 end
             end
@@ -207,7 +207,7 @@ function ModuleQuest.Global:OverrideKernelQuestApi()
         -- Stop segments of quest first
         if ModuleQuest.Global.SegmentsOfQuest[_QuestName] then
             for k, v in pairs(ModuleQuest.Global.SegmentsOfQuest[_QuestName]) do
-                if API.IsValidQuest(v.Name) and Quests[GetQuestID(v.Name)].State ~= QuestState.Over then
+                if API.IsValidQuest(v.Name) and Quests[API.GetQuestID(v.Name)].State ~= QuestState.Over then
                     API.StopQuest_Orig_ModuleQuest(v.Name, true);
                 end
             end
@@ -661,9 +661,9 @@ You may use and modify this file unter the terms of the MIT licence.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>
--- <li><a href="QSB_0_Kernel.api.html">(0) Basismodul</a></li>
--- <li><a href="QSB_1_GUI.api.html">(1) Interface</a></li>
--- <li><a href="QSB_1_Requester.api.html">(1) Requester</a></li>
+-- <li><a href="qsb.html">(0) Basismodul</a></li>
+-- <li><a href="modules.QSB_1_GuiControl.QSB_1_GuiControl.html">(1) Anzeigekontrolle</a></li>
+-- <li><a href="modules.QSB_1_Requester.QSB_1_Requester.html">(1) Requester</a></li>
 -- </ul>
 --
 -- @within Beschreibung
