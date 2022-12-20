@@ -2257,9 +2257,15 @@ function Revision.Save:SetupQuicksaveKeyCallback()
     if Revision.Environment == QSB.Environment.LOCAL then
         KeyBindings_SaveGame_Orig_Revision = KeyBindings_SaveGame;
         KeyBindings_SaveGame = function(...)
+            -- No quicksave if saving disabled
+            if Revision.Save.SavingDisabled then
+                return;
+            end
+            -- No quicksave if forced by History Edition
             if not Revision.Save.HistoryEditionQuickSave and not arg[1] then
                 return;
             end
+            -- Do quicksave
             KeyBindings_SaveGame_Orig_Revision();
         end
     end

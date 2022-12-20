@@ -453,14 +453,6 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @set sort=true
 --
 
-QSB.CinematicEvent = {};
-
-CinematicEvent = {
-    NotTriggered = 0,
-    Active = 1,
-    Concluded = 2,
-}
-
 ---
 -- Events, auf die reagiert werden kann.
 --

@@ -284,8 +284,8 @@ function ModuleGuiEffects.Global:FinishTypewriter(_PlayerID)
                 API.DeactivateImageScreen(GUI.GetPlayerID())
                 API.ActivateNormalInterface(GUI.GetPlayerID())
                 API.ActivateBorderScroll(GUI.GetPlayerID())
-                if ModuleGUI then
-                    ModuleGUI.Local:UpdateHiddenWidgets()
+                if ModuleGuiControl then
+                    ModuleGuiControl.Local:UpdateHiddenWidgets()
                 end
                 Input.GameMode()
                 GUI.ClearNotes()

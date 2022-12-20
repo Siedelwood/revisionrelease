@@ -440,6 +440,7 @@ QSB.ScriptEvents = QSB.ScriptEvents or {};
 -- @param[type=number] _PlayerID ID des Spielers
 -- @param[type=table] ...        Liste an Handelsrouten
 -- @see API.AddTradeRoute
+-- @within Anwenderfunktionen
 --
 -- @usage
 -- API.InitHarbor(2);
@@ -464,6 +465,7 @@ end
 -- der KI-Spieler feindlich wird.
 --
 -- @param[type=number] _PlayerID ID des Spielers
+-- @within Anwenderfunktionen
 --
 -- @usage
 -- API.DisposeHarbor(2);
@@ -531,6 +533,7 @@ end
 -- @see API.InitHarbor
 -- @see API.ChangeTradeRouteGoods
 -- @see API.RemoveTradeRoute
+-- @within Anwenderfunktionen
 --
 -- @usage
 -- API.AddTradeRoute(
@@ -611,6 +614,7 @@ end
 -- @see API.InitHarbor
 -- @see API.RemoveTradeRoute
 -- @see API.AddTradeRoute
+-- @within Anwenderfunktionen
 --
 -- @usage
 -- API.ChangeTradeRouteGoods(
@@ -657,6 +661,7 @@ end
 -- @see API.InitHarbor
 -- @see API.AddTradeRoute
 -- @see API.ChangeTradeRouteGoods
+-- @within Anwenderfunktionen
 --
 -- @usage
 -- API.RemoveTradeRoute(2, "Route1");

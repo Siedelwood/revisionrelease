@@ -478,7 +478,7 @@ You may use and modify this file unter the terms of the MIT licence.
 -- <ul>
 -- <li><a href="qsb.html">(0) Basismodul</a></li>
 -- <li><a href="modules.QSB_1_GuiControl.QSB_1_GuiControl.html">(1) Ankeigekontrolle</a></li>
--- <li><a href="modules.QSB_2_BuildingUI.QSB_2_BuildingUI.html">(1) Gebäudeschalter</a></li>
+-- <li><a href="modules.QSB_2_BuildingUI.QSB_2_BuildingUI.html">(2) Gebäudeschalter</a></li>
 -- </ul>
 --
 -- @within Beschreibung
