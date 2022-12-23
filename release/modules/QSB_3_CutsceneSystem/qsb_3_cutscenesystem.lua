@@ -1016,7 +1016,7 @@ end
 --
 -- @usage
 -- -- Beispiel #1: Eine einfache Seite erstellen
--- AF {
+-- AP {
 --     -- Dateiname der Cutscene ohne .cs
 --     Flight       = "c02",
 --     -- Maximale Renderdistanz
@@ -1178,7 +1178,7 @@ function B_Trigger_Cutscene:AddParameter(_Index, _Parameter)
 end
 
 function B_Trigger_Cutscene:CustomFunction(_Quest)
-    if API.GetCinematicEventStatus(self.CutsceneName, self.PlayerID) == CinematicEvent.Concluded then
+    if API.GetCinematicEvent(self.CutsceneName, self.PlayerID) == CinematicEvent.Concluded then
         if self.WaitTime and self.WaitTime > 0 then
             self.WaitTimeTimer = self.WaitTimeTimer or Logic.GetTime();
             if Logic.GetTime() >= self.WaitTimeTimer + self.WaitTime then

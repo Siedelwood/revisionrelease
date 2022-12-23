@@ -1046,13 +1046,13 @@ InteractiveObjectDeactivate = API.InteractiveObjectDeactivate;
 --
 -- @usage
 -- -- Beispiel #1: Einfache Beschriftung
--- API.InteractiveObjectSetName("D_X_ChestOpenEmpty", "Leere Schatztruhe");
+-- API.InteractiveObjectSetQuestName("D_X_ChestOpenEmpty", "Leere Schatztruhe");
 --
 -- @usage
 -- -- Beispiel #1: Multilinguale Beschriftung
--- API.InteractiveObjectSetName("D_X_ChestClosed", {de = "Schatztruhe", en = "Treasure"});
+-- API.InteractiveObjectSetQuestName("D_X_ChestClosed", {de = "Schatztruhe", en = "Treasure"});
 --
-function API.InteractiveObjectSetName(_Key, _Text)
+function API.InteractiveObjectSetQuestName(_Key, _Text)
     if GUI then
         return;
     end

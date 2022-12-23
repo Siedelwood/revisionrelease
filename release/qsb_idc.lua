@@ -14473,10 +14473,6 @@ QSB.ScriptEvents = QSB.ScriptEvents or {};
 ---
 -- Findet <u>alle</u> Entities.
 --
--- <h5>Multiplayer</h5>
--- Im Multiplayer kann diese Funktion nur in synchron
--- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
---
 -- @param[type=number]  _PlayerID               (Optional) ID des Besitzers
 -- @param[type=boolean] _WithoutDefeatResistant (Optional) Niederlageresistente Entities filtern
 -- @return[type=table] Liste mit Ergebnissen
@@ -14515,10 +14511,6 @@ end
 ---
 -- Findet alle Entities des Typs in einem Gebiet.
 --
--- <h5>Multiplayer</h5>
--- Im Multiplayer kann diese Funktion nur in synchron
--- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
---
 -- @param[type=number] _Area     Größe des Suchgebiet
 -- @param              _Position Mittelpunkt (EntityID, Skriptname oder Table)
 -- @param[type=number] _Type     Typ des Entity
@@ -14536,10 +14528,6 @@ end
 
 ---
 -- Findet alle Entities der Kategorie in einem Gebiet.
---
--- <h5>Multiplayer</h5>
--- Im Multiplayer kann diese Funktion nur in synchron
--- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
 --
 -- @param[type=number] _Area     Größe des Suchgebiet
 -- @param              _Position Mittelpunkt (EntityID, Skriptname oder Table)
@@ -14583,10 +14571,6 @@ end
 ---
 -- Findet alle Entities des Typs in einem Territorium.
 --
--- <h5>Multiplayer</h5>
--- Im Multiplayer kann diese Funktion nur in synchron
--- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
---
 -- @param[type=number] _Territory Territorium für die Suche
 -- @param[type=number] _Type      Typ des Entity
 -- @param[type=number] _PlayerID  (Optional) ID des Besitzers
@@ -14603,10 +14587,6 @@ end
 
 ---
 -- Findet alle Entities der Kategorie in einem Territorium.
---
--- <h5>Multiplayer</h5>
--- Im Multiplayer kann diese Funktion nur in synchron
--- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
 --
 -- @param[type=number] _Territory Territorium für die Suche
 -- @param[type=number] _Category  Category des Entity
@@ -14640,6 +14620,29 @@ function API.SearchEntitiesInTerritory(_Territory, _PlayerID, _Type, _Category)
         return true;
     end
     return API.CommenceEntitySearch(Filter);
+end
+
+---
+-- Findet alle Entities deren Skriptname das Suchwort enthält.
+--
+-- @param[type=number] _Pattern Suchwort
+-- @return[type=table] Liste mit Ergebnissen
+-- @within Suche
+-- @see API.CommenceEntitySearch
+--
+-- @usage
+-- -- Findet alle Entities, deren Name mit "TreasureChest" beginnt.
+-- local Result = API.SearchEntitiesByScriptname("^TreasureChest");
+--
+function API.SearchEntitiesByScriptname(_Pattern)
+    _Filter = _Filter or function(_ID)
+        local ScriptName = Logic.GetEntityName(_ID);
+        if not string.find(ScriptName, _Pattern) then
+            return false;
+        end
+        return true;
+    end
+    return ModuleEntity.Shared:IterateOverEntities(_Filter);
 end
 
 ---
@@ -14783,9 +14786,20 @@ ModuleGuiControl = {
     Local = {
         HiddenWidgets = {},
         HotkeyDescriptions = {},
+        SpeedLimit = 1,
     },
 
-    Shared = {};
+    Shared = {
+        Text = {
+            Message = {
+                NoSpeedUp = {
+                    de = "Die Spielgeschwindigkeit kann nicht erhöht werden!",
+                    en = "The game speed can not be increased!",
+                    fr = "La vitesse du jeu ne peut pas être augmentée!"
+                }
+            }
+        }
+    };
 }
 
 QSB.PlayerNames = {};
@@ -14818,6 +14832,7 @@ function ModuleGuiControl.Local:OnGameStart()
     self:OverrideMissionGoodCounter();
     self:OverrideUpdateClaimTerritory();
     self:SetupHackRegisterHotkey();
+    self:InitForbidSpeedUp();
 end
 
 function ModuleGuiControl.Local:OnEvent(_ID, ...)
@@ -15166,6 +15181,47 @@ function ModuleGuiControl.Local:SetupHackRegisterHotkey()
         for Index, Desc in ipairs(g_KeyBindingsOptions.Descriptions) do
             XGUIEng.ListBoxPushItem(g_KeyBindingsOptions.Widget.ShortcutList, Desc[1]);
             XGUIEng.ListBoxPushItem(g_KeyBindingsOptions.Widget.ActionList,   Desc[2]);
+        end
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+
+function ModuleGuiControl.Local:SetSpeedLimit(_Limit)
+    if Framework.IsNetworkGame() then
+        debug("ModuleGuiControl: Detect network game. Aborting!");
+        return;
+    end
+    _Limit = (_Limit < 1 and 1) or math.floor(_Limit);
+    debug("ModuleGuiControl: Setting speed limit to " .._Limit);
+    self.SpeedLimit = _Limit;
+end
+
+function ModuleGuiControl.Local:ActivateSpeedLimit(_Flag)
+    if Framework.IsNetworkGame() then
+        debug("ModuleGuiControl: Detect network game. Aborting!");
+        return;
+    end
+    self.UseSpeedLimit = _Flag == true;
+    if _Flag and Game.GameTimeGetFactor(GUI.GetPlayerID()) > self.SpeedLimit then
+        debug("ModuleGuiControl: Speed is capped at " ..self.SpeedLimit);
+        Game.GameTimeSetFactor(GUI.GetPlayerID(), self.SpeedLimit);
+        g_GameSpeed = 1;
+    end
+end
+
+function ModuleGuiControl.Local:InitForbidSpeedUp()
+    GameCallback_GameSpeedChanged_Orig_Preferences_ForbidSpeedUp = GameCallback_GameSpeedChanged;
+    GameCallback_GameSpeedChanged = function( _Speed )
+        GameCallback_GameSpeedChanged_Orig_Preferences_ForbidSpeedUp( _Speed );
+        if ModuleGuiControl.Local.UseSpeedLimit == true then
+            debug("ModuleGuiControl: Checking speed limit.");
+            if _Speed > ModuleGuiControl.Local.SpeedLimit then
+                debug("ModuleGuiControl: Speed is capped at " ..tostring(_Speed).. ".");
+                Game.GameTimeSetFactor(GUI.GetPlayerID(), ModuleGuiControl.Local.SpeedLimit);
+                g_GameSpeed = 1;
+                API.Message(ModuleGuiControl.Shared.Text.Message.NoSpeedUp);
+            end
         end
     end
 end
@@ -15717,6 +15773,29 @@ function API.HideBuildMenu(_Flag)
     end
 
     ModuleGuiControl.Local:DisplayInterfaceButton("/InGame/Root/Normal/AlignBottomRight/BuildMenu", _Flag);
+end
+
+---
+-- Setzt die Spielgeschwindigkeit auf Stufe 1 fest oder gibt sie wieder frei.
+--
+-- <b>Hinweis</b>: Die Geschwindigkeitsbeschränkung wirkt sich ebenfalls auf
+-- Cheats aus. Es ist generell nicht mehr möglich, das Spiel zu beschleunigen,
+-- wenn die "Speedbremse" aktiv ist.
+--
+-- @param[type=boolean] _Flag Speedbremse ist aktiv
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- -- Geschwindigkeit auf Stufe 1 festsetzen
+-- API.SpeedLimitActivate(true);
+-- -- Geschwindigkeit freigeben
+-- API.SpeedLimitActivate(false);
+--
+function API.SpeedLimitActivate(_Flag)
+    if GUI or Framework.IsNetworkGame() then
+        return;
+    end
+    return Logic.ExecuteInLuaLocalState("ModuleGuiControl.Local:ActivateSpeedLimit(" ..tostring(_Flag).. ")");
 end
 
 --[[
@@ -22562,6 +22641,247 @@ You may use and modify this file unter the terms of the MIT licence.
 
 -- -------------------------------------------------------------------------- --
 
+ModuleCamera = {
+    Properties = {
+        Name = "ModuleCamera",
+        Version = "4.0.0 (ALPHA 1.0.0)",
+    },
+
+    Global = {},
+    Local = {
+        ExtendedZoomHotKeyID = 0,
+        ExtendedZoomAllowed = true,
+    },
+
+    Shared = {
+        Text = {
+            Shortcut = {
+                Hotkey = {
+                    de = "STRG + UMSCHALT + K",
+                    en = "CTRL + SHIFT + K",
+                    fr = "CTRL + SHIFT + K",
+                },
+                Description = {
+                    de = "Alternativen Zoom ein/aus",
+                    en = "Alternative zoom on/off",
+                    fr = "Zoom alternatif On/Off",
+                }
+            }
+        },
+    };
+}
+
+-- -------------------------------------------------------------------------- --
+-- Global Script
+
+function ModuleCamera.Global:OnGameStart()
+end
+
+function ModuleCamera.Global:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+-- Local Script
+
+function ModuleCamera.Local:OnGameStart()
+    self:RegisterExtendedZoomHotkey();
+    self:ActivateExtendedZoomHotkey();
+end
+
+function ModuleCamera.Local:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.SaveGameLoaded then
+        if self.ExtendedZoomActive then
+            self:ActivateExtendedZoom();
+        end
+        self:ActivateExtendedZoomHotkey();
+    end
+end
+
+function ModuleCamera.Local:SetCameraToEntity(_Entity, _Rotation, _ZoomFactor)
+    local pos = GetPosition(_Entity);
+    local rotation = (_Rotation or -45);
+    local zoomFactor = (_ZoomFactor or 0.5);
+    Camera.RTS_SetLookAtPosition(pos.X, pos.Y);
+    Camera.RTS_SetRotationAngle(rotation);
+    Camera.RTS_SetZoomFactor(zoomFactor);
+end
+
+-- Utility Functions -------------------------------------------------------- --
+
+function ModuleCamera.Local:RegisterExtendedZoomHotkey()
+    self:UnregisterExtendedZoomHotkey();
+    if self.ExtendedZoomHotKeyID == 0 then
+        self.ExtendedZoomHotKeyID = API.AddShortcutEntry(
+            ModuleCamera.Shared.Text.Shortcut.Hotkey,
+            ModuleCamera.Shared.Text.Shortcut.Description
+        );
+    end
+end
+
+function ModuleCamera.Local:UnregisterExtendedZoomHotkey()
+    if self.ExtendedZoomHotKeyID ~= 0 then
+        API.RemoveShortcutEntry(self.ExtendedZoomHotKeyID);
+        self.ExtendedZoomHotKeyID = 0;
+    end
+end
+
+function ModuleCamera.Local:ActivateExtendedZoomHotkey()
+    Input.KeyBindDown(
+        Keys.ModifierControl + Keys.ModifierShift + Keys.K,
+        "ModuleCamera.Local:ToggleExtendedZoom()",
+        2
+    );
+end
+
+function ModuleCamera.Local:ToggleExtendedZoom()
+    if self.ExtendedZoomAllowed then
+        if self.ExtendedZoomActive then
+            self:DeactivateExtendedZoom();
+        else
+            self:ActivateExtendedZoom();
+        end
+    end
+end
+
+function ModuleCamera.Local:ActivateExtendedZoom()
+    self.ExtendedZoomActive = true;
+    Camera.RTS_SetZoomFactorMax(0.870001);
+    Camera.RTS_SetZoomFactor(0.870000);
+    Camera.RTS_SetZoomFactorMin(0.099999);
+end
+
+function ModuleCamera.Local:DeactivateExtendedZoom()
+    self.ExtendedZoomActive = false;
+    Camera.RTS_SetZoomFactor(0.500000);
+    Camera.RTS_SetZoomFactorMax(0.500001);
+    Camera.RTS_SetZoomFactorMin(0.099999);
+end
+
+-- -------------------------------------------------------------------------- --
+
+Revision:RegisterModule(ModuleCamera);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Stellt Funktionen für die RTS-Camera bereit.
+--
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="qsb.html">(0) Basismodul</a></li>
+-- <li><a href="modules.QSB_1_GuiControl.QSB_1_GuiControl.html">(1) Anzeigekontrolle</a></li>
+-- <li><a href="modules.QSB_1_GuiEffects.QSB_1_GuiEffects.html">(1) Anzeigeeffekte</a></li>
+-- </ul>
+--
+-- @within Beschreibung
+-- @set sort=true
+--
+
+---
+-- Aktiviert oder deaktiviert den erweiterten Zoom.
+--
+-- Der maximale Zoom wird erweitert. Dabei entsteht eine fast völlige 
+-- Draufsicht. Dies kann nütztlich sein, wenn der Spieler ein größeres 
+-- Sichtfeld benötigt.
+--
+-- @param[type=boolean] _Flag Erweiterter Zoom gestattet
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- -- Erweitere Kamera einschalten
+-- API.AllowExtendedZoom(true);
+-- -- Erweitere Kamera abschalten
+-- API.AllowExtendedZoom(false);
+--
+function API.AllowExtendedZoom(_Flag)
+    if not GUI then
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[API.AllowExtendedZoom(%s)]],
+            tostring(_Flag)
+        ))
+        return;
+    end
+    ModuleCamera.Local.ExtendedZoomAllowed = _Flag == true;
+    if _Flag == true then
+        ModuleCamera.Local:RegisterExtendedZoomHotkey();
+    else
+        ModuleCamera.Local:UnregisterExtendedZoomHotkey();
+        ModuleCamera.Local:DeactivateExtendedZoom();
+    end
+end
+
+---
+-- Fokusiert die Kamera auf dem Primärritter des Spielers.
+--
+-- @param[type=number] _Player Partei
+-- @param[type=number] _Rotation Kamerawinkel
+-- @param[type=number] _ZoomFactor Zoomfaktor
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- -- Zentriert die Kamera über den Helden von Spieler 3.
+-- API.FocusCameraOnKnight(3, 90, 0.5);
+--
+function API.FocusCameraOnKnight(_Player, _Rotation, _ZoomFactor)
+    API.FocusCameraOnEntity(Logic.GetKnightID(_Player), _Rotation, _ZoomFactor)
+end
+
+---
+-- Fokusiert die Kamera auf dem Entity.
+--
+-- @param _Entity Entity (Skriptname oder ID)
+-- @param[type=number] _Rotation Kamerawinkel
+-- @param[type=number] _ZoomFactor Zoomfaktor
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- -- Zentriert die Kamera über dem Entity mit dem Skriptnamen "HansWurst".
+-- API.FocusCameraOnKnight("HansWurst", -45, 0.2);
+--
+function API.FocusCameraOnEntity(_Entity, _Rotation, _ZoomFactor)
+    if not GUI then
+        local Subject = (type(_Entity) ~= "string" and _Entity) or ("'" .._Entity.. "'");
+        Logic.ExecuteInLuaLocalState("API.FocusCameraOnEntity(" ..Subject.. ", " ..tostring(_Rotation).. ", " ..tostring(_ZoomFactor).. ")");
+        return;
+    end
+    if type(_Rotation) ~= "number" then
+        error("API.FocusCameraOnEntity: Rotation is wrong!");
+        return;
+    end
+    if type(_ZoomFactor) ~= "number" then
+        error("API.FocusCameraOnEntity: Zoom factor is wrong!");
+        return;
+    end
+    if not IsExisting(_Entity) then
+        error("API.FocusCameraOnEntity: Entity " ..tostring(_Entity).." does not exist!");
+        return;
+    end
+    return ModuleCamera.Local:SetCameraToEntity(_Entity, _Rotation, _ZoomFactor);
+end
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
 ModuleBehaviorCollection = {
     Properties = {
         Name = "ModuleBehaviorCollection",
@@ -27101,13 +27421,13 @@ InteractiveObjectDeactivate = API.InteractiveObjectDeactivate;
 --
 -- @usage
 -- -- Beispiel #1: Einfache Beschriftung
--- API.InteractiveObjectSetName("D_X_ChestOpenEmpty", "Leere Schatztruhe");
+-- API.InteractiveObjectSetQuestName("D_X_ChestOpenEmpty", "Leere Schatztruhe");
 --
 -- @usage
 -- -- Beispiel #1: Multilinguale Beschriftung
--- API.InteractiveObjectSetName("D_X_ChestClosed", {de = "Schatztruhe", en = "Treasure"});
+-- API.InteractiveObjectSetQuestName("D_X_ChestClosed", {de = "Schatztruhe", en = "Treasure"});
 --
-function API.InteractiveObjectSetName(_Key, _Text)
+function API.InteractiveObjectSetQuestName(_Key, _Text)
     if GUI then
         return;
     end
@@ -31295,9 +31615,11 @@ ModuleBriefingSystem = {
     },
     Local = {
         ParallaxWidgets = {
-            {"/EndScreen/EndScreen/BG", "/EndScreen/EndScreen"},
+            -- Can not set UV coordinates for this... :(
+            -- {"/EndScreen/EndScreen/BG", "/EndScreen/EndScreen"},
             {"/EndScreen/EndScreen/BackGround", "/EndScreen/EndScreen"},
-            {"/InGame/MissionStatistic/BG", "/InGame/MissionStatistic"},
+            -- Can not set UV coordinates for this... :(
+            -- {"/InGame/MissionStatistic/BG", "/InGame/MissionStatistic"},
             {"/InGame/Root/EndScreen/BlackBG", "/InGame/Root/EndScreen"},
             {"/InGame/Root/EndScreen/BG", "/InGame/Root/EndScreen"},
             {"/InGame/Root/BlackStartScreen/BG", "/InGame/Root/BlackStartScreen"},
@@ -31434,7 +31756,6 @@ function ModuleBriefingSystem.Global:CreateBriefingAddPage(_Briefing)
         -- Language
         _Page.Title = API.Localize(_Page.Title or "");
         _Page.Text = API.Localize(_Page.Text or "");
-        _Page.FOV = _Page.FOV or 42.0;
 
         -- Bars
         if _Page.BigBars == nil then
@@ -31479,6 +31800,15 @@ function ModuleBriefingSystem.Global:CreateBriefingAddPage(_Briefing)
                  _Page.Position, _Page.Rotation, _Page.Zoom, _Page.Angle,
                  Position2, Rotation2, Zoom2, Angle2}
             };
+        end
+
+        -- Field of View
+        if not _Page.FOV then
+            if _Page.DialogCamera then
+                _Page.FOV = QSB.Briefing.DLGCAMERA_FOVDEFAULT;
+            else
+                _Page.FOV = QSB.Briefing.CAMERA_FOVDEFAULT;
+            end
         end
 
         -- Display time
@@ -31663,7 +31993,7 @@ function ModuleBriefingSystem.Global:TransformParallax(_PlayerID)
             if PageID ~= 0 then
                 self.Briefing[_PlayerID][PageID].Parallax = {};
                 self.Briefing[_PlayerID][PageID].Parallax.Clear = v.Clear == true;
-                for i= 1, 6, 1 do
+                for i= 1, 4, 1 do
                     if v[i] then
                         local Entry = {};
                         Entry.Image = v[i][1];
@@ -32049,7 +32379,7 @@ function ModuleBriefingSystem.Local:DisplayPageParallaxes(_PlayerID, _PageID)
             end
             self.Briefing[_PlayerID].ParallaxLayers = {};
         end
-        for i= 1, 6, 1 do
+        for i= 1, 4, 1 do
             if Page.Parallax[i] then
                 local Animation = table.copy(Page.Parallax[i]);
                 Animation.Started = XGUIEng.GetSystemTime();
@@ -32139,11 +32469,11 @@ function ModuleBriefingSystem.Local:ThroneRoomCameraControl(_PlayerID, _Page)
     if _Page then
         -- Camera
         self:ControlCameraAnimation(_PlayerID);
-        local FOV = 42;
+        local FOV = (type(_Page) == "table" and _Page.FOV) or 42;
         local PX, PY, PZ = self:GetPagePosition(_PlayerID);
         local LX, LY, LZ = self:GetPageLookAt(_PlayerID);
         if PX and not LX then
-            LX, LY, LZ, PX, PY, PZ, FOV = self:GetCameraProperties(_PlayerID);
+            LX, LY, LZ, PX, PY, PZ, FOV = self:GetCameraProperties(_PlayerID, FOV);
         end
         Camera.ThroneRoom_SetPosition(PX, PY, PZ);
         Camera.ThroneRoom_SetLookAt(LX, LY, LZ);
@@ -32268,7 +32598,7 @@ function ModuleBriefingSystem.Local:GetInterpolationFactor(_PlayerID)
     return 1;
 end
 
-function ModuleBriefingSystem.Local:GetCameraProperties(_PlayerID)
+function ModuleBriefingSystem.Local:GetCameraProperties(_PlayerID, _FOV)
     local CurrPage, FlyTo;
     if self.Briefing[_PlayerID].CurrentAnimation then
         CurrPage = self.Briefing[_PlayerID].CurrentAnimation.Start;
@@ -32283,8 +32613,6 @@ function ModuleBriefingSystem.Local:GetCameraProperties(_PlayerID)
     local endZoomAngle = (FlyTo and FlyTo.Angle) or CurrPage.Angle;
     local startZoomDistance = CurrPage.Zoom;
     local endZoomDistance = (FlyTo and FlyTo.Zoom) or CurrPage.Zoom;
-    local startFOV = (CurrPage.FOV) or 42.0;
-    local endFOV = ((FlyTo and FlyTo.FOV) or CurrPage.FOV) or 42.0;
 
     local factor = self:GetInterpolationFactor(_PlayerID);
 
@@ -32293,7 +32621,6 @@ function ModuleBriefingSystem.Local:GetCameraProperties(_PlayerID)
     local lookAtX = lPLX + (cPLX - lPLX) * factor;
     local lookAtY = lPLY + (cPLY - lPLY) * factor;
     local lookAtZ = lPLZ + (cPLZ - lPLZ) * factor;
-    local FOV = startFOV + (endFOV - startFOV) * factor;
 
     local zoomDistance = startZoomDistance + (endZoomDistance - startZoomDistance) * factor;
     local zoomAngle = startZoomAngle + (endZoomAngle - startZoomAngle) * factor;
@@ -32303,7 +32630,7 @@ function ModuleBriefingSystem.Local:GetCameraProperties(_PlayerID)
     local positionY = lookAtY + math.sin(math.rad(rotation - 90)) * line;
     local positionZ = lookAtZ + (zoomDistance) * math.sin(math.rad(zoomAngle));
 
-    return lookAtX, lookAtY, lookAtZ, positionX, positionY, positionZ, FOV;
+    return lookAtX, lookAtY, lookAtZ, positionX, positionY, positionZ, _FOV;
 end
 
 function ModuleBriefingSystem.Local:SkipButtonPressed(_PlayerID, _Page)
@@ -32413,10 +32740,7 @@ function ModuleBriefingSystem.Local:ActivateCinematicMode(_PlayerID)
         XGUIEng.SetMaterialColor(self.ParallaxWidgets[i][1], 1, 255, 255, 255, 0);
         XGUIEng.SetMaterialUV(self.ParallaxWidgets[i][1], 1, 0, 0, 1, 1);
     end
-    XGUIEng.ShowWidget("/InGame/MissionStatistic/Backdrop", 0);
-    XGUIEng.ShowWidget("/InGame/MissionStatistic/ContainerBottom", 0);
-    XGUIEng.ShowWidget("/InGame/MissionStatistic/ContainerStatistics", 0);
-    XGUIEng.ShowWidget("/EndScreen/EndScreen/BG", 1);
+    XGUIEng.ShowWidget("/EndScreen/EndScreen/BG", 0);
 
     -- Throneroom Main
     XGUIEng.ShowWidget("/InGame/ThroneRoom", 1);
@@ -32515,9 +32839,6 @@ function ModuleBriefingSystem.Local:DeactivateCinematicMode(_PlayerID)
         Display.SetUserOptionOcclusionEffect(1);
     end
 
-    XGUIEng.ShowWidget("/InGame/MissionStatistic/Backdrop", 1);
-    XGUIEng.ShowWidget("/InGame/MissionStatistic/ContainerBottom", 1);
-    XGUIEng.ShowWidget("/InGame/MissionStatistic/ContainerStatistics", 1);
     XGUIEng.ShowWidget("/EndScreen/EndScreen/BG", 1);
     for i= 1, #self.ParallaxWidgets do
         XGUIEng.ShowWidget(self.ParallaxWidgets[i][1], 0);
@@ -32721,10 +33042,10 @@ QSB.ScriptEvents = QSB.ScriptEvents or {};
 --     -- Aufrufe von AP oder ASP um Seiten zu erstellen
 --
 --     Briefing.Starting = function(_Data)
---         -- Mach was tolles hier wenn es anfängt.
+--         -- Mach was tolles hier, wenn es anfängt.
 --     end
 --     Briefing.Finished = function(_Data)
---         -- Mach was tolles hier wenn es endet.
+--         -- Mach was tolles hier, wenn es endet.
 --     end
 --     -- Das Briefing wird gestartet
 --     API.StartBriefing(Briefing, _Name, _PlayerID);
@@ -32741,7 +33062,7 @@ QSB.ScriptEvents = QSB.ScriptEvents or {};
 --     },
 --     ["Page3"] = {
 --         -- Vektordarstellung
---         -- Animationsdauer, {Position1, Höhe}, {LookAt1, Höhe}, {Position2, Höhe}, {LookAt2, Höhe}, Animationsdauer
+--         -- Animationsdauer, {Position1, Höhe}, {LookAt1, Höhe}, {Position2, Höhe}, {LookAt2, Höhe}
 --         {30, {"pos2", 500}, {"pos4", 0}, {"pos7", 1000}, {"pos8", 0}},
 --         -- Hier können weitere Animationen folgen...
 --     },
@@ -32773,13 +33094,19 @@ QSB.ScriptEvents = QSB.ScriptEvents or {};
 -- -- Beispiel #5: Angabe von Parallaxen
 -- Briefing.PageParallax = {
 --     ["Page1"] = {
---         -- Bilddatei, Anzeigedauer, U0Start, V0Start, U1Start, V1Start, AlphaStart, U0End, V0End, U1End, V1End, AlphaEnd
---         {"C:/IMG/Parallax6.png", 60, 0, 0, 0.8, 1, 255, 0.2, 0, 1, 1, 255},
+--         -- Bilddatei, Anzeigedauer,
+--         -- U0Start, V0Start, U1Start, V1Start, AlphaStart,
+--         -- U0End, V0End, U1End, V1End, AlphaEnd
+--         {"maps/externalmap/mapname/graphics/Parallax6.png", 60,
+--          0, 0, 0.8, 1, 255,
+--          0.2, 0, 1, 1, 255},
 --         -- Hier können weitere Einträge folgen...
 --     },
 --     ["Page3"] = {
---         -- Bilddatei, Anzeigedauer, U0Start, V0Start, U1Start, V1Start, AlphaStart
---         {"C:/IMG/Parallax1.png", 1, 0, 0, 1, 1, 180},
+--         -- Bilddatei, Anzeigedauer,
+--         -- U0Start, V0Start, U1Start, V1Start, AlphaStart
+--         {"maps/externalmap/mapname/graphics/Parallax1.png", 1,
+--          0, 0, 1, 1, 180},
 --         -- Hier können weitere Einträge folgen...
 --     }
 --     -- Hier können weitere Pages folgen...
@@ -32791,7 +33118,19 @@ QSB.ScriptEvents = QSB.ScriptEvents or {};
 --     ["Page1"] = {
 --         -- Löscht alle laufenden Paralaxe
 --         Clear = true,
---         {"C:/IMG/Parallax6.png", 60, 0, 0, 0.8, 1, 255, 0.2, 0, 1, 1, 255},
+--         {"maps/externalmap/mapname/graphics/Parallax6.png",
+--          60, 0, 0, 0.8, 1, 255, 0.2, 0, 1, 1, 255},
+--     },
+-- };
+--
+-- @usage
+-- -- Beispiel #7: Parallaxe im Vordergrund
+-- Briefing.PageParallax = {
+--     ["Page1"] = {
+--         -- Parallaxe erscheinen im Vordergrund
+--         Foreground = true,
+--         {"maps/externalmap/mapname/graphics/Parallax6.png",
+--          60, 0, 0, 0.8, 1, 255, 0.2, 0, 1, 1, 255},
 --     },
 -- };
 --
@@ -33176,7 +33515,7 @@ end
 -- @usage
 -- -- Beispiel #7: Erfragen der gewählten Antwort
 -- Briefing.Finished = function(_Data)
---     local Choosen = _Data:GetPage("Choice"):GetSelectedAnswer();
+--     local Choosen = _Data:GetPage("Choice"):GetSelected();
 --     -- In Choosen steht der Index der Antwort
 -- end
 --
@@ -33415,7 +33754,7 @@ function B_Trigger_Briefing:AddParameter(_Index, _Parameter)
 end
 
 function B_Trigger_Briefing:CustomFunction(_Quest)
-    if API.GetCinematicEventStatus(self.BriefingName, self.PlayerID) == CinematicEvent.Concluded then
+    if API.GetCinematicEvent(self.BriefingName, self.PlayerID) == CinematicEvent.Concluded then
         if self.WaitTime and self.WaitTime > 0 then
             self.WaitTimeTimer = self.WaitTimeTimer or Logic.GetTime();
             if Logic.GetTime() >= self.WaitTimeTimer + self.WaitTime then
@@ -34464,7 +34803,7 @@ end
 --
 -- @usage
 -- -- Beispiel #1: Eine einfache Seite erstellen
--- AF {
+-- AP {
 --     -- Dateiname der Cutscene ohne .cs
 --     Flight       = "c02",
 --     -- Maximale Renderdistanz
@@ -34626,7 +34965,7 @@ function B_Trigger_Cutscene:AddParameter(_Index, _Parameter)
 end
 
 function B_Trigger_Cutscene:CustomFunction(_Quest)
-    if API.GetCinematicEventStatus(self.CutsceneName, self.PlayerID) == CinematicEvent.Concluded then
+    if API.GetCinematicEvent(self.CutsceneName, self.PlayerID) == CinematicEvent.Concluded then
         if self.WaitTime and self.WaitTime > 0 then
             self.WaitTimeTimer = self.WaitTimeTimer or Logic.GetTime();
             if Logic.GetTime() >= self.WaitTimeTimer + self.WaitTime then
@@ -35744,10 +36083,10 @@ QSB.ScriptEvents = QSB.ScriptEvents or {};
 --     -- Aufrufe von AP oder ASP um Seiten zu erstellen
 --
 --     Dialog.Starting = function(_Data)
---         -- Mach was tolles hier wenn es anfängt.
+--         -- Mach was tolles hier, wenn es anfängt.
 --     end
 --     Dialog.Finished = function(_Data)
---         -- Mach was tolles hier wenn es endet.
+--         -- Mach was tolles hier, wenn es endet.
 --     end
 --     API.StartDialog(Dialog, _Name, _PlayerID);
 -- end
@@ -36061,7 +36400,7 @@ end
 -- @usage
 -- -- Beispiel #7: Erfragen der gewählten Antwort
 -- Dialog.Finished = function(_Data)
---     local Choosen = _Data:GetPage("Choice"):GetSelectedAnswer();
+--     local Choosen = _Data:GetPage("Choice"):GetSelected();
 --     -- In Choosen steht der Index der Antwort
 -- end
 -- 
@@ -37709,6 +38048,2148 @@ function API.RemoveTradeRoute(_PlayerID, _RouteName)
         return 0;
     end
     return ModuleShipSalesment.Global:ShutdownTradeRoute(_PlayerID, _RouteName);
+end
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+ModuleInteractiveMines = {
+    Properties = {
+        Name = "ModuleInteractiveMines",
+    },
+
+    Global = {
+        Mines = {},
+        Lambda = {
+            MineCondition = {},
+            MineConstructed = {},
+            InteractiveMineDepleted = {},
+        }
+    },
+    Local = {},
+    -- This is a shared structure but the values are asynchronous!
+    Shared = {
+        Text = {
+            Title = {
+                de = "Rohstoffquelle erschließen",
+                en = "Construct mine",
+                fr = "Exploiter la source de ressources",
+            },
+            Text = {
+                de = "An diesem Ort könnt Ihr eine Rohstoffquelle erschließen!",
+                en = "You're able to create a pit at this location!",
+                fr = "À cet endroit, vous pouvez exploiter une source de ressources!",
+            },
+        },
+    },
+};
+
+-- Global ------------------------------------------------------------------- --
+
+function ModuleInteractiveMines.Global:OnGameStart()
+    QSB.ScriptEvents.InteractiveMineDepleted = API.RegisterScriptEvent("Event_InteractiveMineDepleted");
+
+    API.StartHiResJob(function()
+        ModuleInteractiveMines.Global:ControlIOMines();
+    end);
+end
+
+function ModuleInteractiveMines.Global:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.ObjectReset then
+        if IO[arg[1]] and IO[arg[1]].IsInteractiveMine then
+            self:ResetIOMine(arg[1], IO[arg[1]].Type);
+        end
+    elseif _ID == QSB.ScriptEvents.ObjectDelete then
+        if IO[arg[1]].IsInteractiveMine and IO[arg[1]].Type then
+            ReplaceEntity(arg[1], IO[arg[1]].Type);
+        end
+    end
+end
+
+function ModuleInteractiveMines.Global:CreateIOMine(
+    _Position, _Type, _Title, _Text, _Costs, _ResourceAmount,
+    _RefillAmount, _Condition, _ConditionInfo, _Action
+)
+    local BlockerID = self:ResetIOMine(_Position, _Type);
+    local Icon = {14, 10};
+    if g_GameExtraNo >= 1 then
+        if _Type == Entities.R_IronMine then
+            Icon = {14, 10};
+        end
+        if _Type == Entities.R_StoneMine then
+            Icon = {14, 10};
+        end
+    end
+
+    API.SetupObject {
+        Name                 = _Position,
+        IsInteractiveMine    = true,
+        Title                = _Title or ModuleInteractiveMines.Shared.Text.Title,
+        Text                 = _Text or ModuleInteractiveMines.Shared.Text.Text,
+        Texture              = Icon,
+        Type                 = _Type,
+        ResourceAmount       = _ResourceAmount or 250,
+        RefillAmount         = _RefillAmount or 75,
+        Costs                = _Costs,
+        InvisibleBlocker     = BlockerID,
+        Distance             = 1200,
+        ConditionInfo        = _ConditionInfo,
+        AdditionalCondition  = _Condition,
+        AdditionalAction     = _Action,
+        Condition            = function(_Data)
+            if _Data.AdditionalCondition then
+                return _Data:AdditionalCondition(_Data);
+            end
+            return true;
+        end,
+        Action               = function(_Data, _KnightID, _PlayerID)
+            local ID = ReplaceEntity(_Data.Name, _Data.Type);
+            API.SetResourceAmount(ID, _Data.ResourceAmount, _Data.RefillAmount);
+            DestroyEntity(_Data.InvisibleBlocker);
+            if _Data.AdditionalAction then
+                _Data.AdditionalAction(_Data, _KnightID, _PlayerID);
+            end
+        end
+    };
+end
+
+function ModuleInteractiveMines.Global:ResetIOMine(_ScriptName, _Type)
+    if IO[_ScriptName] then
+        DestroyEntity(IO[_ScriptName].InvisibleBlocker);
+    end
+    local EntityID = ReplaceEntity(_ScriptName, Entities.XD_ScriptEntity);
+    local Model = Models.Doodads_D_SE_ResourceIron_Wrecked;
+    if _Type == Entities.R_StoneMine then
+        Model = Models.R_SE_ResorceStone_10;
+    end
+    Logic.SetVisible(EntityID, true);
+    Logic.SetModel(EntityID, Model);
+    local x, y, z = Logic.EntityGetPos(EntityID);
+    local BlockerID = Logic.CreateEntity(Entities.D_ME_Rock_Set01_B_07, x, y, 0, 0);
+    Logic.SetVisible(BlockerID, false);
+    if IO[_ScriptName] then
+        IO[_ScriptName].InvisibleBlocker = BlockerID;
+    end
+    return BlockerID;
+end
+
+function ModuleInteractiveMines.Global:ControlIOMines()
+    for k, v in pairs(IO) do
+        local EntityID = GetID(k);
+        if v.IsInteractiveMine and Logic.GetResourceDoodadGoodType(EntityID) ~= 0 then
+            if Logic.GetResourceDoodadGoodAmount(EntityID) == 0 then
+                if v.RefillAmount == 0 then
+                    local Model = Models.Doodads_D_SE_ResourceIron_Wrecked;
+                    if v.Type == Entities.R_StoneMine then
+                        Model = Models.R_ResorceStone_Scaffold_Destroyed;
+                    end
+                    API.InteractiveObjectDeactivate(EntityID);
+                    Logic.SetModel(EntityID, Model);
+                end
+
+                API.SendScriptEvent(QSB.ScriptEvents.InteractiveMineDepleted, k);
+                Logic.ExecuteInLuaLocalState(string.format(
+                    [[API.SendScriptEvent(QSB.ScriptEvents.InteractiveMineDepleted, "%s")]],
+                    k
+                ));
+            end
+        end
+    end
+end
+
+-- Local -------------------------------------------------------------------- --
+
+function ModuleInteractiveMines.Local:OnGameStart()
+    QSB.ScriptEvents.InteractiveMineDepleted = API.RegisterScriptEvent("Event_InteractiveMineDepleted");
+end
+
+function ModuleInteractiveMines.Local:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+
+Revision:RegisterModule(ModuleInteractiveMines);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Der Mapper kann eine Stein- oder Eisenmine restaurieren, die zuerst durch
+-- Begleichen der Kosten aufgebaut werden muss, bevor sie genutzt werden kann.
+-- <br>Optional kann die Mine einstürzen, wenn sie ausgebeutet wurde.
+--
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="qsb.html">(0) Basismodul</a></li>
+-- <li><a href="modules.QSB_1_GuiControl.QSB_1_GuiControl.html">(1) Anzeigekontrolle</a></li>
+-- <li><a href="modules.QSB_2_Objects.QSB_2_Objects.html">(2) Interaktive Objekte</a></li>
+-- </ul>
+--
+-- @within Beschreibung
+-- @set sort=true
+--
+
+---
+-- Events, auf die reagiert werden kann.
+--
+-- @field InteractiveMineDepleted  Eine ehemals interaktive Mine wurde ausgebeutet (Parameter: ScriptName)
+--
+-- @within Event
+--
+QSB.ScriptEvents = QSB.ScriptEvents or {};
+
+---
+-- Erstelle eine verschüttete Eisenmine.
+--
+-- Werden keine Materialkosten bestimmt, benötigt der Bau der Mine 500 Gold und
+-- 20 Holz.
+--
+-- Die Parameter der interaktiven Mine werden durch ihre Beschreibung
+-- festgelegt. Die Beschreibung ist eine Table, die bestimmte Werte für das
+-- Objekt beinhaltet. Dabei müssen nicht immer alle Werte angegeben werden.
+--
+-- Mögliche Angaben:
+-- <table border="1">
+-- <tr>
+-- <td><b>Feldname</b></td>
+-- <td><b>Typ</b></td>
+-- <td><b>Beschreibung</b></td>
+-- <td><b>Optional</b></td>
+-- </tr>
+-- <tr>
+-- <td>Position</td>
+-- <td>string</td>
+-- <td>Der Skriptname des Entity, das zum interaktiven Objekt wird.</td>
+-- <td>nein</td>
+-- </tr>
+-- <tr>
+-- <td>Title</td>
+-- <td>string</td>
+-- <td>Angezeigter Titel der Beschreibung für die Mine</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>Text</td>
+-- <td>string</td>
+-- <td>Angezeigte Text der Beschreibung für die Mine</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>Costs</td>
+-- <td>table</td>
+-- <td>Eine Table mit dem Typ und der Menge der Kosten. (Format: {Typ, Menge, Typ, Menge})</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>ResourceAmount</td>
+-- <td>number</td>
+-- <td>Menge an Rohstoffen nach der Aktivierung</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>RefillAmount</td>
+-- <td>number</td>
+-- <td>Menge an Rohstoffen, die ein Geologe auffüllt (0 == nicht nachfüllbar)</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>ConstructionCondition</td>
+-- <td>function</td>
+-- <td>Eine zusätzliche Aktivierungsbedinung als Funktion.</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>ConstructionAction</td>
+-- <td>function</td>
+-- <td>Eine zusätzliche Aktion nach der Aktivierung.</td>
+-- <td>ja</td>
+-- </tr>
+-- </table>
+--
+-- @param[type=table] _Data Datentabelle der Mine
+-- @within Anwenderfunktionen
+-- @see API.CreateIOStoneMine
+--
+-- @usage
+-- -- Beispiel #1: Eine einfache Mine
+-- API.CreateIOIronMine{
+--     Position = "mine"
+-- };
+--
+-- @usage
+-- -- Beispiel #2: Mine mit geänderten Kosten
+-- API.CreateIOIronMine{
+--     Position = "mine",
+--     Costs    = {Goods.G_Wood, 15}
+-- };
+--
+-- @usage
+-- -- Beispiel #3: Mine mit Aktivierungsbedingung
+-- API.CreateIOIronMine{
+--     Position              = "mine",
+--     Costs                 = {Goods.G_Wood, 15},
+--     ConstructionCondition = function(_Data)
+--         return HeroHasShovel == true;
+--     end
+-- };
+--
+function API.CreateIOIronMine(_Data)
+    if GUI then
+        return;
+    end
+    if not IsExisting(_Data.Position) then
+        error("API.CreateIOIronMine: Position (" ..tostring(_Data.Position).. ") does not exist!");
+        return;
+    end
+
+    local Costs = {Goods.G_Gold, 500, Goods.G_Wood, 20};
+    if _Data.Costs then
+        if _Data.Costs[1] then
+            if GetNameOfKeyInTable(Goods, _Data.Costs[1]) == nil then
+                error("API.CreateIOIronMine: First cost type (" ..tostring(_Data.Costs[1]).. ") is wrong!");
+                return;
+            end
+            if _Data.Costs[2] and (type(_Data.Costs[2]) ~= "number" or _Data.Costs[2] < 1) then
+                error("API.CreateIOIronMine: First cost amount must be above 0!");
+                return;
+            end
+        end
+        if _Data.Costs[3] then
+            if GetNameOfKeyInTable(Goods, _Data.Costs[3]) == nil then
+                error("API.CreateIOIronMine: Second cost type (" ..tostring(_Data.Costs[3]).. ") is wrong!");
+                return;
+            end
+            if _Data.Costs[4] and (type(_Data.Costs[4]) ~= "number" or _Data.Costs[4] < 1) then
+                error("API.CreateIOIronMine: Second cost amount must be above 0!");
+                return;
+            end
+        end
+        Costs = _Data.Costs;
+    end
+
+    ModuleInteractiveMines.Global:CreateIOMine(
+        _Data.Position,
+        Entities.R_IronMine,
+        _Data.Title,
+        _Data.Text,
+        Costs,
+        _Data.ResourceAmount,
+        _Data.RefillAmount,
+        _Data.ConstructionCondition,
+        _Data.ConditionInfo,
+        _Data.ConstructionAction
+    );
+end
+
+---
+-- Erstelle eine verschüttete Steinmine.
+--
+-- Werden keine Materialkosten bestimmt, benötigt der Bau der Mine 500 Gold und
+-- 20 Holz.
+--
+-- Die Parameter der interaktiven Mine werden durch ihre Beschreibung
+-- festgelegt. Die Beschreibung ist eine Table, die bestimmte Werte für das
+-- Objekt beinhaltet. Dabei müssen nicht immer alle Werte angegeben werden.
+--
+-- Mögliche Angaben:
+-- <table border="1">
+-- <tr>
+-- <td><b>Feldname</b></td>
+-- <td><b>Typ</b></td>
+-- <td><b>Beschreibung</b></td>
+-- <td><b>Optional</b></td>
+-- </tr>
+-- <tr>
+-- <td>Position</td>
+-- <td>string</td>
+-- <td>Der Skriptname des Entity, das zum interaktiven Objekt wird.</td>
+-- <td>nein</td>
+-- </tr>
+-- <tr>
+-- <td>Title</td>
+-- <td>string</td>
+-- <td>Angezeigter Titel der Beschreibung für die Mine</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>Text</td>
+-- <td>string</td>
+-- <td>Angezeigte Text der Beschreibung für die Mine</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>Costs</td>
+-- <td>table</td>
+-- <td>Eine Table mit dem Typ und der Menge der Kosten. (Format: {Typ, Menge, Typ, Menge})</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <tr>
+-- <td>ResourceAmount</td>
+-- <td>number</td>
+-- <td>Menge an Rohstoffen nach der Aktivierung</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>RefillAmount</td>
+-- <td>number</td>
+-- <td>Menge an Rohstoffen, die ein Geologe auffüllt (0 == nicht nachfüllbar)</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>ConstructionCondition</td>
+-- <td>function</td>
+-- <td>Eine zusätzliche Aktivierungsbedinung als Funktion.</td>
+-- <td>ja</td>
+-- </tr>
+-- <tr>
+-- <td>ConstructionAction</td>
+-- <td>function</td>
+-- <td>Eine zusätzliche Aktion nach der Aktivierung.</td>
+-- <td>ja</td>
+-- </tr>
+-- </table>
+--
+-- @param[type=table] _Data Datentabelle der Mine
+-- @within Anwenderfunktionen
+-- @see API.CreateIOIronMine
+--
+-- @usage
+-- -- Beispiel #1: Eine einfache Mine
+-- API.CreateIOStoneMine{
+--     Position = "mine"
+-- };
+--
+-- @usage
+-- -- Beispiel #2: Mine mit geänderten Kosten
+-- API.CreateIOStoneMine{
+--     Position = "mine",
+--     Costs    = {Goods.G_Wood, 15}
+-- };
+--
+-- @usage
+-- -- Beispiel #3: Mine mit Aktivierungsbedingung
+-- API.CreateIOStoneMine{
+--     Position              = "mine",
+--     Costs                 = {Goods.G_Wood, 15},
+--     ConstructionCondition = function(_Data)
+--         return HeroHasPickaxe == true;
+--     end
+-- };
+--
+function API.CreateIOStoneMine(_Data)
+    if GUI then
+        return;
+    end
+    if not IsExisting(_Data.Position) then
+        error("API.CreateIOStoneMine: Position (" ..tostring(_Data.Position).. ") does not exist!");
+        return;
+    end
+
+    local Costs = {Goods.G_Gold, 500, Goods.G_Wood, 20};
+    if _Data.Costs then
+        if _Data.Costs[1] then
+            if GetNameOfKeyInTable(Goods, _Data.Costs[1]) == nil then
+                error("API.CreateIOStoneMine: First cost type (" ..tostring(_Data.Costs[1]).. ") is wrong!");
+                return;
+            end
+            if _Data.Costs[2] and (type(_Data.Costs[2]) ~= "number" or _Data.Costs[2] < 1) then
+                error("API.CreateIOStoneMine: First cost amount must be above 0!");
+                return;
+            end
+        end
+        if _Data.Costs[3] then
+            if GetNameOfKeyInTable(Goods, _Data.Costs[3]) == nil then
+                error("API.CreateIOStoneMine: Second cost type (" ..tostring(_Data.Costs[3]).. ") is wrong!");
+                return;
+            end
+            if _Data.Costs[4] and (type(_Data.Costs[4]) ~= "number" or _Data.Costs[4] < 1) then
+                error("API.CreateIOStoneMine: Second cost amount must be above 0!");
+                return;
+            end
+        end
+        Costs = _Data.Costs;
+    end
+
+    ModuleInteractiveMines.Global:CreateIOMine(
+        _Data.Position,
+        Entities.R_StoneMine,
+        _Data.Title,
+        _Data.Text,
+        Costs,
+        _Data.ResourceAmount,
+        _Data.RefillAmount,
+        _Data.ConstructionCondition,
+        _Data.ConditionInfo,
+        _Data.ConstructionAction
+    );
+end
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+ModuleQuestJournal = {
+    Properties = {
+        Name = "ModuleQuestJournal",
+        Version = "4.0.0 (ALPHA 1.0.0)",
+    },
+
+    Global = {
+        Journal = {ID = 0},
+        CustomInputAllowed = {},
+        InputShown = {},
+        TextColor  = "{tooltip}",
+    };
+    Local = {
+        NextButton = "/InGame/Root/Normal/AlignBottomLeft/Message/MessagePortrait/TutorialNextButton",
+        NextButtonIcon = {16, 10},
+    };
+
+    Shared = {
+        Text = {
+            Next  = {de = "Tagebuch anzeigen", en = "Show Journal", fr = "Afficher le journal"},
+            Title = {de = "Tagebuch",          en = "Journal",      fr = "Journal"},
+            Note  = {de = "Notiz",             en = "Note",         fr = "Note"},
+        },
+    };
+};
+
+-- -------------------------------------------------------------------------- --
+-- Global Script
+
+function ModuleQuestJournal.Global:OnGameStart()
+    QSB.ScriptEvents.QuestJournalDisplayed = API.RegisterScriptEvent("Event_QuestJournalDisplayed");
+    QSB.ScriptEvents.QuestJournalPlayerNote = API.RegisterScriptEvent("Event_QuestJournalPlayerNote");
+
+    API.RegisterScriptCommand("Cmd_TutorialNextClicked", function(_QuestName, _PlayerID)
+        local CustomInput = self.CustomInputAllowed[_QuestName] == true;
+        local FullText = self:FormatJournalEntry(_QuestName, _PlayerID);
+        API.SendScriptEvent(
+            QSB.ScriptEvents.QuestJournalDisplayed,
+            _PlayerID, _QuestName, FullText, CustomInput
+        );
+    end);
+end
+
+function ModuleQuestJournal.Global:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.ChatClosed then
+        self:ProcessChatInput(arg[1], arg[2]);
+    elseif _ID == QSB.ScriptEvents.QuestJournalPlayerNote then
+        self.InputShown[arg[1]] = arg[2];
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[API.SendScriptEvent(QSB.ScriptEvents.QuestJournalPlayerNote, %d, "%s", %s)]],
+            arg[1], arg[2], tostring(arg[3] == true)
+        ));
+    elseif _ID == QSB.ScriptEvents.QuestJournalDisplayed then
+        Logic.ExecuteInLuaLocalState(string.format(
+            [[API.SendScriptEvent(QSB.ScriptEvents.QuestJournalDisplayed, %d, "%s", "%s", %s)]],
+            arg[1], arg[2], arg[3], tostring(arg[4])
+        ));
+    end
+end
+
+function ModuleQuestJournal.Global:CreateJournalEntry(_Text, _Rank, _AlwaysVisible)
+    self.Journal.ID = self.Journal.ID +1;
+    table.insert(self.Journal, {
+        ID            = self.Journal.ID,
+        AlwaysVisible = _AlwaysVisible == true,
+        Quests        = {},
+        Rank          = _Rank,
+        _Text
+    });
+    return self.Journal.ID;
+end
+
+function ModuleQuestJournal.Global:GetJournalEntry(_ID)
+    for i= 1, #self.Journal do
+        if self.Journal[i].ID == _ID then
+            return self.Journal[i];
+        end
+    end
+end
+
+function ModuleQuestJournal.Global:UpdateJournalEntry(_ID, _Text, _Rank, _AlwaysVisible, _Deleted)
+    for i= 1, #self.Journal do
+        if self.Journal[i].ID == _ID then
+            self.Journal[i].AlwaysVisible = _AlwaysVisible == true;
+            self.Journal[i].Deleted       = _Deleted == true;
+            self.Journal[i].Rank          = _Rank;
+
+            self.Journal[i][1] = self.Journal[i][1] or _Text;
+        end
+    end
+end
+
+function ModuleQuestJournal.Global:AssociateJournalEntryWithQuest(_ID, _Quest, _Flag)
+    for i= 1, #self.Journal do
+        if self.Journal[i].ID == _ID then
+            self.Journal[i].Quests[_Quest] = _Flag == true;
+        end
+    end
+end
+
+function ModuleQuestJournal.Global:FormatJournalEntry(_QuestName, _PlayerID)
+    local Quest = Quests[GetQuestID(_QuestName)];
+    if Quest and Quest.QuestNotes and Quest.ReceivingPlayer == _PlayerID then
+        local Journal = self:GetJournalEntriesSorted();
+        local SeperateImportant = false;
+        local SeperateNormal = false;
+        local Info = "";
+        for i= 1, #Journal, 1 do
+            if Journal[i].AlwaysVisible or Journal[i].Quests[_QuestName] then
+                if not Journal[i].Deleted then
+                    local Text = API.ConvertPlaceholders(API.Localize(Journal[i][1]));
+
+                    if Journal[i].Rank == 1 then
+                        Text = "{scarlet}" .. Text .. self.TextColor;
+                        SeperateImportant = true;
+                    end
+                    if Journal[i].Rank == 0 then
+                        if SeperateImportant then
+                            SeperateImportant = false;
+                            Text = "{cr}----------{cr}{cr}" .. Text;
+                        end
+                        SeperateNormal = true;
+                    end
+                    if Journal[i].Rank == -1 then
+                        local Color = "";
+                        if SeperateNormal then
+                            SeperateNormal = false;
+                            Color = "{violet}";
+                            Text = "{cr}----------{cr}{cr}" .. Text;
+                        end
+                        Text = Color .. Text .. self.TextColor;
+                    end
+
+                    Info = Info .. ((Info ~= "" and "{cr}") or "") .. Text;
+                end
+            end
+        end
+        return Info;
+    end
+end
+
+function ModuleQuestJournal.Global:GetJournalEntriesSorted()
+    local Journal = {};
+    for i= 1, #self.Journal, 1 do
+        table.insert(Journal, self.Journal[i]);
+    end
+    table.sort(Journal, function(a, b)
+        return a.Rank > b.Rank;
+    end)
+    return Journal;
+end
+
+function ModuleQuestJournal.Global:ProcessChatInput(_Text, _PlayerID)
+    if self.InputShown[_PlayerID] then
+        if _Text and _Text ~= "" then
+            local QuestName = self.InputShown[_PlayerID];
+            local CustomInput = self.CustomInputAllowed[QuestName] == true;
+            local ID = self:CreateJournalEntry(_Text, -1, false)
+            self:AssociateJournalEntryWithQuest(ID, QuestName, true);
+            local FullText = self:FormatJournalEntry(QuestName, _PlayerID);
+
+            API.SendScriptEvent(
+            QSB.ScriptEvents.QuestJournalDisplayed,
+                _PlayerID, QuestName, FullText, CustomInput
+            );
+        end
+        self.InputShown[_PlayerID] = nil;
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+-- Local Script
+
+function ModuleQuestJournal.Local:OnGameStart()
+    QSB.ScriptEvents.QuestJournalDisplayed = API.RegisterScriptEvent("Event_QuestJournalDisplayed");
+    QSB.ScriptEvents.QuestJournalPlayerNote = API.RegisterScriptEvent("Event_QuestJournalPlayerNote");
+
+    self:OverrideUpdateVoiceMessage();
+    self:OverrideTutorialNext();
+    self:OverrideStringKeys();
+    self:OverrideTimerButtons();
+end
+
+function ModuleQuestJournal.Local:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.QuestJournalPlayerNote then
+        if arg[1] == GUI.GetPlayerID() and arg[3] then
+            API.ShowTextInput(arg[1], false);
+        end
+    elseif _ID == QSB.ScriptEvents.QuestJournalDisplayed then
+        if arg[1] == GUI.GetPlayerID() then
+            self:DisplayQuestJournal(arg[2], arg[1], arg[3], arg[4]);
+        end
+    end
+end
+
+function ModuleQuestJournal.Local:DisplayQuestJournal(_QuestName, _PlayerID, _Info, _Input)
+    if _Info and GUI.GetPlayerID() == _PlayerID then
+        local Title = API.Localize(ModuleQuestJournal.Shared.Text.Title);
+        local Data = {
+            PlayerID  = _PlayerID,
+            Caption   = Title,
+            Content   = API.ConvertPlaceholders(_Info),
+            QuestName = _QuestName
+        }
+        if _Input then
+            Data.Button = {
+                Text   = API.Localize{de = "Notiz", en = "Note", fr = "Note"},
+                Action = function(_Data)
+                    API.BroadcastScriptEventToGlobal("QuestJournalPlayerNote", _Data.PlayerID, _Data.QuestName, _Input);
+                end
+            }
+        end
+        ModuleRequester.Local:ShowTextWindow(Data);
+    end
+end
+
+function ModuleQuestJournal.Local:OverrideUpdateVoiceMessage()
+    GUI_Interaction.UpdateVoiceMessage_Orig_ModuleQuestJournal = GUI_Interaction.UpdateVoiceMessage;
+    GUI_Interaction.UpdateVoiceMessage = function()
+        GUI_Interaction.UpdateVoiceMessage_Orig_ModuleQuestJournal();
+        if not QuestLog.IsQuestLogShown() then
+            if ModuleQuestJournal.Local:IsShowingJournalButton(g_Interaction.CurrentMessageQuestIndex) then
+                XGUIEng.ShowWidget(ModuleQuestJournal.Local.NextButton, 1);
+                SetIcon(
+                    ModuleQuestJournal.Local.NextButton,
+                    ModuleQuestJournal.Local.NextButtonIcon
+                );
+            else
+                XGUIEng.ShowWidget(ModuleQuestJournal.Local.NextButton, 0);
+            end
+        end
+    end
+end
+
+function ModuleQuestJournal.Local:IsShowingJournalButton(_ID)
+    if not g_Interaction.CurrentMessageQuestIndex then
+        return false;
+    end
+    local Quest = Quests[_ID];
+    if type(Quest) == "table" and Quest.QuestNotes then
+        return true;
+    end
+    return false;
+end
+
+function ModuleQuestJournal.Local:OverrideTimerButtons()
+    GUI_Interaction.TimerButtonClicked_Orig_ModuleQuestJournal = GUI_Interaction.TimerButtonClicked;
+    GUI_Interaction.TimerButtonClicked = function()
+        if  XGUIEng.IsWidgetShown("/InGame/Root/Normal/ChatOptions") == 1
+        and XGUIEng.IsWidgetShown("/InGame/Root/Normal/ChatOptions/ToggleWhisperTarget") == 1 then
+            return;
+        end
+        GUI_Interaction.TimerButtonClicked_Orig_ModuleQuestJournal();
+    end
+end
+
+function ModuleQuestJournal.Local:OverrideTutorialNext()
+    GUI_Interaction.TutorialNext_Orig_ModuleQuestJournal = GUI_Interaction.TutorialNext;
+    GUI_Interaction.TutorialNext = function()
+        if g_Interaction.CurrentMessageQuestIndex then
+            local QuestID = g_Interaction.CurrentMessageQuestIndex;
+            local Quest = Quests[QuestID];
+            API.BroadcastScriptCommand(
+                QSB.ScriptCommands.TutorialNextClicked,
+                Quest.Identifier,
+                GUI.GetPlayerID()
+            );
+        end
+    end
+end
+
+function ModuleQuestJournal.Local:OverrideStringKeys()
+    GetStringTableText_Orig_ModuleQuestJournal = XGUIEng.GetStringTableText;
+    XGUIEng.GetStringTableText = function(_key)
+        if _key == "UI_ObjectNames/TutorialNextButton" then
+            return API.Localize(ModuleQuestJournal.Shared.Text.Next);
+        end
+        return GetStringTableText_Orig_ModuleQuestJournal(_key);
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+
+Revision:RegisterModule(ModuleQuestJournal);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Erlaubt es Notizen zu einem Quest hinzuzufügen.
+-- 
+-- <p><b>Vorausgesetzte Module:</b></p>
+-- <ul>
+-- <li><a href="qsb.html">(0) Basismodul</a></li>
+-- <li><a href="modules.QSB_1_GuiControl.QSB_1_GuiControl.html">(1) Anzeigekontrolle</a></li>
+-- <li><a href="modules.QSB_1_Requester.QSB_1_Requester.html">(1) Requester</a></li>
+-- <li><a href="modules.QSB_2_Quest.QSB_2_Quest.html">(2) Aufträge</a></li>
+-- </ul>
+--
+-- @within Beschreibung
+-- @set sort=true
+--
+
+---
+-- Events, auf die reagiert werden kann.
+--
+-- @field QuestJournalDisplayed   (Parameter: PlayerID, QuestName, Text, NotizenErlaubt)
+-- @field QuestJournalPlayerNote  (Parameter: PlayerID, QuestName, NotizenErlaubt)
+--
+-- @within Event
+--
+QSB.ScriptEvents = QSB.ScriptEvents or {};
+
+---
+-- Aktiviert oder Deaktiviert die Verfügbarkeit der Zusatzinformationen für den
+-- übergebenen Quest.
+--
+-- <b>Hinweis</b>: Die Sichtbarkeit der Zusatzinformationen für einzelne Quests
+-- ist generell deaktiviert und muss explizit aktiviert werden.
+--
+-- <b>Hinweis</b>: Der Button wird auch dann angezeigt, wenn es noch keine
+-- Zusatzinformationen für den Quest gibt.
+--
+-- @param[type=string]  _Quest Name des Quest
+-- @param[type=boolean] _Flag  Zusatzinfos aktivieren
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- -- Deaktivieren
+-- API.ShowJournalForQuest("MyQuest", false);
+-- -- Aktivieren
+-- API.ShowJournalForQuest("MyQuest", true);
+--
+function API.ShowJournalForQuest(_Quest, _Flag)
+    if GUI then
+        return;
+    end
+    local Quest = Quests[GetQuestID(_Quest)];
+    if Quest then
+        Quest.QuestNotes = _Flag == true;
+    end
+end
+
+---
+-- Aktiviert die Möglichkeit, selbst Notizen zu schreiben.
+--
+-- <b>Hinweis</b>: Die Zusatzinformationen müssen für den Quest aktiv sein.
+--
+-- @param[type=string]  _Quest Name des Quest
+-- @param[type=boolean] _Flag  Notizen aktivieren
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- -- Deaktivieren
+-- API.AllowNotesForQuest("MyQuest", false);
+-- -- Aktivieren
+-- API.AllowNotesForQuest("MyQuest", true);
+--
+function API.AllowNotesForQuest(_Quest, _Flag)
+    if GUI then
+        return;
+    end
+    local Quest = Quests[GetQuestID(_Quest)];
+    if Quest then
+        ModuleQuestJournal.Global.CustomInputAllowed[_Quest] = _Flag == true;
+    end
+end
+
+---
+-- Fugt eine Zusatzinformation für diesen Quests hinzu.
+--
+-- <b>Hinweis</b>: Die erzeugte ID ist immer eindeutig für alle Einträge,
+-- ungeachtet ob sie einem Quest zugeordnet sind oder nicht.
+--
+-- <b>Hinweis</b>: Der Questname kann durch nil ersetzt werden. In diesem Fall
+-- erscheint der Eintrag bei <i>allen</i> Quests (für die das Feature aktiviert
+-- ist). Und das so lange, bis er wieder gelöscht wird.
+--
+-- <b>Hinweis</b>: Formatierungsbefehle sind deaktiviert.
+--
+-- @param[type=string] _Text  Text der Zusatzinfo
+-- @return[type=number] ID des neuen Eintrags
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- local NewEntryID = API.CreateJournalEntry("Wichtige Information zum Anzeigen");
+--
+function API.CreateJournalEntry(_Text)
+    _Text = _Text:gsub("{@[A-Za-z0-9:,]+}", "");
+    _Text = _Text:gsub("{[A-Za-z0-9_]+}", "");
+    return ModuleQuestJournal.Global:CreateJournalEntry(_Text, 0, false);
+end
+
+---
+-- Ändert den Text einer Zusatzinformation.
+--
+-- <b>Hinweis</b>: Der neue Text bezieht sich auf den Eintrag mit der ID. Ist
+-- der Eintrag für alle Quests sichtbar, wird er in allen Quests geändert.
+-- Kopien eines Eintrags werden nicht berücksichtigt.
+--
+-- <b>Hinweis</b>: Formatierungsbefehle sind deaktiviert.
+--
+-- @param[type=number] _ID   ID des Eintrag
+-- @param              _Text Neuer Text
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.AlterJournalEntry(SomeEntryID, "Das ist der neue Text.");
+--
+function API.AlterJournalEntry(_ID, _Text)
+    _Text = _Text:gsub("{@[A-Za-z0-9:,]+}", "");
+    _Text = _Text:gsub("{[A-Za-z0-9_]+}", "");
+    local Entry = ModuleQuestJournal.Global:GetJournalEntry(_ID);
+    if Entry then
+        ModuleQuestJournal.Global:UpdateJournalEntry(
+            _ID,
+            _Text,
+            Entry.Rank,
+            Entry.AlwaysVisible,
+            Entry.Deleted
+        );
+    end
+end
+
+---
+-- Hebt einen Eintrag aus den Zusatzinformationen als wichtig hervor oder
+-- setzt ihn zurück.
+--
+-- <b>Hinweis</b>: Wichtige Einträge erscheinen immer als erstes und sind durch
+-- rote Färbung hervorgehoben. Eigene Farben in einer Nachricht beeinträchtigen
+-- die rote hervorhebung.
+--
+-- @param[type=number]  _ID        ID des Eintrag
+-- @param[type=boolean] _Important Wichtig Markierung
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.HighlightJournalEntry(SomeEntryID, true);
+--
+function API.HighlightJournalEntry(_ID, _Important)
+    local Entry = ModuleQuestJournal.Global:GetJournalEntry(_ID);
+    if Entry then
+        ModuleQuestJournal.Global:UpdateJournalEntry(
+            _ID,
+            Entry[1],
+            (_Important == true and 1) or 0,
+            Entry.AlwaysVisible,
+            Entry.Deleted
+        );
+    end
+end
+
+---
+-- Entfernt einen Eintrag aus den Zusatzinformationen.
+--
+-- <b>Hinweis</b>: Ein Eintrag wird niemals wirklich gelöscht, sondern nur
+-- unsichtbar geschaltet.
+--
+-- @param[type=number] _ID ID des Eintrag
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.DeleteJournalEntry(SomeEntryID);
+--
+function API.DeleteJournalEntry(_ID)
+    local Entry = ModuleQuestJournal.Global:GetJournalEntry(_ID);
+    if Entry then
+        ModuleQuestJournal.Global:UpdateJournalEntry(
+            _ID,
+            Entry[1],
+            Entry.Rank,
+            Entry.AlwaysVisible,
+            true
+        );
+    end
+end
+
+---
+-- Stellt einen gelöschten Eintrag in den Zusatzinformationen wieder her.
+--
+-- @param[type=number] _ID ID des Eintrag
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.RestoreJournalEntry(SomeEntryID);
+--
+function API.RestoreJournalEntry(_ID)
+    local Entry = ModuleQuestJournal.Global:GetJournalEntry(_ID);
+    if Entry then
+        ModuleQuestJournal.Global:UpdateJournalEntry(
+            _ID,
+            Entry[1],
+            Entry.Rank,
+            Entry.AlwaysVisible,
+            false
+        );
+    end
+end
+
+---
+-- Fügt einen Tagebucheintrag zu einem Quest hinzu.
+--
+-- @param[type=number]  _ID    ID des Eintrag
+-- @param[type=boolean] _Quest Name des Quest
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.AddJournalEntryToQuest(_ID, _Quest);
+--
+function API.AddJournalEntryToQuest(_ID, _Quest)
+    local Entry = ModuleQuestJournal.Global:GetJournalEntry(_ID);
+    if Entry then
+        ModuleQuestJournal.Global:AssociateJournalEntryWithQuest(_ID, _Quest, true);
+    end
+end
+
+---
+-- Entfernt einen Tagebucheintrag von einem Quest.
+--
+-- @param[type=number]  _ID    ID des Eintrag
+-- @param[type=boolean] _Quest Name des Quest
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.RemoveJournalEntryFromQuest(_ID, _Quest);
+--
+function API.RemoveJournalEntryFromQuest(_ID, _Quest)
+    local Entry = ModuleQuestJournal.Global:GetJournalEntry(_ID);
+    if Entry then
+        ModuleQuestJournal.Global:AssociateJournalEntryWithQuest(_ID, _Quest, false);
+    end
+end
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Stellt Behavior bereit um die Tagebuchfunktion über den Assistenten nutzbar
+-- zu machen.
+--
+-- @set sort=true
+--
+
+QSB.JournalEntryNameToQuestName = {};
+QSB.JournalEntryNameToID = {};
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Zeigt das Tagebuch für einen Quest an oder versteckt es.
+--
+-- @param[type=string] _QuestName Name des Quest
+-- @param[type=string] _Active    Tagebuch ist aktiv
+-- @within Reprisal
+--
+function Reprisal_JournalEnable(...)
+    return B_Reprisal_JournalEnable:new(...);
+end
+
+B_Reprisal_JournalEnable = {
+    Name = "Reprisal_JournalEnable",
+    Description = {
+        en = "Reprisal: Displays the journal for a quest or hides it.",
+        de = "Vergeltung: Zeigt das Tagebuch für einen Quest an oder versteckt es.",
+        fr = "Rétribution: Affiche ou cache le journal pour une quête.",
+    },
+    Parameter = {
+        { ParameterType.QuestName, en = "Quest name",     de = "Name Quest",     fr = "Nom de la quête" },
+        { ParameterType.Custom,    en = "Journal active", de = "Tagebuch aktiv", fr = "Journal actif" },
+    },
+}
+
+function B_Reprisal_JournalEnable:GetReprisalTable()
+    return { Reprisal.Custom, {self, self.CustomFunction} };
+end
+
+function B_Reprisal_JournalEnable:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.QuestName = _Parameter;
+    elseif (_Index == 1) then
+        self.ActiveFlag = API.ToBoolean(_Parameter);
+    end
+end
+
+function B_Reprisal_JournalEnable:CustomFunction(_Quest)
+    API.ShowJournalForQuest(self.QuestName, self.ActiveFlag == true);
+end
+
+function B_Reprisal_JournalEnable:Debug(_Quest)
+    if not API.IsValidQuest(GetQuestID(self.QuestName)) then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": quest '" ..tostring(self.QuestName).."' does not exist!");
+        return true;
+    end
+    return false;
+end
+
+Revision:RegisterBehavior(B_Reprisal_JournalEnable);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Zeigt das Tagebuch für einen Quest an oder versteckt es.
+--
+-- @param[type=string] _QuestName Name des Quest
+-- @param[type=string] _Active    Tagebuch ist aktiv
+-- @within Reward
+--
+function Reward_JournalEnable(...)
+    return B_Reward_JournalEnable:new(...);
+end
+
+B_Reward_JournalEnable = Revision.LuaBase:CopyTable(B_Reprisal_JournalEnable);
+B_Reward_JournalEnable.Name = "Reward_JournalEnable";
+B_Reward_JournalEnable.Description.en = "Reward: Displays the journal for a quest or hides it.";
+B_Reward_JournalEnable.Description.de = "Lohn: Zeigt das Tagebuch für einen Quest an oder versteckt es.";
+B_Reward_JournalEnable.Description.fr = "Récompense: Affiche ou cache le journal d'une quête.";
+B_Reward_JournalEnable.GetReprisalTable = nil;
+
+B_Reward_JournalEnable.GetRewardTable = function(self, _Quest)
+    return { Reward.Custom, { self, self.CustomFunction } };
+end
+
+Revision:RegisterBehavior(B_Reward_JournalEnable);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Schreibt einen Tagebucheintrag zu dem angegebenen Quest.
+--
+-- @param[type=string] _QuestName Name des Quest
+-- @param[type=string] _EntryName Name des Eintrag
+-- @param[type=string] _EntryText Text des Eintrag
+-- @within Reprisal
+--
+function Reprisal_JournalWrite(...)
+    return B_Reprisal_JournalWrite:new(...);
+end
+
+B_Reprisal_JournalWrite = {
+    Name = "Reprisal_JournalWrite",
+    Description = {
+        en = "Reprisal: Adds or alters a journal entry to a quest.",
+        de = "Vergeltung: Schreibt oder ändert einen Tagebucheintrag.",
+        fr = "Rétribution: Écrit ou modifie une entrée de journal.",
+    },
+    Parameter = {
+        { ParameterType.QuestName, en = "Quest name", de = "Name Quest",   fr = "Nom de la quête" },
+        { ParameterType.Default,   en = "Entry name", de = "Name Eintrag", fr = "Nom de l'entrée" },
+        { ParameterType.Default,   en = "Entry text", de = "Text Eintrag", fr = "Texte de l'entrée" },
+    },
+}
+
+function B_Reprisal_JournalWrite:GetReprisalTable()
+    return { Reprisal.Custom, {self, self.CustomFunction} };
+end
+
+function B_Reprisal_JournalWrite:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.QuestName = _Parameter;
+    elseif (_Index == 1) then
+        self.EntryName = _Parameter;
+    elseif (_Index == 2) then
+        self.EntryText = _Parameter;
+    end
+end
+
+function B_Reprisal_JournalWrite:CustomFunction(_Quest)
+    if QSB.JournalEntryNameToQuestName[self.EntryName] then
+        local EntryID = QSB.JournalEntryNameToID[self.EntryName];
+        API.AlterJournalEntry(EntryID, self.EntryText);
+    else
+        local EntryID = API.CreateJournalEntry(self.EntryText);
+        API.AddJournalEntryToQuest(EntryID, self.QuestName);
+        QSB.JournalEntryNameToQuestName[self.EntryName] = self.QuestName;
+        QSB.JournalEntryNameToID[self.EntryName] = EntryID;
+    end
+end
+
+function B_Reprisal_JournalWrite:Debug(_Quest)
+    if not API.IsValidQuest(GetQuestID(self.QuestName)) then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": quest '" ..tostring(self.QuestName).."' does not exist!");
+        return true;
+    end
+    if QSB.JournalEntryNameToQuestName[self.EntryName] ~= self.QuestName then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": entry name '" ..tostring(self.EntryName).."' is already in use in another quest!");
+        return true;
+    end
+    if not QSB.JournalEntryNameToID[self.EntryName] then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": entry '" ..tostring(self.EntryName).."' does not exist!");
+        return true;
+    end
+    return false;
+end
+
+Revision:RegisterBehavior(B_Reprisal_JournalWrite);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Schreibt einen Tagebucheintrag zu dem angegebenen Quest.
+--
+-- @param[type=string] _QuestName Name des Quest
+-- @param[type=string] _EntryName Name des Eintrag
+-- @param[type=string] _EntryText Text des Eintrag
+-- @within Reward
+--
+function Reward_JournalWrite(...)
+    return B_Reward_JournalWrite:new(...);
+end
+
+B_Reward_JournalWrite = Revision.LuaBase:CopyTable(B_Reprisal_JournalWrite);
+B_Reward_JournalWrite.Name = "Reward_JournalWrite";
+B_Reward_JournalWrite.Description.en = "Reward: Adds or alters a journal entry to a quest.";
+B_Reward_JournalWrite.Description.de = "Lohn: Schreibt oder ändert einen Tagebucheintrag.";
+B_Reward_JournalWrite.Description.de = "Récompense: Écrit ou modifie une entrée de journal.";
+B_Reward_JournalWrite.GetReprisalTable = nil;
+
+B_Reward_JournalWrite.GetRewardTable = function(self, _Quest)
+    return { Reward.Custom, { self, self.CustomFunction } };
+end
+
+Revision:RegisterBehavior(B_Reward_JournalWrite);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Entfernt einen Tagebucheintrag von einem Quest.
+--
+-- @param[type=string] _QuestName Name des Quest
+-- @param[type=string] _EntryName Name des Entry
+-- @within Reprisal
+--
+function Reprisal_JournalRemove(...)
+    return B_Reprisal_JournalRemove:new(...);
+end
+
+B_Reprisal_JournalRemove = {
+    Name = "Reprisal_JournalRemove",
+    Description = {
+        en = "Reprisal: Remove a journal entry from a quest.",
+        de = "Vergeltung: Entfernt einen Tagebucheintrag vom Quest.",
+        fr = "Rétribution: Supprime une entrée de journal de la quête.",
+    },
+    Parameter = {
+        { ParameterType.QuestName, en = "Quest name", de = "Name Quest",   fr = "Nom de la quête" },
+        { ParameterType.Default,   en = "Entry name", de = "Name Eintrag", fr = "Nom de l'entrée" },
+    },
+}
+
+function B_Reprisal_JournalRemove:GetReprisalTable()
+    return { Reprisal.Custom, {self, self.CustomFunction} };
+end
+
+function B_Reprisal_JournalRemove:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.QuestName = _Parameter;
+    elseif (_Index == 1) then
+        self.EntryName = _Parameter;
+    end
+end
+
+function B_Reprisal_JournalRemove:CustomFunction(_Quest)
+    if QSB.JournalEntryNameToQuestName[self.EntryName] then
+        local EntryID = QSB.JournalEntryNameToID[self.EntryName];
+        API.RemoveJournalEntryFromQuest(EntryID, self.QuestName);
+        API.DeleteJournalEntry(EntryID);
+        QSB.JournalEntryNameToQuestName[self.EntryName] = nil;
+        QSB.JournalEntryNameToID[self.EntryName] = nil;
+    end
+end
+
+function B_Reprisal_JournalRemove:Debug(_Quest)
+    if not API.IsValidQuest(GetQuestID(self.QuestName)) then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": quest '" ..tostring(self.QuestName).."' does not exist!");
+        return true;
+    end
+    if QSB.JournalEntryNameToQuestName[self.EntryName] ~= self.QuestName then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": entry name '" ..tostring(self.EntryName).."' is already in use in another quest!");
+        return true;
+    end
+    if not QSB.JournalEntryNameToID[self.EntryName] then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": entry '" ..tostring(self.EntryName).."' does not exist!");
+        return true;
+    end
+    return false;
+end
+
+Revision:RegisterBehavior(B_Reprisal_JournalRemove);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Entfernt einen Tagebucheintrag von einem Quest.
+--
+-- @param[type=string] _QuestName Name des Quest
+-- @param[type=string] _EntryName Name des Entry
+-- @within Reward
+--
+function Reward_JournalRemove(...)
+    return B_Reward_JournalRemove:new(...);
+end
+
+B_Reward_JournalRemove = Revision.LuaBase:CopyTable(B_Reprisal_JournalRemove);
+B_Reward_JournalRemove.Name = "Reward_JournalRemove";
+B_Reward_JournalRemove.Description.en = "Reward: Remove a journal entry from a quest.";
+B_Reward_JournalRemove.Description.de = "Lohn: Entfernt einen Tagebucheintrag vom Quest.";
+B_Reward_JournalRemove.Description.fr = "Récompense: Supprime une entrée de journal de la quête.";
+B_Reward_JournalRemove.GetReprisalTable = nil;
+
+B_Reward_JournalRemove.GetRewardTable = function(self, _Quest)
+    return { Reward.Custom, { self, self.CustomFunction } };
+end
+
+Revision:RegisterBehavior(B_Reward_JournalRemove);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Hebt einen Eintrag im Tagebuch hervor oder setzt ihn auf normal zurück.
+--
+-- @param[type=string] _QuestName Name des Quest
+-- @param[type=string]  _EntryName   Name des Eintrag
+-- @param[type=boolean] _Highlighted Eintrag ist hervorgehoben
+-- @within Reprisal
+--
+function Reprisal_JournaHighlight(...)
+    return B_Reprisal_JournaHighlight:new(...);
+end
+
+B_Reprisal_JournaHighlight = {
+    Name = "Reprisal_JournaHighlight",
+    Description = {
+        en = "Reprisal: Highlights or unhighlights a journal entry of a quest.",
+        de = "Vergeltung: Hebt einen Tagebucheintrag hevor oder hebt die Hervorhebung auf.",
+        fr = "Rétribution: met en valeur ou annule la mise en valeur d'une entrée de journal.",
+    },
+    Parameter = {
+        { ParameterType.QuestName, en = "Quest name",      de = "Name Quest",   fr= "Nom de la quête" },
+        { ParameterType.Default,   en = "Name of entry",   de = "Name Eintrag", fr= "Nom de l'entrée" },
+        { ParameterType.Custom,    en = "Highlight entry", de = "Hebe hervor",  fr= "Mettre en valeur" },
+    },
+}
+
+function B_Reprisal_JournaHighlight:GetReprisalTable()
+    return { Reprisal.Custom, {self, self.CustomFunction} };
+end
+
+function B_Reprisal_JournaHighlight:AddParameter(_Index, _Parameter)
+    if (_Index == 0) then
+        self.QuestName = _Parameter;
+    elseif (_Index == 1) then
+        self.EntryName = _Parameter;
+    elseif (_Index == 2) then
+        self.IsImportant = API.ToBoolean(_Parameter);
+    end
+end
+
+function B_Reprisal_JournaHighlight:GetCustomData(_Index)
+    return {"true","false"};
+end
+
+function B_Reprisal_JournaHighlight:CustomFunction(_Quest)
+    if QSB.JournalEntryNameToQuestName[self.EntryName] then
+        local EntryID = QSB.JournalEntryNameToID[self.EntryName];
+        API.HighlightJournalEntry(EntryID, self.IsImportant == true);
+    end
+end
+
+function B_Reprisal_JournaHighlight:Debug(_Quest)
+    if not API.IsValidQuest(GetQuestID(self.QuestName)) then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": quest '" ..tostring(self.QuestName).."' does not exist!");
+        return true;
+    end
+    if QSB.JournalEntryNameToQuestName[self.EntryName] ~= self.QuestName then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": entry name '" ..tostring(self.EntryName).."' is not mapped to the quest!");
+        return true;
+    end
+    if not QSB.JournalEntryNameToID[self.EntryName] then
+        error(_Quest.Identifier.. ": " ..self.Name .. ": entry '" ..tostring(self.EntryName).."' does not exist!");
+        return true;
+    end
+    return false;
+end
+
+Revision:RegisterBehavior(B_Reprisal_JournaHighlight);
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Hebt einen Eintrag im Tagebuch hervor oder setzt ihn auf normal zurück.
+--
+-- @param[type=string] _QuestName Name des Quest
+-- @param[type=string]  _EntryName   Name des Eintrag
+-- @param[type=boolean] _Highlighted Eintrag ist hervorgehoben
+-- @within Reward
+--
+function Reward_JournaHighlight(...)
+    return B_Reward_JournaHighlight:new(...);
+end
+
+B_Reward_JournaHighlight = Revision.LuaBase:CopyTable(B_Reprisal_JournaHighlight);
+B_Reward_JournaHighlight.Name = "Reward_JournaHighlight";
+B_Reward_JournaHighlight.Description.en = "Reward: Highlights or unhighlights a journal entry of a quest.";
+B_Reward_JournaHighlight.Description.de = "Lohn: Hebt einen Tagebucheintrag hevor oder hebt die Hervorhebung auf.";
+B_Reward_JournaHighlight.Description.fr = "Récompense: met en valeur ou annule la mise en valeur d'une entrée de journal.";
+B_Reward_JournaHighlight.GetReprisalTable = nil;
+
+B_Reward_JournaHighlight.GetRewardTable = function(self, _Quest)
+    return { Reward.Custom, { self, self.CustomFunction } };
+end
+
+Revision:RegisterBehavior(B_Reward_JournaHighlight);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+ModuleInteractiveSites = {
+    Properties = {
+        Name = "ModuleInteractiveSites",
+    },
+
+    Global = {
+        CreatedSites = {},
+    };
+    Local  = {};
+
+    Shared = {
+        Text = {
+            Description = {
+                Title = {
+                    de = "Gebäude bauen",
+                    en = "Create building",
+                    fr = "Construire le bâtiment",
+                },
+                Text = {
+                    de = "Beauftragt den Bau eines Gebäudes. Ein Siedler wird aus"..
+                        " dem Lagerhaus kommen und mit dem Bau beginnen.",
+                    en = "Order a building. A worker will come out of the"..
+                        " storehouse and erect it.",
+                    fr = "Commande la construction d'un bâtiment. Un Settler sortira de"..
+                        " l'entrepôt et commencera la construction.",
+                },
+            }
+        }
+    };
+};
+
+QSB.NonPlayerCharacterObjects = {};
+
+-- Global Script ------------------------------------------------------------ --
+
+function ModuleInteractiveSites.Global:OnGameStart()
+    QSB.ScriptEvents.InteractiveSiteBuilt = API.RegisterScriptEvent("Event_InteractiveSiteBuilt");
+
+    self:OverrideConstructionCompleteCallback();
+end
+
+function ModuleInteractiveSites.Global:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.ObjectReset then
+        if IO[arg[1]] and IO[arg[1]].IsInteractiveSite then
+            -- Nothing to do?
+        end
+    elseif _ID == QSB.ScriptEvents.ObjectDelete then
+        if IO[arg[1]] and IO[arg[1]].IsInteractiveSite then
+            -- Nothing to do?
+        end
+    end
+end
+
+function ModuleInteractiveSites.Global:OverrideConstructionCompleteCallback()
+    GameCallback_OnBuildingConstructionComplete_Orig_QSB_InteractiveSites = GameCallback_OnBuildingConstructionComplete;
+    GameCallback_OnBuildingConstructionComplete = function(_PlayerID, _EntityID)
+        GameCallback_OnBuildingConstructionComplete_Orig_QSB_InteractiveSites(_PlayerID, _EntityID);
+
+        if ModuleInteractiveSites.Global.CreatedSites[_EntityID] then
+            local Object = ModuleInteractiveSites.Global.CreatedSites[_EntityID];
+            if Object then
+                API.SendScriptEvent(QSB.ScriptEvents.InteractiveSiteBuilt, Object.Name, _PlayerID, _EntityID);
+                Logic.ExecuteInLuaLocalState(string.format(
+                    [[API.SendScriptEvent(QSB.ScriptEvents.InteractiveSiteBuilt, "%s", %d, %d)]],
+                    Object.Name,
+                    _PlayerID,
+                    _EntityID
+                ));
+            end
+        end
+    end
+end
+
+function ModuleInteractiveSites.Global:CreateIOBuildingSite(_Data)
+    local Costs = _Data.Costs or {Logic.GetEntityTypeFullCost(_Data.Type)};
+    local Title = _Data.Title or ModuleInteractiveSites.Shared.Text.Description.Title;
+    local Text = _Data.Text or ModuleInteractiveSites.Shared.Text.Description.Text;
+
+    local EntityID = GetID(_Data.Name);
+    Logic.SetModel(EntityID, Models.Buildings_B_BuildingPlot_10x10);
+    Logic.SetVisible(EntityID, true);
+
+    _Data.Title = Title;
+    _Data.Text = Text;
+    _Data.Costs = Costs;
+    _Data.ConditionOrigSite = _Data.Condition;
+    _Data.ActionOrigSite = _Data.Action;
+    API.SetupObject(_Data);
+
+    IO[_Data.Name].Condition = function(_Data)
+        if _Data.ConditionOrigSite then
+            _Data.ConditionOrigSite(_Data);
+        end
+        return self:ConditionIOConstructionSite(_Data);
+    end
+    IO[_Data.Name].Action = function(_Data, _KnightID, _PlayerID)
+        self:CallbackIOConstructionSite(_Data, _KnightID, _PlayerID);
+        if _Data.ActionOrigSite then
+            _Data.ActionOrigSite(_Data, _KnightID, _PlayerID);
+        end
+    end
+end
+
+function ModuleInteractiveSites.Global:CallbackIOConstructionSite(_Data, _KnightID, _PlayerID)
+    local Position = GetPosition(_Data.Name);
+    local EntityID = GetID(_Data.Name);
+    local Orientation = Logic.GetEntityOrientation(EntityID);
+    local SiteID = Logic.CreateConstructionSite(Position.X, Position.Y, Orientation, _Data.Type, _Data.PlayerID);
+    Logic.SetVisible(EntityID, false);
+
+    if (SiteID == nil) then
+        warn("For object '" .._Data.Name.. "' building placement failed! Building created instead");
+        SiteID = Logic.CreateEntity(_Data.Type, Position.X, Position.Y, Orientation, _Data.PlayerID);
+    end
+    self.CreatedSites[SiteID] = _Data;
+end
+
+function ModuleInteractiveSites.Global:ConditionIOConstructionSite(_Data)
+    local EntityID = GetID(_Data.Name);
+    local TerritoryID = GetTerritoryUnderEntity(EntityID);
+    local PlayerID = Logic.GetTerritoryPlayerID(TerritoryID);
+
+    if Logic.GetStoreHouse(_Data.PlayerID) == 0 then
+        return false;
+    end
+    if _Data.PlayerID ~= PlayerID then
+        return false;
+    end
+    return true;
+end
+
+-- Local Script ------------------------------------------------------------- --
+
+function ModuleInteractiveSites.Local:OnGameStart()
+end
+
+function ModuleInteractiveSites.Local:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+
+Revision:RegisterModule(ModuleInteractiveSites);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Ermöglicht Baustellen als interaktive Objekte zu setzen.
+--
+-- Die Baustelle muss durch den Helden aktiviert werden. Ein Siedler wird aus
+-- dem Lagerhaus kommen und das Gebäude bauen.
+--
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="qsb.html">(0) Basismodul</a></li>
+-- <li><a href="modules.QSB_1_GuiControl.QSB_1_GuiControl.html">(1) Anzeigekontrolle</a></li>
+-- <li><a href="modules.QSB_2_Objects.QSB_2_Objects.html">(2) Interaktive Objekte</a></li>
+-- </ul>
+--
+-- @within Beschreibung
+-- @set sort=true
+--
+
+---
+-- Events, auf die reagiert werden kann.
+--
+-- @field InteractiveSiteBuilt (Parameter: ScriptName, PlayerID, BuildingID)
+--
+-- @within Event
+--
+QSB.ScriptEvents = QSB.ScriptEvents or {};
+
+---
+-- Erzeugt eine Baustelle eines beliebigen Gebäudetyps an der Position.
+--
+-- Diese Baustelle kann durch einen Helden aktiviert werden. Dann wird ein
+-- Siedler zur Baustelle eilen und das Gebäude aufbauen. Es ist egal, ob es
+-- sich um ein Territorium des Spielers oder einer KI handelt.
+--
+-- Es ist dabei zu beachten, dass der Spieler, dem die Baustelle zugeordnet
+-- wird, das Territorium besitzt, auf dem er bauen soll. Des weiteren muss
+-- er über ein Lagerhaus/Hauptzelt verfügen.
+--
+-- <p><b>Hinweis:</b> Es kann vorkommen, dass das Model der Baustelle nicht
+-- geladen wird. Dann ist der Boden der Baustelle schwarz. Sobald wenigstens
+-- ein reguläres Gebäude gebaut wurde, sollte die Textur jedoch vorhanden sein.
+-- </p>
+--
+-- Mögliche Angaben für die Konfiguration:
+-- <table border="1">
+-- <tr><td><b>Feldname</b></td><td><b>Typ</b></td><td><b>Beschreibung</b></td></tr>
+-- <tr><td>Name</td><td>string</td><td>Position für die Baustelle</td></tr>
+-- <tr><td>PlayerID</td><td>number</td><td>Besitzer des Gebäudes</td></tr>
+-- <tr><td>Type</td><td>number</td><td>Typ des Gebäudes</td></tr>
+-- <tr><td>Costs</td><td>table</td><td>(optional) Eigene Gebäudekosten</td></tr>
+-- <tr><td>Distance</td><td>number</td><td>(optional) Aktivierungsentfernung</td></tr>
+-- <tr><td>Icon</td><td>table</td><td>(optional) Icon des Schalters</td></tr>
+-- <tr><td>Title</td><td>string</td><td>(optional) Titel der Beschreibung</td></tr>
+-- <tr><td>Text</td><td>string</td><td>(optional) Text der Beschreibung</td></tr>
+-- <tr><td>Condition</td><td>function</td><td>(optional) Optionale Aktivierungsbedingung</td></tr>
+-- <tr><td>Action</td><td>function</td><td>(optional) Optionale Funktion bei Aktivierung</td></tr>
+-- </table>
+--
+-- @param[type=table] _Data Konfiguration des Objektes
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- -- Beispiel #1: Eine einfache Baustelle erzeugen
+-- API.CreateIOBuildingSite {
+--     Name     = "haus",
+--     PlayerID = 1,
+--     Type     = Entities.B_Bakery
+-- };
+--
+-- @usage
+-- -- Beispiel #2: Baustelle mit Kosten erzeugen
+-- API.CreateIOBuildingSite {
+--     Name     = "haus",
+--     PlayerID = 1,
+--     Type     = Entities.B_Bakery,
+--     Costs    = {Goods.G_Wood, 4},
+--     Distance = 1000
+-- };
+--
+function API.CreateIOBuildingSite(_Data)
+    if GUI then
+        return;
+    end
+    if not IsExisting(_Data.Name) then
+        error("API.CreateIOBuildingSite: Position (" ..tostring(_Data.Name).. ") does not exist!");
+        return;
+    end
+    if type(_Data.PlayerID) ~= "number" or _Data.PlayerID < 1 or _Data.PlayerID > 8 then
+        error("API.CreateIOBuildingSite: PlayerID is wrong!");
+        return;
+    end
+    if GetNameOfKeyInTable(Entities, _Data.Type) == nil then
+        error("API.CreateIOBuildingSite: Type (" ..tostring(_Data.Type).. ") is wrong!");
+        return;
+    end
+    if _Data.Costs and (type(_Data.Costs) ~= "table" or #_Data.Costs %2 ~= 0) then
+        error("API.CreateIOBuildingSite: Costs has the wrong format!");
+        return;
+    end
+    if _Data.Distance and (type(_Data.Distance) ~= "number" or _Data.Distance < 100) then
+        error("API.CreateIOBuildingSite: Distance (" ..tostring(_Data.Distance).. ") is wrong or too small!");
+        return;
+    end
+    if _Data.Condition and type(_Data.Condition) ~= "function" then
+        error("API.CreateIOBuildingSite: Condition must be a function!");
+        return;
+    end
+    if _Data.Action and type(_Data.Action) ~= "function" then
+        error("API.CreateIOBuildingSite: Action must be a function!");
+        return;
+    end
+    ModuleInteractiveSites.Global:CreateIOBuildingSite(_Data);
+end
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+ModuleTreasure = {
+    Properties = {
+        Name = "ModuleTreasure",
+    },
+
+    Global = {
+        Chests = {},
+    };
+    Local  = {};
+
+    Shared = {
+        Text = {
+            Chest = {
+                Title = {
+                    de = "Schatztruhe",
+                    en = "Treasure Chest",
+                    fr = "Coffre au trésor",
+                },
+                Text = {
+                    de = "Diese Truhe enthält einen geheimen Schatz. Öffnet sie, um den Schatz zu bergen.",
+                    en = "This chest contains a secred treasure. Open it to salvage the treasure.",
+                    fr = "Ce coffre contient un trésor secret. Ouvrez-le pour récupérer le trésor.",
+                },
+            },
+            Treasure = {
+                Title = {
+                    de = "Versteckter Schatz",
+                    en = "Hidden treasure",
+                    fr = "Trésor caché",
+                },
+                Text = {
+                    de = "Ihr habt einen geheimen Schatz entdeckt. Beeilt Euch und beansprucht ihn für Euch!",
+                    en = "You have discovered a secred treasure. Be quick to claim it before it is to late!",
+                    fr = "Vous avez découvert un trésor secret. Dépêchez-vous de le revendiquer!",
+                },
+            }
+        }
+    };
+};
+
+QSB.NonPlayerCharacterObjects = {};
+
+-- Global Script ------------------------------------------------------------ --
+
+function ModuleTreasure.Global:OnGameStart()
+end
+
+function ModuleTreasure.Global:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    elseif _ID == QSB.ScriptEvents.ObjectReset then
+        if IO[arg[1]] and IO[arg[1]].IsInteractiveChest then
+            self:ResetIOChest(arg[1]);
+        end
+    elseif _ID == QSB.ScriptEvents.ObjectDelete then
+        if IO[arg[1]] and IO[arg[1]].IsInteractiveChest then
+            -- Nothing to do?
+        end
+    end
+end
+
+function ModuleTreasure.Global:CreateRandomChest(_Name, _Good, _Min, _Max, _DirectPay, _NoModelChange, _Condition, _Action)
+    _Min = math.floor((_Min ~= nil and _Min > 0 and _Min) or 1);
+    _Max = math.floor((_Max ~= nil and _Max > 1 and _Max) or 2);
+    assert(_Good ~= nil, "CreateRandomChest: Good does not exist!");
+    assert(_Min <= _Max, "CreateRandomChest: min amount must be smaller or equal than max amount!");
+
+    -- Debug Informationen schreiben
+    debug(string.format(
+        "ModuleTreasure: Creating chest (%s, %s, %d, %d, %s, %s)",
+        _Name,
+        Logic.GetGoodTypeName(_Good),
+        _Min,
+        _Max,
+        tostring(_DirectPay == true),
+        tostring(_NoModelChange == true)
+    ))
+
+    -- Texte und Model setzen
+    local Title = ModuleTreasure.Shared.Text.Treasure.Title;
+    local Text  = ModuleTreasure.Shared.Text.Treasure.Text;
+    if not _NoModelChange then
+        Title = ModuleTreasure.Shared.Text.Chest.Title;
+        Text  = ModuleTreasure.Shared.Text.Chest.Text;
+
+        local eID = ReplaceEntity(_Name, Entities.XD_ScriptEntity, 0);
+        Logic.SetModel(eID, Models.Doodads_D_X_ChestClose);
+        Logic.SetVisible(eID, true);
+    end
+
+    -- Menge an Gütern ermitteln
+    local GoodAmount = _Min;
+    if _Min < _Max then
+        GoodAmount = math.random(_Min, _Max);
+    end
+
+    -- Rewards
+    local DirectReward;
+    local IOReward;
+    if not _DirectPay then
+        IOReward = {_Good, GoodAmount};
+    else
+        DirectReward = {_Good, GoodAmount};
+    end
+
+    API.SetupObject {
+        Name                    = _Name,
+        IsInteractiveChest      = true,
+        Title                   = Title,
+        Text                    = Text,
+        Reward                  = IOReward,
+        DirectReward            = DirectReward,
+        Texture                 = {1, 6},
+        Distance                = (_NoModelChange and 1200) or 650,
+        Waittime                = 0,
+        State                   = 0,
+        DoNotChangeModel        = _NoModelChange == true,
+        ActivationCondition     = _Condition,
+        ActivationAction        = _Action,
+        Condition               = function(_Data)
+            if _Data.ActivationCondition then
+                return _Data.ActivationCondition(_Data);
+            end
+            return true;
+        end,
+        Action                  = function(_Data, _KnightID, _PlayerID)
+            if not _Data.DoNotChangeModel then
+                Logic.SetModel(GetID(_Data.Name), Models.Doodads_D_X_ChestOpenEmpty);
+            end
+            if _Data.DirectReward then
+                AddGood(_Data.DirectReward[1], _Data.DirectReward[2], _PlayerID);
+            end
+            if _Data.ActivationAction then
+                _Data.ActivationAction(_Data, _KnightID, _PlayerID);
+            end
+        end,
+    };
+end
+
+function ModuleTreasure.Global:ResetIOChest(_ScriptName)
+    if not IO[_ScriptName].DoNotChangeModel then
+        local EntityID = ReplaceEntity(_ScriptName, Entities.XD_ScriptEntity, 0);
+        Logic.SetModel(EntityID, Models.Doodads_D_X_ChestClose);
+        Logic.SetVisible(EntityID, true);
+    end
+end
+
+function ModuleTreasure.Global:CreateRandomGoldChest(_Name)
+    self:CreateRandomChest(_Name, Goods.G_Gold, 300, 600, false);
+end
+
+function ModuleTreasure.Global:CreateRandomResourceChest(_Name)
+    local PossibleGoods = {
+        Goods.G_Iron, Goods.G_Stone, Goods.G_Wood, Goods.G_Wool,
+        Goods.G_Carcass, Goods.G_Herb, Goods.G_Honeycomb,
+        Goods.G_Milk, Goods.G_RawFish, Goods.G_Grain
+    };
+    local Good = PossibleGoods[math.random(1, #PossibleGoods)];
+    self:CreateRandomChest(_Name, Good, 30, 60, false);
+end
+
+function ModuleTreasure.Global:CreateRandomLuxuryChest(_Name)
+    local Luxury = {Goods.G_Salt, Goods.G_Dye};
+    if g_GameExtraNo >= 1 then
+        table.insert(Luxury, Goods.G_Gems);
+        table.insert(Luxury, Goods.G_MusicalInstrument);
+        table.insert(Luxury, Goods.G_Olibanum);
+    end
+    local Good = Luxury[math.random(1, #Luxury)];
+    self:CreateRandomChest(_Name, Good, 50, 100, false);
+end
+
+-- Local Script ------------------------------------------------------------- --
+
+function ModuleTreasure.Local:OnGameStart()
+end
+
+function ModuleTreasure.Global:OnEvent(_ID, ...)
+    if _ID == QSB.ScriptEvents.LoadscreenClosed then
+        self.LoadscreenClosed = true;
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+
+Revision:RegisterModule(ModuleTreasure);
+
+--[[
+Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
+
+This file is part of the QSB-R. QSB-R is created by totalwarANGEL.
+You may use and modify this file unter the terms of the MIT licence.
+(See https://en.wikipedia.org/wiki/MIT_License)
+]]
+
+-- -------------------------------------------------------------------------- --
+
+---
+-- Es können Schatztruhen mit zufälligem Inhalt erzeugt werden.
+-- 
+-- Der Schatz einer Kiste oder Ruine wird nach Aktivierung in einem Karren
+-- abtransportiert.
+--
+-- Die erzeugten Truhen und Ruinen verhalten sich wie Interaktive Objekte.
+-- Werden ihnen Aktionen und Bedingungen mitgegeben, gelten für diese Funktionen
+-- die gleichen Regeln wie bei Interaktiven Objekten.
+--
+-- <b>Vorausgesetzte Module:</b>
+-- <ul>
+-- <li><a href="qsb.html">(0) Basismodul</a></li>
+-- <li><a href="modules.QSB_1_GuiControl.QSB_1_GuiControl.html">(1) Anzeigekontrolle</a></li>
+-- <li><a href="modules.QSB_2_Objects.QSB_2_Objects.html">(2) Interaktive Objekte</a></li>
+-- </ul>
+--
+-- @within Beschreibung
+-- @set sort=true
+--
+
+---
+-- Erstellt eine Schatztruhe mit einer zufälligen Menge an Waren
+-- des angegebenen Typs.
+--
+-- Die Menge der Ware ist dabei zufällig und liegt zwischen dem Minimalwert
+-- und dem Maximalwert.
+--
+-- @param[type=string] _Name      Name der zu ersetzenden Script Entity
+-- @param[type=number] _Good      Warentyp
+-- @param[type=number] _Min       Mindestmenge
+-- @param[type=number] _Max       (Optional) Maximalmenge
+-- @param[type=number] _Condition (Optional) Bedingung zur Aktivierung
+-- @param[type=number] _Action    (Optional) Aktion nach Aktivierung
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- -- Bepspiel #1: Normale Truhe
+-- API.CreateRandomChest("well1", Goods.G_Gems, 100, 300);
+--
+-- @usage
+-- -- Bepspiel #2: Truhe mit Aktion
+-- -- Wird die Bedingung weggelassen, tritt die Aktion an ihre Stelle
+-- API.CreateRandomChest("well1", Goods.G_Gems, 100, 300, MyActionFunction);
+--
+-- @usage
+-- -- Bepspiel #3: Truhe mit Bedingung
+-- -- Wenn eine Bedingung gebraucht wird, muss eine Aktion angegeben werden.
+-- API.CreateRandomChest("well1", Goods.G_Gems, 100, 300, MyConditionFunction, MyActionFunction);
+--
+function API.CreateRandomChest(_Name, _Good, _Min, _Max, _Condition, _Action)
+    if GUI then
+        return;
+    end
+    if not _Action then
+        _Action = _Condition;
+        _Condition = nil;
+    end
+
+    if not IsExisting(_Name) then
+        error("API.CreateRandomChest: _Name (" ..tostring(_Name).. ") does not exist!");
+        return;
+    end
+    if GetNameOfKeyInTable(Goods, _Good) == nil then
+        error("API.CreateRandomChest: _Good (" ..tostring(_Good).. ") is wrong!");
+        return;
+    end
+    if type(_Min) ~= "number" or _Min < 1 then
+        error("API.CreateRandomChest: _Min (" ..tostring(_Min).. ") is wrong!");
+        return;
+    end
+
+    if type(_Max) ~= "number" then
+        _Max = _Min;
+    else
+        if type(_Max) ~= "number" or _Max < 1 then
+            error("API.CreateRandomChest: _Max (" ..tostring(_Max).. ") is wrong!");
+            return;
+        end
+        if _Max < _Min then
+            error("API.CreateRandomChest: _Max (" ..tostring(_Max).. ") must be greather then _Min (" ..tostring(_Min).. ")!");
+            return;
+        end
+    end
+    ModuleTreasure.Global:CreateRandomChest(_Name, _Good, _Min, _Max, false, false, _Condition, _Action);
+end
+
+---
+-- Erstellt ein beliebiges IO mit einer zufälligen Menge an Waren
+-- des angegebenen Typs.
+--
+-- Die Menge der Ware ist dabei zufällig und liegt zwischen dem Minimalwert
+-- und dem Maximalwert.
+--
+-- @param[type=string] _Name      Name des Script Entity
+-- @param[type=number] _Good      Warentyp
+-- @param[type=number] _Min       Mindestmenge
+-- @param[type=number] _Max       (Optional) Maximalmenge
+-- @param[type=number] _Condition (Optional) Bedingung zur Aktivierung
+-- @param[type=number] _Action    (Optional) Aktion nach Aktivierung
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- -- Bepspiel #1: Normale Ruine
+-- API.CreateRandomTreasure("well1", Goods.G_Gems, 100, 300);
+--
+-- @usage
+-- -- Bepspiel #2: Ruine mit Aktion
+-- -- Wird die Bedingung weggelassen, tritt die Aktion an ihre Stelle
+-- API.CreateRandomTreasure("well1", Goods.G_Gems, 100, 300, MyActionFunction);
+--
+-- @usage
+-- -- Bepspiel #3: Ruine mit Bedingung
+-- -- Wenn eine Bedingung gebraucht wird, muss eine Action angegeben werden.
+-- API.CreateRandomTreasure("well1", Goods.G_Gems, 100, 300, MyConditionFunction, MyActionFunction);
+--
+function API.CreateRandomTreasure(_Name, _Good, _Min, _Max, _Condition, _Action)
+    if GUI then
+        return;
+    end
+    if not _Action then
+        _Action = _Condition;
+        _Condition = nil;
+    end
+
+    if not IsExisting(_Name) then
+        error("API.CreateRandomTreasure: _Name (" ..tostring(_Name).. ") does not exist!");
+        return;
+    end
+    if GetNameOfKeyInTable(Goods, _Good) == nil then
+        error("API.CreateRandomTreasure: _Good (" ..tostring(_Good).. ") is wrong!");
+        return;
+    end
+    if type(_Min) ~= "number" or _Min < 1 then
+        error("API.CreateRandomTreasure: _Min (" ..tostring(_Min).. ") is wrong!");
+        return;
+    end
+
+    if type(_Max) ~= "number" then
+        _Max = _Min;
+    else
+        if type(_Max) ~= "number" or _Max < 1 then
+            error("API.CreateRandomTreasure: _Max (" ..tostring(_Max).. ") is wrong!");
+            return;
+        end
+        if _Max < _Min then
+            error("API.CreateRandomTreasure: _Max (" ..tostring(_Max).. ") must be greather then _Min (" ..tostring(_Min).. ")!");
+            return;
+        end
+    end
+    ModuleTreasure.Global:CreateRandomChest(_Name, _Good, _Min, _Max, false, true, _Condition, _Action);
+end
+
+---
+-- Erstellt eine Schatztruhe mit einer zufälligen Menge Gold.
+--
+-- @param[type=string] _Name Name der zu ersetzenden Script Entity
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.CreateRandomGoldChest("chest")
+--
+function API.CreateRandomGoldChest(_Name)
+    if GUI then
+        return;
+    end
+    if not IsExisting(_Name) then
+        error("API.CreateRandomGoldChest: _Name (" ..tostring(_Name).. ") does not exist!");
+        return;
+    end
+    ModuleTreasure.Global:CreateRandomGoldChest(_Name);
+end
+
+---
+-- Erstellt eine Schatztruhe mit zufälligen Gütern.
+--
+-- Güter können seien: Eisen, Fisch, Fleisch, Getreide, Holz,
+-- Honig, Kräuter, Milch, Stein, Wolle.
+--
+-- @param[type=string] _Name Name der zu ersetzenden Script Entity
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.CreateRandomResourceChest("chest")
+--
+function API.CreateRandomResourceChest(_Name)
+    if GUI then
+        return;
+    end
+    if not IsExisting(_Name) then
+        error("API.CreateRandomResourceChest: _Name (" ..tostring(_Name).. ") does not exist!");
+        return;
+    end
+    ModuleTreasure.Global:CreateRandomResourceChest(_Name);
+end
+
+---
+-- Erstellt eine Schatztruhe mit zufälligen Luxusgütern.
+--
+-- Luxusgüter können seien: Salz, Farben (, Edelsteine, Musikinstrumente
+-- Weihrauch)
+--
+-- @param[type=string] _Name Name der zu ersetzenden Script Entity
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- API.CreateRandomLuxuryChest("chest")
+--
+function API.CreateRandomLuxuryChest(_Name)
+    if GUI then
+        return;
+    end
+    if not IsExisting(_Name) then
+        error("API.CreateRandomLuxuryChest: _Name (" ..tostring(_Name).. ") does not exist!");
+        return;
+    end
+    ModuleTreasure.Global:CreateRandomLuxuryChest(_Name);
 end
 
 --[[

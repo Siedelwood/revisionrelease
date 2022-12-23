@@ -20,9 +20,11 @@ ModuleBriefingSystem = {
     },
     Local = {
         ParallaxWidgets = {
-            {"/EndScreen/EndScreen/BG", "/EndScreen/EndScreen"},
+            -- Can not set UV coordinates for this... :(
+            -- {"/EndScreen/EndScreen/BG", "/EndScreen/EndScreen"},
             {"/EndScreen/EndScreen/BackGround", "/EndScreen/EndScreen"},
-            {"/InGame/MissionStatistic/BG", "/InGame/MissionStatistic"},
+            -- Can not set UV coordinates for this... :(
+            -- {"/InGame/MissionStatistic/BG", "/InGame/MissionStatistic"},
             {"/InGame/Root/EndScreen/BlackBG", "/InGame/Root/EndScreen"},
             {"/InGame/Root/EndScreen/BG", "/InGame/Root/EndScreen"},
             {"/InGame/Root/BlackStartScreen/BG", "/InGame/Root/BlackStartScreen"},
@@ -159,7 +161,6 @@ function ModuleBriefingSystem.Global:CreateBriefingAddPage(_Briefing)
         -- Language
         _Page.Title = API.Localize(_Page.Title or "");
         _Page.Text = API.Localize(_Page.Text or "");
-        _Page.FOV = _Page.FOV or 42.0;
 
         -- Bars
         if _Page.BigBars == nil then
@@ -204,6 +205,15 @@ function ModuleBriefingSystem.Global:CreateBriefingAddPage(_Briefing)
                  _Page.Position, _Page.Rotation, _Page.Zoom, _Page.Angle,
                  Position2, Rotation2, Zoom2, Angle2}
             };
+        end
+
+        -- Field of View
+        if not _Page.FOV then
+            if _Page.DialogCamera then
+                _Page.FOV = QSB.Briefing.DLGCAMERA_FOVDEFAULT;
+            else
+                _Page.FOV = QSB.Briefing.CAMERA_FOVDEFAULT;
+            end
         end
 
         -- Display time
@@ -388,7 +398,7 @@ function ModuleBriefingSystem.Global:TransformParallax(_PlayerID)
             if PageID ~= 0 then
                 self.Briefing[_PlayerID][PageID].Parallax = {};
                 self.Briefing[_PlayerID][PageID].Parallax.Clear = v.Clear == true;
-                for i= 1, 6, 1 do
+                for i= 1, 4, 1 do
                     if v[i] then
                         local Entry = {};
                         Entry.Image = v[i][1];
@@ -774,7 +784,7 @@ function ModuleBriefingSystem.Local:DisplayPageParallaxes(_PlayerID, _PageID)
             end
             self.Briefing[_PlayerID].ParallaxLayers = {};
         end
-        for i= 1, 6, 1 do
+        for i= 1, 4, 1 do
             if Page.Parallax[i] then
                 local Animation = table.copy(Page.Parallax[i]);
                 Animation.Started = XGUIEng.GetSystemTime();
@@ -864,11 +874,11 @@ function ModuleBriefingSystem.Local:ThroneRoomCameraControl(_PlayerID, _Page)
     if _Page then
         -- Camera
         self:ControlCameraAnimation(_PlayerID);
-        local FOV = 42;
+        local FOV = (type(_Page) == "table" and _Page.FOV) or 42;
         local PX, PY, PZ = self:GetPagePosition(_PlayerID);
         local LX, LY, LZ = self:GetPageLookAt(_PlayerID);
         if PX and not LX then
-            LX, LY, LZ, PX, PY, PZ, FOV = self:GetCameraProperties(_PlayerID);
+            LX, LY, LZ, PX, PY, PZ, FOV = self:GetCameraProperties(_PlayerID, FOV);
         end
         Camera.ThroneRoom_SetPosition(PX, PY, PZ);
         Camera.ThroneRoom_SetLookAt(LX, LY, LZ);
@@ -993,7 +1003,7 @@ function ModuleBriefingSystem.Local:GetInterpolationFactor(_PlayerID)
     return 1;
 end
 
-function ModuleBriefingSystem.Local:GetCameraProperties(_PlayerID)
+function ModuleBriefingSystem.Local:GetCameraProperties(_PlayerID, _FOV)
     local CurrPage, FlyTo;
     if self.Briefing[_PlayerID].CurrentAnimation then
         CurrPage = self.Briefing[_PlayerID].CurrentAnimation.Start;
@@ -1008,8 +1018,6 @@ function ModuleBriefingSystem.Local:GetCameraProperties(_PlayerID)
     local endZoomAngle = (FlyTo and FlyTo.Angle) or CurrPage.Angle;
     local startZoomDistance = CurrPage.Zoom;
     local endZoomDistance = (FlyTo and FlyTo.Zoom) or CurrPage.Zoom;
-    local startFOV = (CurrPage.FOV) or 42.0;
-    local endFOV = ((FlyTo and FlyTo.FOV) or CurrPage.FOV) or 42.0;
 
     local factor = self:GetInterpolationFactor(_PlayerID);
 
@@ -1018,7 +1026,6 @@ function ModuleBriefingSystem.Local:GetCameraProperties(_PlayerID)
     local lookAtX = lPLX + (cPLX - lPLX) * factor;
     local lookAtY = lPLY + (cPLY - lPLY) * factor;
     local lookAtZ = lPLZ + (cPLZ - lPLZ) * factor;
-    local FOV = startFOV + (endFOV - startFOV) * factor;
 
     local zoomDistance = startZoomDistance + (endZoomDistance - startZoomDistance) * factor;
     local zoomAngle = startZoomAngle + (endZoomAngle - startZoomAngle) * factor;
@@ -1028,7 +1035,7 @@ function ModuleBriefingSystem.Local:GetCameraProperties(_PlayerID)
     local positionY = lookAtY + math.sin(math.rad(rotation - 90)) * line;
     local positionZ = lookAtZ + (zoomDistance) * math.sin(math.rad(zoomAngle));
 
-    return lookAtX, lookAtY, lookAtZ, positionX, positionY, positionZ, FOV;
+    return lookAtX, lookAtY, lookAtZ, positionX, positionY, positionZ, _FOV;
 end
 
 function ModuleBriefingSystem.Local:SkipButtonPressed(_PlayerID, _Page)
@@ -1138,10 +1145,7 @@ function ModuleBriefingSystem.Local:ActivateCinematicMode(_PlayerID)
         XGUIEng.SetMaterialColor(self.ParallaxWidgets[i][1], 1, 255, 255, 255, 0);
         XGUIEng.SetMaterialUV(self.ParallaxWidgets[i][1], 1, 0, 0, 1, 1);
     end
-    XGUIEng.ShowWidget("/InGame/MissionStatistic/Backdrop", 0);
-    XGUIEng.ShowWidget("/InGame/MissionStatistic/ContainerBottom", 0);
-    XGUIEng.ShowWidget("/InGame/MissionStatistic/ContainerStatistics", 0);
-    XGUIEng.ShowWidget("/EndScreen/EndScreen/BG", 1);
+    XGUIEng.ShowWidget("/EndScreen/EndScreen/BG", 0);
 
     -- Throneroom Main
     XGUIEng.ShowWidget("/InGame/ThroneRoom", 1);
@@ -1240,9 +1244,6 @@ function ModuleBriefingSystem.Local:DeactivateCinematicMode(_PlayerID)
         Display.SetUserOptionOcclusionEffect(1);
     end
 
-    XGUIEng.ShowWidget("/InGame/MissionStatistic/Backdrop", 1);
-    XGUIEng.ShowWidget("/InGame/MissionStatistic/ContainerBottom", 1);
-    XGUIEng.ShowWidget("/InGame/MissionStatistic/ContainerStatistics", 1);
     XGUIEng.ShowWidget("/EndScreen/EndScreen/BG", 1);
     for i= 1, #self.ParallaxWidgets do
         XGUIEng.ShowWidget(self.ParallaxWidgets[i][1], 0);
@@ -1446,10 +1447,10 @@ QSB.ScriptEvents = QSB.ScriptEvents or {};
 --     -- Aufrufe von AP oder ASP um Seiten zu erstellen
 --
 --     Briefing.Starting = function(_Data)
---         -- Mach was tolles hier wenn es anfängt.
+--         -- Mach was tolles hier, wenn es anfängt.
 --     end
 --     Briefing.Finished = function(_Data)
---         -- Mach was tolles hier wenn es endet.
+--         -- Mach was tolles hier, wenn es endet.
 --     end
 --     -- Das Briefing wird gestartet
 --     API.StartBriefing(Briefing, _Name, _PlayerID);
@@ -1466,7 +1467,7 @@ QSB.ScriptEvents = QSB.ScriptEvents or {};
 --     },
 --     ["Page3"] = {
 --         -- Vektordarstellung
---         -- Animationsdauer, {Position1, Höhe}, {LookAt1, Höhe}, {Position2, Höhe}, {LookAt2, Höhe}, Animationsdauer
+--         -- Animationsdauer, {Position1, Höhe}, {LookAt1, Höhe}, {Position2, Höhe}, {LookAt2, Höhe}
 --         {30, {"pos2", 500}, {"pos4", 0}, {"pos7", 1000}, {"pos8", 0}},
 --         -- Hier können weitere Animationen folgen...
 --     },
@@ -1498,13 +1499,19 @@ QSB.ScriptEvents = QSB.ScriptEvents or {};
 -- -- Beispiel #5: Angabe von Parallaxen
 -- Briefing.PageParallax = {
 --     ["Page1"] = {
---         -- Bilddatei, Anzeigedauer, U0Start, V0Start, U1Start, V1Start, AlphaStart, U0End, V0End, U1End, V1End, AlphaEnd
---         {"C:/IMG/Parallax6.png", 60, 0, 0, 0.8, 1, 255, 0.2, 0, 1, 1, 255},
+--         -- Bilddatei, Anzeigedauer,
+--         -- U0Start, V0Start, U1Start, V1Start, AlphaStart,
+--         -- U0End, V0End, U1End, V1End, AlphaEnd
+--         {"maps/externalmap/mapname/graphics/Parallax6.png", 60,
+--          0, 0, 0.8, 1, 255,
+--          0.2, 0, 1, 1, 255},
 --         -- Hier können weitere Einträge folgen...
 --     },
 --     ["Page3"] = {
---         -- Bilddatei, Anzeigedauer, U0Start, V0Start, U1Start, V1Start, AlphaStart
---         {"C:/IMG/Parallax1.png", 1, 0, 0, 1, 1, 180},
+--         -- Bilddatei, Anzeigedauer,
+--         -- U0Start, V0Start, U1Start, V1Start, AlphaStart
+--         {"maps/externalmap/mapname/graphics/Parallax1.png", 1,
+--          0, 0, 1, 1, 180},
 --         -- Hier können weitere Einträge folgen...
 --     }
 --     -- Hier können weitere Pages folgen...
@@ -1516,7 +1523,19 @@ QSB.ScriptEvents = QSB.ScriptEvents or {};
 --     ["Page1"] = {
 --         -- Löscht alle laufenden Paralaxe
 --         Clear = true,
---         {"C:/IMG/Parallax6.png", 60, 0, 0, 0.8, 1, 255, 0.2, 0, 1, 1, 255},
+--         {"maps/externalmap/mapname/graphics/Parallax6.png",
+--          60, 0, 0, 0.8, 1, 255, 0.2, 0, 1, 1, 255},
+--     },
+-- };
+--
+-- @usage
+-- -- Beispiel #7: Parallaxe im Vordergrund
+-- Briefing.PageParallax = {
+--     ["Page1"] = {
+--         -- Parallaxe erscheinen im Vordergrund
+--         Foreground = true,
+--         {"maps/externalmap/mapname/graphics/Parallax6.png",
+--          60, 0, 0, 0.8, 1, 255, 0.2, 0, 1, 1, 255},
 --     },
 -- };
 --
@@ -1901,7 +1920,7 @@ end
 -- @usage
 -- -- Beispiel #7: Erfragen der gewählten Antwort
 -- Briefing.Finished = function(_Data)
---     local Choosen = _Data:GetPage("Choice"):GetSelectedAnswer();
+--     local Choosen = _Data:GetPage("Choice"):GetSelected();
 --     -- In Choosen steht der Index der Antwort
 -- end
 --
@@ -2140,7 +2159,7 @@ function B_Trigger_Briefing:AddParameter(_Index, _Parameter)
 end
 
 function B_Trigger_Briefing:CustomFunction(_Quest)
-    if API.GetCinematicEventStatus(self.BriefingName, self.PlayerID) == CinematicEvent.Concluded then
+    if API.GetCinematicEvent(self.BriefingName, self.PlayerID) == CinematicEvent.Concluded then
         if self.WaitTime and self.WaitTime > 0 then
             self.WaitTimeTimer = self.WaitTimeTimer or Logic.GetTime();
             if Logic.GetTime() >= self.WaitTimeTimer + self.WaitTime then

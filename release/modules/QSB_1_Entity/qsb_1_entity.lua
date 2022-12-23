@@ -530,10 +530,6 @@ QSB.ScriptEvents = QSB.ScriptEvents or {};
 ---
 -- Findet <u>alle</u> Entities.
 --
--- <h5>Multiplayer</h5>
--- Im Multiplayer kann diese Funktion nur in synchron
--- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
---
 -- @param[type=number]  _PlayerID               (Optional) ID des Besitzers
 -- @param[type=boolean] _WithoutDefeatResistant (Optional) Niederlageresistente Entities filtern
 -- @return[type=table] Liste mit Ergebnissen
@@ -572,10 +568,6 @@ end
 ---
 -- Findet alle Entities des Typs in einem Gebiet.
 --
--- <h5>Multiplayer</h5>
--- Im Multiplayer kann diese Funktion nur in synchron
--- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
---
 -- @param[type=number] _Area     Größe des Suchgebiet
 -- @param              _Position Mittelpunkt (EntityID, Skriptname oder Table)
 -- @param[type=number] _Type     Typ des Entity
@@ -593,10 +585,6 @@ end
 
 ---
 -- Findet alle Entities der Kategorie in einem Gebiet.
---
--- <h5>Multiplayer</h5>
--- Im Multiplayer kann diese Funktion nur in synchron
--- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
 --
 -- @param[type=number] _Area     Größe des Suchgebiet
 -- @param              _Position Mittelpunkt (EntityID, Skriptname oder Table)
@@ -640,10 +628,6 @@ end
 ---
 -- Findet alle Entities des Typs in einem Territorium.
 --
--- <h5>Multiplayer</h5>
--- Im Multiplayer kann diese Funktion nur in synchron
--- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
---
 -- @param[type=number] _Territory Territorium für die Suche
 -- @param[type=number] _Type      Typ des Entity
 -- @param[type=number] _PlayerID  (Optional) ID des Besitzers
@@ -660,10 +644,6 @@ end
 
 ---
 -- Findet alle Entities der Kategorie in einem Territorium.
---
--- <h5>Multiplayer</h5>
--- Im Multiplayer kann diese Funktion nur in synchron
--- ausgeführtem Code benutzt werden, da es sonst zu Desyncs komm.
 --
 -- @param[type=number] _Territory Territorium für die Suche
 -- @param[type=number] _Category  Category des Entity
@@ -697,6 +677,29 @@ function API.SearchEntitiesInTerritory(_Territory, _PlayerID, _Type, _Category)
         return true;
     end
     return API.CommenceEntitySearch(Filter);
+end
+
+---
+-- Findet alle Entities deren Skriptname das Suchwort enthält.
+--
+-- @param[type=number] _Pattern Suchwort
+-- @return[type=table] Liste mit Ergebnissen
+-- @within Suche
+-- @see API.CommenceEntitySearch
+--
+-- @usage
+-- -- Findet alle Entities, deren Name mit "TreasureChest" beginnt.
+-- local Result = API.SearchEntitiesByScriptname("^TreasureChest");
+--
+function API.SearchEntitiesByScriptname(_Pattern)
+    _Filter = _Filter or function(_ID)
+        local ScriptName = Logic.GetEntityName(_ID);
+        if not string.find(ScriptName, _Pattern) then
+            return false;
+        end
+        return true;
+    end
+    return ModuleEntity.Shared:IterateOverEntities(_Filter);
 end
 
 ---

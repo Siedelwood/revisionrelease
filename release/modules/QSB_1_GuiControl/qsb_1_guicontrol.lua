@@ -18,9 +18,20 @@ ModuleGuiControl = {
     Local = {
         HiddenWidgets = {},
         HotkeyDescriptions = {},
+        SpeedLimit = 1,
     },
 
-    Shared = {};
+    Shared = {
+        Text = {
+            Message = {
+                NoSpeedUp = {
+                    de = "Die Spielgeschwindigkeit kann nicht erhöht werden!",
+                    en = "The game speed can not be increased!",
+                    fr = "La vitesse du jeu ne peut pas être augmentée!"
+                }
+            }
+        }
+    };
 }
 
 QSB.PlayerNames = {};
@@ -53,6 +64,7 @@ function ModuleGuiControl.Local:OnGameStart()
     self:OverrideMissionGoodCounter();
     self:OverrideUpdateClaimTerritory();
     self:SetupHackRegisterHotkey();
+    self:InitForbidSpeedUp();
 end
 
 function ModuleGuiControl.Local:OnEvent(_ID, ...)
@@ -401,6 +413,47 @@ function ModuleGuiControl.Local:SetupHackRegisterHotkey()
         for Index, Desc in ipairs(g_KeyBindingsOptions.Descriptions) do
             XGUIEng.ListBoxPushItem(g_KeyBindingsOptions.Widget.ShortcutList, Desc[1]);
             XGUIEng.ListBoxPushItem(g_KeyBindingsOptions.Widget.ActionList,   Desc[2]);
+        end
+    end
+end
+
+-- -------------------------------------------------------------------------- --
+
+function ModuleGuiControl.Local:SetSpeedLimit(_Limit)
+    if Framework.IsNetworkGame() then
+        debug("ModuleGuiControl: Detect network game. Aborting!");
+        return;
+    end
+    _Limit = (_Limit < 1 and 1) or math.floor(_Limit);
+    debug("ModuleGuiControl: Setting speed limit to " .._Limit);
+    self.SpeedLimit = _Limit;
+end
+
+function ModuleGuiControl.Local:ActivateSpeedLimit(_Flag)
+    if Framework.IsNetworkGame() then
+        debug("ModuleGuiControl: Detect network game. Aborting!");
+        return;
+    end
+    self.UseSpeedLimit = _Flag == true;
+    if _Flag and Game.GameTimeGetFactor(GUI.GetPlayerID()) > self.SpeedLimit then
+        debug("ModuleGuiControl: Speed is capped at " ..self.SpeedLimit);
+        Game.GameTimeSetFactor(GUI.GetPlayerID(), self.SpeedLimit);
+        g_GameSpeed = 1;
+    end
+end
+
+function ModuleGuiControl.Local:InitForbidSpeedUp()
+    GameCallback_GameSpeedChanged_Orig_Preferences_ForbidSpeedUp = GameCallback_GameSpeedChanged;
+    GameCallback_GameSpeedChanged = function( _Speed )
+        GameCallback_GameSpeedChanged_Orig_Preferences_ForbidSpeedUp( _Speed );
+        if ModuleGuiControl.Local.UseSpeedLimit == true then
+            debug("ModuleGuiControl: Checking speed limit.");
+            if _Speed > ModuleGuiControl.Local.SpeedLimit then
+                debug("ModuleGuiControl: Speed is capped at " ..tostring(_Speed).. ".");
+                Game.GameTimeSetFactor(GUI.GetPlayerID(), ModuleGuiControl.Local.SpeedLimit);
+                g_GameSpeed = 1;
+                API.Message(ModuleGuiControl.Shared.Text.Message.NoSpeedUp);
+            end
         end
     end
 end
@@ -952,5 +1005,28 @@ function API.HideBuildMenu(_Flag)
     end
 
     ModuleGuiControl.Local:DisplayInterfaceButton("/InGame/Root/Normal/AlignBottomRight/BuildMenu", _Flag);
+end
+
+---
+-- Setzt die Spielgeschwindigkeit auf Stufe 1 fest oder gibt sie wieder frei.
+--
+-- <b>Hinweis</b>: Die Geschwindigkeitsbeschränkung wirkt sich ebenfalls auf
+-- Cheats aus. Es ist generell nicht mehr möglich, das Spiel zu beschleunigen,
+-- wenn die "Speedbremse" aktiv ist.
+--
+-- @param[type=boolean] _Flag Speedbremse ist aktiv
+-- @within Anwenderfunktionen
+--
+-- @usage
+-- -- Geschwindigkeit auf Stufe 1 festsetzen
+-- API.SpeedLimitActivate(true);
+-- -- Geschwindigkeit freigeben
+-- API.SpeedLimitActivate(false);
+--
+function API.SpeedLimitActivate(_Flag)
+    if GUI or Framework.IsNetworkGame() then
+        return;
+    end
+    return Logic.ExecuteInLuaLocalState("ModuleGuiControl.Local:ActivateSpeedLimit(" ..tostring(_Flag).. ")");
 end
 

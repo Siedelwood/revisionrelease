@@ -1085,10 +1085,10 @@ QSB.ScriptEvents = QSB.ScriptEvents or {};
 --     -- Aufrufe von AP oder ASP um Seiten zu erstellen
 --
 --     Dialog.Starting = function(_Data)
---         -- Mach was tolles hier wenn es anfängt.
+--         -- Mach was tolles hier, wenn es anfängt.
 --     end
 --     Dialog.Finished = function(_Data)
---         -- Mach was tolles hier wenn es endet.
+--         -- Mach was tolles hier, wenn es endet.
 --     end
 --     API.StartDialog(Dialog, _Name, _PlayerID);
 -- end
@@ -1402,7 +1402,7 @@ end
 -- @usage
 -- -- Beispiel #7: Erfragen der gewählten Antwort
 -- Dialog.Finished = function(_Data)
---     local Choosen = _Data:GetPage("Choice"):GetSelectedAnswer();
+--     local Choosen = _Data:GetPage("Choice"):GetSelected();
 --     -- In Choosen steht der Index der Antwort
 -- end
 -- 
