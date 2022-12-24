@@ -453,16 +453,31 @@ end
 --
 QSB.ScriptEvents = QSB.ScriptEvents or {};
 
+---
+-- Konstanten der Script Environments
+-- @field GLOBAL Die globale Skriptumgebung
+-- @field LOCAL  Die lokale Skriptumgebung
+--
 QSB.Environment = {
     GLOBAL = 1,
     LOCAL  = 2,
 }
 
+---
+-- Konstanten der Spielversionen
+-- @field ORIGINAL        Das Originalspiel
+-- @field HISTORY_EDITION Die History Edition
+--
 QSB.GameVersion = {
     ORIGINAL        = 1,
     HISTORY_EDITION = 2,
 }
 
+---
+-- Konstanten der Spielvarianten
+-- @field VANILLA   Das unmodifizierte Spiel
+-- @field COMMUNITY Der Community Patch
+--
 QSB.GameVariant = {
     VANILLA   = 1,
     COMMUNITY = 2,
@@ -470,12 +485,12 @@ QSB.GameVariant = {
 
 -- -------------------------------------------------------------------------- --
 
-Revision = {
+Swift = {
     ModuleRegister = {},
     BehaviorRegister = {},
 };
 
-function Revision:LoadKernel()
+function Swift:LoadKernel()
     self.Environment = (GUI and QSB.Environment.LOCAL) or QSB.Environment.GLOBAL;
     self.GameVersion = (Network.IsNATReady and QSB.GameVersion.HISTORY_EDITION) or QSB.GameVersion.ORIGINAL;
     self.GameVariant = (Entities.U_PolarBear and QSB.GameVariant.COMMUNITY) or QSB.GameVariant.VANILLA;
@@ -507,7 +522,7 @@ end
 -- -------------------------------------------------------------------------- --
 -- File Loading
 
-function Revision:LoadExternFiles()
+function Swift:LoadExternFiles()
     if Mission_LoadFiles then
         local FilesList = Mission_LoadFiles();
         for i= 1, #FilesList, 1 do
@@ -523,13 +538,13 @@ end
 -- -------------------------------------------------------------------------- --
 -- Multiplayer
 
-function Revision:SetupRandomSeedHandler()
+function Swift:SetupRandomSeedHandler()
     if self.Environment == QSB.Environment.GLOBAL then
-        Revision.Event:CreateScriptCommand("Cmd_ProclaimateRandomSeed", function(_Seed)
-            if Revision.MP_Seed_Set then
+        Swift.Event:CreateScriptCommand("Cmd_ProclaimateRandomSeed", function(_Seed)
+            if Swift.MP_Seed_Set then
                 return;
             end
-            Revision.MP_Seed_Set = true;
+            Swift.MP_Seed_Set = true;
             math.randomseed(_Seed);
             local void = math.random(1, 100);
             Logic.ExecuteInLuaLocalState(string.format(
@@ -541,7 +556,7 @@ function Revision:SetupRandomSeedHandler()
     end
 end
 
-function Revision:CreateRandomSeed()
+function Swift:CreateRandomSeed()
     for PlayerID = 1, 8 do
         -- Find first human player to generate random seed
         if Logic.PlayerGetIsHumanFlag(PlayerID) and Logic.PlayerGetGameState(PlayerID) ~= 0 then
@@ -550,7 +565,7 @@ function Revision:CreateRandomSeed()
             if GUI.GetPlayerID() == PlayerID then
                 local Seed = self:BuildRandomSeed(PlayerID);
                 if Framework.IsNetworkGame() then
-                    Revision.Event:DispatchScriptCommand(QSB.ScriptCommands.ProclaimateRandomSeed, 0, Seed);
+                    Swift.Event:DispatchScriptCommand(QSB.ScriptCommands.ProclaimateRandomSeed, 0, Seed);
                 else
                     math.randomseed(Seed);
                     math.random(1, 100);
@@ -565,7 +580,7 @@ function Revision:CreateRandomSeed()
     end
 end
 
-function Revision:BuildRandomSeed(_PlayerID)
+function Swift:BuildRandomSeed(_PlayerID)
     local PlayerName = Logic.GetPlayerName(_PlayerID);
     local MapName = Framework.GetCurrentMapName();
     local MapType = Framework.GetCurrentMapTypeAndCampaignName();
@@ -582,38 +597,38 @@ end
 -- -------------------------------------------------------------------------- --
 -- Save Game
 
-function Revision:SetupQsbLoadedHandler()
+function Swift:SetupQsbLoadedHandler()
     if self.Environment == QSB.Environment.GLOBAL then
-        Revision.Event:CreateScriptCommand("Cmd_GlobalQsbLoaded", function()
-            if Mission_MP_OnQsbLoaded and not Revision.MP_FMA_Loaded and Framework.IsNetworkGame() then
+        Swift.Event:CreateScriptCommand("Cmd_GlobalQsbLoaded", function()
+            if Mission_MP_OnQsbLoaded and not Swift.MP_FMA_Loaded and Framework.IsNetworkGame() then
                 Logic.ExecuteInLuaLocalState([[
                     if Mission_MP_LocalOnQsbLoaded then
                         Mission_MP_LocalOnQsbLoaded();
                     end
                 ]]);
-                Revision.MP_FMA_Loaded = true;
+                Swift.MP_FMA_Loaded = true;
                 Mission_MP_OnQsbLoaded();
             end
         end);
     end
 end
 
-function Revision:SetupSaveGameHandler()
+function Swift:SetupSaveGameHandler()
     QSB.ScriptEvents.SaveGameLoaded = self.Event:CreateScriptEvent("Event_SaveGameLoaded");
 
     if self.Environment == QSB.Environment.GLOBAL then
-        Mission_OnSaveGameLoaded_Orig_Revision = Mission_OnSaveGameLoaded;
+        Mission_OnSaveGameLoaded_Orig_Swift = Mission_OnSaveGameLoaded;
         Mission_OnSaveGameLoaded = function()
-            Mission_OnSaveGameLoaded_Orig_Revision();
-            Revision:OnSaveGameLoaded();
+            Mission_OnSaveGameLoaded_Orig_Swift();
+            Swift:OnSaveGameLoaded();
         end
     end
 end
 
-function Revision:OnSaveGameLoaded()
+function Swift:OnSaveGameLoaded()
     -- Trigger in local script
     if self.Environment == QSB.Environment.GLOBAL then
-        Logic.ExecuteInLuaLocalState("Revision:OnSaveGameLoaded()");
+        Logic.ExecuteInLuaLocalState("Swift:OnSaveGameLoaded()");
     end
     -- Call shared
     self.LuaBase:OnSaveGameLoaded();
@@ -641,7 +656,7 @@ end
 -- -------------------------------------------------------------------------- --
 -- Module Registration
 
-function Revision:LoadModules()
+function Swift:LoadModules()
     for i= 1, #self.ModuleRegister, 1 do
         if self.Environment == QSB.Environment.GLOBAL then
             self.ModuleRegister[i].Local = nil;
@@ -658,7 +673,7 @@ function Revision:LoadModules()
     end
 end
 
-function Revision:RegisterModule(_Module)
+function Swift:RegisterModule(_Module)
     if (type(_Module) ~= "table") then
         assert(false, "Modules must be tables!");
         return;
@@ -670,7 +685,7 @@ function Revision:RegisterModule(_Module)
     table.insert(self.ModuleRegister, _Module);
 end
 
-function Revision:IsModuleRegistered(_Name)
+function Swift:IsModuleRegistered(_Name)
     for k, v in pairs(self.ModuleRegister) do
         return v.Properties and v.Properties.Name == _Name;
     end
@@ -679,7 +694,7 @@ end
 -- -------------------------------------------------------------------------- --
 -- Behavior Registration
 
-function Revision:LoadBehaviors()
+function Swift:LoadBehaviors()
     for i= 1, #self.BehaviorRegister, 1 do
         local Behavior = self.BehaviorRegister[i];
 
@@ -705,7 +720,7 @@ function Revision:LoadBehaviors()
     end
 end
 
-function Revision:RegisterBehavior(_Behavior)
+function Swift:RegisterBehavior(_Behavior)
     if self.Environment == QSB.Environment.LOCAL then
         return;
     end
@@ -733,33 +748,34 @@ end
 -- -------------------------------------------------------------------------- --
 -- Escape Capture
 
-function Revision:SetupEscapeHandler()
+function Swift:SetupEscapeHandler()
     QSB.ScriptEvents.EscapePressed = self.Event:CreateScriptEvent("Event_EscapePressed");
     if self.Environment == QSB.Environment.LOCAL then
         self:SetEscapeKeyTrigger();
     end
 end
 
-function Revision:SetEscapeKeyTrigger()
-    Input.KeyBindDown(Keys.Escape, "Revision:OnPlayerPressedEscape()", 30, false);
+function Swift:SetEscapeKeyTrigger()
+    Input.KeyBindDown(Keys.Escape, "Swift:OnPlayerPressedEscape()", 30, false);
 end
 
-function Revision:OnPlayerPressedEscape()
+function Swift:OnPlayerPressedEscape()
     -- Global
-    Revision.Event:DispatchScriptCommand(
+    Swift.Event:DispatchScriptCommand(
         QSB.ScriptCommands.SendScriptEvent,
         0,
         "EscapePressed",
         GUI.GetPlayerID()
     );
     -- Local
-    Revision.Event:DispatchScriptCommand(QSB.ScriptEvents.EscapePressed, 0, GUI.GetPlayerID());
+    Swift.Event:DispatchScriptCommand(QSB.ScriptEvents.EscapePressed, 0, GUI.GetPlayerID());
 end
 
 -- -------------------------------------------------------------------------- --
 -- Loadscreen
 
-function Revision:SetupLoadscreenHandler()
+function Swift:SetupLoadscreenHandler()
+    -- Send the event as command to the global script
     QSB.ScriptEvents.LoadscreenClosed = self.Event:CreateScriptEvent("Event_LoadscreenClosed");
     if self.Environment == QSB.Environment.GLOBAL then
         self.Event:CreateScriptCommand(
@@ -767,18 +783,21 @@ function Revision:SetupLoadscreenHandler()
             function()
                 API.SendScriptEvent(QSB.ScriptEvents.LoadscreenClosed);
                 Logic.ExecuteInLuaLocalState([[
-                    API.SendScriptEvent(QSB.ScriptEvents.LoadscreenClosed)
+                    API.SendScriptEvent(QSB.ScriptEvents.LoadscreenClosed);
+                    XGUIEng.PopPage();
                 ]]);
             end
         );
         return;
     end
 
-    self.Job:CreateEventJob(
+    -- Job for when the button can't be clicked
+    -- (When the map is restarted. This should only happen in debug.)
+    self.LoadscreenWatchJobID = self.Job:CreateEventJob(
         Events.LOGIC_EVENT_EVERY_TURN,
         function()
             if XGUIEng.IsWidgetShownEx("/LoadScreen/LoadScreen") == 0 then
-                Revision.Event:DispatchScriptCommand(
+                Swift.Event:DispatchScriptCommand(
                     QSB.ScriptCommands.RegisterLoadscreenHidden,
                     GUI.GetPlayerID()
                 );
@@ -786,35 +805,78 @@ function Revision:SetupLoadscreenHandler()
             end
         end
     );
+
+    -- Overwrite the loadscreen button
+    HideLoadScreen_Orig_Swift = HideLoadScreen;
+    HideLoadScreen = function()
+        HideLoadScreen_Orig_Swift();
+        XGUIEng.PushPage("/LoadScreen/LoadScreen", true);
+        XGUIEng.ShowWidget("/LoadScreen/LoadScreen/ButtonStart", 0);
+        EndJob(self.LoadscreenWatchJobID);
+        Swift.Event:DispatchScriptCommand(
+            QSB.ScriptCommands.RegisterLoadscreenHidden,
+            GUI.GetPlayerID()
+        );
+    end
 end
 
 -- -------------------------------------------------------------------------- --
 -- API
 
 ---
--- Installiert Revision.
+-- Installiert Swift.
 --
 -- @within Base
 -- @local
 --
 function API.Install()
-    Revision:LoadKernel();
-    Revision:LoadModules();
+    Swift:LoadKernel();
+    Swift:LoadModules();
     collectgarbage("collect");
 end
 
 ---
--- Startet die Map sofort neu.
+-- Gibt die Version des Spiels zurück.
 --
--- <b>Achtung</b>: Die Funktion Framework.RestartMap kann nicht mehr verwendet
--- werden, da es sonst zu Fehlern mit dem Ladebildschirm kommt!
+-- <b>Hinweis</b>: Unter der Version wird verstanden, ob das Originalspiel
+-- oder die History Edition gespielt wird. Zwischen den einzelnen Patches
+-- des Originalspiels oder der History Edition wird nicht unterschieden. Es
+-- wird die aktuellste Version vorausgesetzt.
 --
+-- @return[type=boolean] Spiel ist History Edition
 -- @within System
+-- @see QSB.GameVersion
 --
-function API.RestartMap()
-    Camera.RTS_FollowEntity(0);
-    Framework.SetLoadScreenNeedButton(1);
-    Framework.RestartMap();
+function API.GetGameVersion()
+    return Swift.GameVersion;
+end
+
+---
+-- Gibt die Variante des Spiels zurück.
+--
+-- <b>Hinweis</b>: Unter der Variante wird verstanden, ob das unveränderte
+-- Spiel oder der Community Patch gespielt wird.
+--
+-- @return[type=boolean] Spiel ist History Edition
+-- @within System
+-- @see QSB.GameVariant
+--
+function API.GetGameVariant()
+    return Swift.GameVariant;
+end
+
+---
+-- Gibt die Skriptumgebung zurück.
+--
+-- <b>Hinweis</b>: Unter dem Environment wird verstanden, ob es sich um das
+-- globale oder das lokale Skript handelt.
+--
+-- @return[type=boolean] Spiel ist History Edition
+-- @within System
+-- @see QSB.Environment
+--
+function API.GetScriptEnvironment()
+    return Swift.Environment;
 end
 
 ---
@@ -829,7 +891,7 @@ end
 -- @within System
 --
 function API.IsHistoryEditionNetworkGame()
-    return Revision.GameVersion == QSB.GameVersion.HISTORY_EDITION and Framework.IsNetworkGame();
+    return API.GetGameVersion() == QSB.GameVersion.HISTORY_EDITION and Framework.IsNetworkGame();
 end
 
 ---
@@ -918,6 +980,19 @@ function API.GetDelayedPlayers()
     return PlayerList;
 end
 
+---
+-- Gibt zurück, ob die Sitzung geladen wurde.
+--
+-- <h5>Multiplayer</h5>
+-- Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
+--
+-- @return[type=boolean] Sitzung ist geladen
+-- @within Multiplayer
+--
+function API.IsMultiplayerLoaded()
+    return Framework.IsNetworkGame() and  Network.SessionHaveAllPlayersFinishedLoading() == true;
+end
+
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
 
@@ -934,23 +1009,23 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @local
 --
 
-Revision.LuaBase = {};
+Swift.LuaBase = {};
 
 QSB.Metatable = {Init = false, Weak = {}, Metas = {}, Key = 0};
 
-function Revision.LuaBase:Initalize()
+function Swift.LuaBase:Initalize()
     self:OverrideTable();
     self:OverrideString();
     self:OverrideMath();
 end
 
-function Revision.LuaBase:OnSaveGameLoaded()
+function Swift.LuaBase:OnSaveGameLoaded()
     self:OverrideTable();
     self:OverrideString();
     self:OverrideMath();
 end
 
-function Revision.LuaBase:OverrideTable()
+function Swift.LuaBase:OverrideTable()
     table.compare = function(t1, t2, fx)
         assert(type(t1) == "table");
         assert(type(t2) == "table");
@@ -1017,7 +1092,7 @@ function Revision.LuaBase:OverrideTable()
         t2 = t2 or {};
         assert(type(t1) == "table");
         assert(type(t2) == "table");
-        return Revision.LuaBase:CopyTable(t1, t2);
+        return Swift.LuaBase:CopyTable(t1, t2);
     end
 
     table.invert = function (t1)
@@ -1040,7 +1115,7 @@ function Revision.LuaBase:OverrideTable()
     end
 
     table.tostring = function(t)
-        return Revision.LuaBase:ConvertTableToString(t);
+        return Swift.LuaBase:ConvertTableToString(t);
     end
 
     -- FIXME: Does not work?
@@ -1111,7 +1186,7 @@ function Revision.LuaBase:OverrideTable()
     table.restoreMetatables();
 end
 
-function Revision.LuaBase:OverrideString()
+function Swift.LuaBase:OverrideString()
     string.contains = function (self, s)
         return self:find(s) ~= nil;
     end
@@ -1153,7 +1228,7 @@ function Revision.LuaBase:OverrideString()
     end
 end
 
-function Revision.LuaBase:OverrideMath()
+function Swift.LuaBase:OverrideMath()
     math.lerp = function(s, c, e)
         local f = (c - s) / e;
         return (f > 1 and 1) or f;
@@ -1164,7 +1239,7 @@ function Revision.LuaBase:OverrideMath()
     end
 end
 
-function Revision.LuaBase:ConvertTableToString(_Table)
+function Swift.LuaBase:ConvertTableToString(_Table)
     assert(type(_Table) == "table");
     local String = "{";
     for k, v in pairs(_Table) do
@@ -1190,7 +1265,7 @@ function Revision.LuaBase:ConvertTableToString(_Table)
     return String;
 end
 
-function Revision.LuaBase:CopyTable(_Table1, _Table2)
+function Swift.LuaBase:CopyTable(_Table1, _Table2)
     _Table1 = _Table1 or {};
     _Table2 = _Table2 or {};
     for k, v in pairs(_Table1) do
@@ -1206,7 +1281,7 @@ function Revision.LuaBase:CopyTable(_Table1, _Table2)
     return _Table2;
 end
 
-function Revision.LuaBase:ToBoolean(_Input)
+function Swift.LuaBase:ToBoolean(_Input)
     if type(_Input) == "boolean" then
         return _Input;
     end
@@ -1238,7 +1313,7 @@ end
 -- local Bool = API.ToBoolean("no") --> Bool = false
 --
 function API.ToBoolean(_Value)
-    return Revision.LuaBase:ToBoolean(_Value);
+    return Swift.LuaBase:ToBoolean(_Value);
 end
 
 ---
@@ -1290,7 +1365,7 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @local
 --
 
-Revision.Logging = {
+Swift.Logging = {
     FileLogLevel = 3,
     LogLevel = 2,
 };
@@ -1303,26 +1378,26 @@ QSB.LogLevel = {
     OFF     = 0;
 }
 
-function Revision.Logging:Initalize()
+function Swift.Logging:Initalize()
 end
 
-function Revision.Logging:OnSaveGameLoaded()
+function Swift.Logging:OnSaveGameLoaded()
 end
 
-function Revision.Logging:Log(_Text, _Level, _Verbose)
+function Swift.Logging:Log(_Text, _Level, _Verbose)
     if self.FileLogLevel >= _Level then
         local Level = _Text:sub(1, _Text:find(":"));
         local Text = _Text:sub(_Text:find(":")+1);
         Text = string.format(
             " (%s) %s%s",
-            (Revision.Environment == QSB.Environment.LOCAL and "local") or "global",
+            (Swift.Environment == QSB.Environment.LOCAL and "local") or "global",
             Framework.GetSystemTimeDateString(),
             Text
         )
         Framework.WriteToLog(Level .. Text);
     end
     if _Verbose then
-        if Revision.Environment == QSB.Environment.GLOBAL then
+        if Swift.Environment == QSB.Environment.GLOBAL then
             if self.LogLevel >= _Level then
                 Logic.ExecuteInLuaLocalState(string.format(
                     [[GUI.AddStaticNote("%s")]],
@@ -1337,14 +1412,14 @@ function Revision.Logging:Log(_Text, _Level, _Verbose)
     end
 end
 
-function Revision.Logging:SetLogLevel(_ScreenLogLevel, _FileLogLevel)
-    if Revision.Environment == QSB.Environment.GLOBAL then
+function Swift.Logging:SetLogLevel(_ScreenLogLevel, _FileLogLevel)
+    if Swift.Environment == QSB.Environment.GLOBAL then
         Logic.ExecuteInLuaLocalState(string.format(
-            [[Revision.Logging.FileLogLevel = %d]],
+            [[Swift.Logging.FileLogLevel = %d]],
             (_FileLogLevel or 0)
         ));
         Logic.ExecuteInLuaLocalState(string.format(
-            [[Revision.Logging.LogLevel = %d]],
+            [[Swift.Logging.LogLevel = %d]],
             (_ScreenLogLevel or 0)
         ));
         self.FileLogLevel = (_FileLogLevel or 0);
@@ -1353,16 +1428,16 @@ function Revision.Logging:SetLogLevel(_ScreenLogLevel, _FileLogLevel)
 end
 
 function debug(_Text, _Silent)
-    Revision.Logging:Log("DEBUG: " .._Text, QSB.LogLevel.ALL, not _Silent);
+    Swift.Logging:Log("DEBUG: " .._Text, QSB.LogLevel.ALL, not _Silent);
 end
 function info(_Text, _Silent)
-    Revision.Logging:Log("INFO: " .._Text, QSB.LogLevel.INFO, not _Silent);
+    Swift.Logging:Log("INFO: " .._Text, QSB.LogLevel.INFO, not _Silent);
 end
 function warn(_Text, _Silent)
-    Revision.Logging:Log("WARNING: " .._Text, QSB.LogLevel.WARNING, not _Silent);
+    Swift.Logging:Log("WARNING: " .._Text, QSB.LogLevel.WARNING, not _Silent);
 end
 function error(_Text, _Silent)
-    Revision.Logging:Log("ERROR: " .._Text, QSB.LogLevel.ERROR, not _Silent);
+    Swift.Logging:Log("ERROR: " .._Text, QSB.LogLevel.ERROR, not _Silent);
 end
 
 -- -------------------------------------------------------------------------- --
@@ -1412,7 +1487,7 @@ end
 -- API.SetLogLevel(QSB.LogLevel.ERROR, QSB.LogLevel.WARNING);
 --
 function API.SetLogLevel(_ScreenLogLevel, _FileLogLevel)
-    Revision.Logging:SetLogLevel(_ScreenLogLevel, _FileLogLevel);
+    Swift.Logging:SetLogLevel(_ScreenLogLevel, _FileLogLevel);
 end
 
 --[[
@@ -1432,7 +1507,7 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @local
 --
 
-Revision.Event = {
+Swift.Event = {
     ScriptEventRegister   = {};
     ScriptEventListener   = {};
     ScriptCommandRegister = {};
@@ -1442,9 +1517,9 @@ QSB.ScriptCommandSequence = 2;
 QSB.ScriptCommands = {};
 QSB.ScriptEvents = {};
 
-function Revision.Event:Initalize()
+function Swift.Event:Initalize()
     self:OverrideSoldierPayment();
-    if Revision.Environment == QSB.Environment.GLOBAL then
+    if Swift.Environment == QSB.Environment.GLOBAL then
         self:CreateScriptCommand("Cmd_SendScriptEvent", function(_Event, ...)
             assert(QSB.ScriptEvents[_Event] ~= nil);
             API.SendScriptEvent(QSB.ScriptEvents[_Event], unpack(arg));
@@ -1452,24 +1527,24 @@ function Revision.Event:Initalize()
     end
 end
 
-function Revision.Event:OnSaveGameLoaded()
+function Swift.Event:OnSaveGameLoaded()
 end
 
 -- -------------------------------------------------------------------------- --
 -- Script Commands
 
-function Revision.Event:OverrideSoldierPayment()
-    GameCallback_SetSoldierPaymentLevel_Orig_Revision = GameCallback_SetSoldierPaymentLevel;
+function Swift.Event:OverrideSoldierPayment()
+    GameCallback_SetSoldierPaymentLevel_Orig_Swift = GameCallback_SetSoldierPaymentLevel;
     GameCallback_SetSoldierPaymentLevel = function(_PlayerID, _Level)
         if _Level <= 2 then
-            return GameCallback_SetSoldierPaymentLevel_Orig_Revision(_PlayerID, _Level);
+            return GameCallback_SetSoldierPaymentLevel_Orig_Swift(_PlayerID, _Level);
         end
-        Revision.Event:ProcessScriptCommand(_PlayerID, _Level);
+        Swift.Event:ProcessScriptCommand(_PlayerID, _Level);
     end
 end
 
-function Revision.Event:CreateScriptCommand(_Name, _Function)
-    if Revision.Environment == QSB.Environment.LOCAL then
+function Swift.Event:CreateScriptCommand(_Name, _Function)
+    if Swift.Environment == QSB.Environment.LOCAL then
         return 0;
     end
     QSB.ScriptCommandSequence = QSB.ScriptCommandSequence +1;
@@ -1483,7 +1558,7 @@ function Revision.Event:CreateScriptCommand(_Name, _Function)
         [[
             local ID = %d
             local Name = "%s"
-            Revision.Event.ScriptCommandRegister[ID] = Name
+            Swift.Event.ScriptCommandRegister[ID] = Name
             QSB.ScriptCommands[Name] = ID
         ]],
         ID,
@@ -1493,8 +1568,8 @@ function Revision.Event:CreateScriptCommand(_Name, _Function)
     return ID;
 end
 
-function Revision.Event:DispatchScriptCommand(_ID, ...)
-    if Revision.Environment == QSB.Environment.GLOBAL then
+function Swift.Event:DispatchScriptCommand(_ID, ...)
+    if Swift.Environment == QSB.Environment.GLOBAL then
         return;
     end
     assert(_ID ~= nil);
@@ -1504,12 +1579,12 @@ function Revision.Event:DispatchScriptCommand(_ID, ...)
         local PlayerName = Logic.GetPlayerName(NamePlayerID);
         local Parameters = self:EncodeScriptCommandParameters(unpack(arg));
 
-        if Framework.IsNetworkGame() and Revision.GameVersion == QSB.GameVersion.HISTORY_EDITION then
+        if Framework.IsNetworkGame() and Swift.GameVersion == QSB.GameVersion.HISTORY_EDITION then
             GUI.SetPlayerName(NamePlayerID, Parameters);
             GUI.SetSoldierPaymentLevel(_ID);
         else
             GUI.SendScriptCommand(string.format(
-                [[Revision.Event:ProcessScriptCommand(%d, %d, "%s")]],
+                [[Swift.Event:ProcessScriptCommand(%d, %d, "%s")]],
                 arg[1],
                 _ID,
                 Parameters
@@ -1520,19 +1595,19 @@ function Revision.Event:DispatchScriptCommand(_ID, ...)
             self.ScriptCommandRegister[_ID]
         ), true);
 
-        if Framework.IsNetworkGame() and Revision.GameVersion == QSB.GameVersion.HISTORY_EDITION then
+        if Framework.IsNetworkGame() and Swift.GameVersion == QSB.GameVersion.HISTORY_EDITION then
             GUI.SetPlayerName(NamePlayerID, PlayerName);
             GUI.SetSoldierPaymentLevel(PlayerSoldierPaymentLevel[PlayerID]);
         end
     end
 end
 
-function Revision.Event:ProcessScriptCommand(_PlayerID, _ID, _ParameterString)
+function Swift.Event:ProcessScriptCommand(_PlayerID, _ID, _ParameterString)
     if not self.ScriptCommandRegister[_ID] then
         return;
     end
     local PlayerName = _ParameterString;
-    if Framework.IsNetworkGame() and Revision.GameVersion == QSB.GameVersion.HISTORY_EDITION then
+    if Framework.IsNetworkGame() and Swift.GameVersion == QSB.GameVersion.HISTORY_EDITION then
         PlayerName = Logic.GetPlayerName(_PlayerID +4);
     end
     local Parameters = self:DecodeScriptCommandParameters(PlayerName);
@@ -1547,7 +1622,7 @@ function Revision.Event:ProcessScriptCommand(_PlayerID, _ID, _ParameterString)
     self.ScriptCommandRegister[_ID][2](unpack(Parameters));
 end
 
-function Revision.Event:EncodeScriptCommandParameters(...)
+function Swift.Event:EncodeScriptCommandParameters(...)
     local Query = "";
     for i= 1, #arg do
         local Parameter = arg[i];
@@ -1568,7 +1643,7 @@ function Revision.Event:EncodeScriptCommandParameters(...)
     return Query;
 end
 
-function Revision.Event:DecodeScriptCommandParameters(_Query)
+function Swift.Event:DecodeScriptCommandParameters(_Query)
     local Parameters = {};
     for k, v in pairs(string.slice(_Query, "#")) do
         local Value = v;
@@ -1596,7 +1671,7 @@ end
 -- -------------------------------------------------------------------------- --
 -- Script Events
 
-function Revision.Event:CreateScriptEvent(_Name)
+function Swift.Event:CreateScriptEvent(_Name)
     for i= 1, #self.ScriptEventRegister, 1 do
         if self.ScriptEventRegister[i] == _Name then
             return 0;
@@ -1608,15 +1683,15 @@ function Revision.Event:CreateScriptEvent(_Name)
     return ID;
 end
 
-function Revision.Event:DispatchScriptEvent(_ID, ...)
+function Swift.Event:DispatchScriptEvent(_ID, ...)
     if not self.ScriptEventRegister[_ID] then
         return;
     end
     -- Dispatch module events
-    for i= 1, #Revision.ModuleRegister, 1 do
-        local Env = (Revision.Environment == QSB.Environment.GLOBAL and "Global") or "Local";
-        if Revision.ModuleRegister[i][Env] and Revision.ModuleRegister[i][Env].OnEvent then
-            Revision.ModuleRegister[i][Env]:OnEvent(_ID, unpack(arg));
+    for i= 1, #Swift.ModuleRegister, 1 do
+        local Env = (Swift.Environment == QSB.Environment.GLOBAL and "Global") or "Local";
+        if Swift.ModuleRegister[i][Env] and Swift.ModuleRegister[i][Env].OnEvent then
+            Swift.ModuleRegister[i][Env]:OnEvent(_ID, unpack(arg));
         end
     end
     -- Call event game callback
@@ -1637,14 +1712,14 @@ end
 -- API
 
 function API.RegisterScriptCommand(_Name, _Function)
-    return Revision.Event:CreateScriptCommand(_Name, _Function);
+    return Swift.Event:CreateScriptCommand(_Name, _Function);
 end
 
 function API.BroadcastScriptCommand(_NameOrID, ...)
     local ID = _NameOrID;
     if type(ID) == "string" then
-        for i= 1, #Revision.Event.ScriptCommandRegister, 1 do
-            if Revision.Event.ScriptCommandRegister[i][1] == _NameOrID then
+        for i= 1, #Swift.Event.ScriptCommandRegister, 1 do
+            if Swift.Event.ScriptCommandRegister[i][1] == _NameOrID then
                 ID = i;
             end
         end
@@ -1653,7 +1728,7 @@ function API.BroadcastScriptCommand(_NameOrID, ...)
     if not GUI then
         return;
     end
-    Revision.Event:DispatchScriptCommand(ID, 0, unpack(arg));
+    Swift.Event:DispatchScriptCommand(ID, 0, unpack(arg));
 end
 
 -- Does this function makes any sense? Calling the synchronization but only for
@@ -1661,8 +1736,8 @@ end
 function API.SendScriptCommand(_NameOrID, ...)
     local ID = _NameOrID;
     if type(ID) == "string" then
-        for i= 1, #Revision.Event.ScriptCommandRegister, 1 do
-            if Revision.Event.ScriptCommandRegister[i][1] == _NameOrID then
+        for i= 1, #Swift.Event.ScriptCommandRegister, 1 do
+            if Swift.Event.ScriptCommandRegister[i][1] == _NameOrID then
                 ID = i;
             end
         end
@@ -1671,7 +1746,7 @@ function API.SendScriptCommand(_NameOrID, ...)
     if not GUI then
         return;
     end
-    Revision.Event:DispatchScriptCommand(ID, GUI.GetPlayerID(), unpack(arg));
+    Swift.Event:DispatchScriptCommand(ID, GUI.GetPlayerID(), unpack(arg));
 end
 
 ---
@@ -1686,7 +1761,7 @@ end
 -- local EventID = API.RegisterScriptEvent("MyNewEvent");
 --
 function API.RegisterScriptEvent(_Name)
-    return Revision.Event:CreateScriptEvent(_Name);
+    return Swift.Event:CreateScriptEvent(_Name);
 end
 
 ---
@@ -1706,7 +1781,7 @@ end
 -- API.SendScriptEvent(SomeEventID, Param1, Param2, ...);
 --
 function API.SendScriptEvent(_EventID, ...)
-    Revision.Event:DispatchScriptEvent(_EventID, unpack(arg));
+    Swift.Event:DispatchScriptEvent(_EventID, unpack(arg));
 end
 
 ---
@@ -1726,7 +1801,7 @@ function API.BroadcastScriptEventToGlobal(_EventName, ...)
     if not GUI then
         return;
     end
-    Revision.Event:DispatchScriptCommand(
+    Swift.Event:DispatchScriptCommand(
         QSB.ScriptCommands.SendScriptEvent,
         0,
         _EventName,
@@ -1751,7 +1826,7 @@ function API.SendScriptEventToGlobal(_EventName, ...)
     if not GUI then
         return;
     end
-    Revision.Event:DispatchScriptCommand(
+    Swift.Event:DispatchScriptCommand(
         QSB.ScriptCommands.SendScriptEvent,
         GUI.GetPlayerID(),
         _EventName,
@@ -1780,15 +1855,15 @@ end
 -- end);
 --
 function API.AddScriptEventListener(_EventID, _Function)
-    if not Revision.Event.ScriptEventListener[_EventID] then
-        Revision.Event.ScriptEventListener[_EventID] = {
+    if not Swift.Event.ScriptEventListener[_EventID] then
+        Swift.Event.ScriptEventListener[_EventID] = {
             IDSequence = 0;
         }
     end
-    local Data = Revision.Event.ScriptEventListener[_EventID];
+    local Data = Swift.Event.ScriptEventListener[_EventID];
     assert(type(_Function) == "function");
-    Revision.Event.ScriptEventListener[_EventID].IDSequence = Data.IDSequence +1;
-    Revision.Event.ScriptEventListener[_EventID][Data.IDSequence] = _Function;
+    Swift.Event.ScriptEventListener[_EventID].IDSequence = Data.IDSequence +1;
+    Swift.Event.ScriptEventListener[_EventID][Data.IDSequence] = _Function;
     return Data.IDSequence;
 end
 
@@ -1801,8 +1876,8 @@ end
 -- @see API.AddScriptEventListener
 --
 function API.RemoveScriptEventListener(_EventID, _ID)
-    if Revision.Event.ScriptEventListener[_EventID] then
-        Revision.Event.ScriptEventListener[_EventID][_ID] = nil;
+    if Swift.Event.ScriptEventListener[_EventID] then
+        Swift.Event.ScriptEventListener[_EventID][_ID] = nil;
     end
 end
 
@@ -1822,7 +1897,7 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @local
 --
 
-Revision.Job = {
+Swift.Job = {
     EventJobMappingID = 0;
     EventJobMapping = {},
     EventJobs = {},
@@ -1831,24 +1906,24 @@ Revision.Job = {
     LastTimeStamp = 0;
 };
 
-function Revision.Job:Initalize()
+function Swift.Job:Initalize()
     self:StartJobs();
 end
 
-function Revision.Job:OnSaveGameLoaded()
+function Swift.Job:OnSaveGameLoaded()
 end
 
-function Revision.Job:StartJobs()
+function Swift.Job:StartJobs()
     -- Update Real time variable
     self:CreateEventJob(
         Events.LOGIC_EVENT_EVERY_TURN,
         function()
-            Revision.Job:RealtimeController();
+            Swift.Job:RealtimeController();
         end
     )
 end
 
-function Revision.Job:CreateEventJob(_Type, _Function, ...)
+function Swift.Job:CreateEventJob(_Type, _Function, ...)
     self.EventJobMappingID = self.EventJobMappingID +1;
     local ID = Trigger.RequestTrigger(
         _Type,
@@ -1863,7 +1938,7 @@ function Revision.Job:CreateEventJob(_Type, _Function, ...)
     return ID;
 end
 
-function Revision.Job:EventJobExecutor(_MappingID)
+function Swift.Job:EventJobExecutor(_MappingID)
     local ID = self.EventJobMapping[_MappingID];
     if ID and self.EventJobs[ID] and self.EventJobs[ID][2] then
         local Parameter = self.EventJobs[ID][4];
@@ -1873,7 +1948,7 @@ function Revision.Job:EventJobExecutor(_MappingID)
     end
 end
 
-function Revision.Job:RealtimeController()
+function Swift.Job:RealtimeController()
     if not self.LastTimeStamp then
         self.LastTimeStamp = math.floor(Framework.TimeGetTime());
     end
@@ -1889,7 +1964,7 @@ end
 -- Helper Jobs
 
 function QSB_EventJob_EventJobExecutor(_MappingID)
-    Revision.Job:EventJobExecutor(_MappingID);
+    Swift.Job:EventJobExecutor(_MappingID);
 end
 
 -- -------------------------------------------------------------------------- --
@@ -1904,7 +1979,7 @@ end
 -- local RealTime = API.RealTimeGetSecondsPassedSinceGameStart();
 --
 function API.RealTimeGetSecondsPassedSinceGameStart()
-    return Revision.Job.SecondsSinceGameStart;
+    return Swift.Job.SecondsSinceGameStart;
 end
 
 ---
@@ -1937,7 +2012,7 @@ function API.StartJobByEventType(_EventType, _Function, ...)
         error("API.StartJobByEventType: Can not find function!");
         return;
     end
-    return Revision.Job:CreateEventJob(_EventType, _Function, unpack(arg));
+    return Swift.Job:CreateEventJob(_EventType, _Function, unpack(arg));
 end
 
 ---
@@ -2008,9 +2083,9 @@ StartSimpleHiResJobEx = API.StartHiResJob;
 -- API.EndJob(AnyJobID);
 --
 function API.EndJob(_JobID)
-    if Revision.Job.EventJobs[_JobID] then
-        Trigger.UnrequestTrigger(Revision.Job.EventJobs[_JobID][1]);
-        Revision.Job.EventJobs[_JobID] = nil;
+    if Swift.Job.EventJobs[_JobID] then
+        Trigger.UnrequestTrigger(Swift.Job.EventJobs[_JobID][1]);
+        Swift.Job.EventJobs[_JobID] = nil;
         return;
     end
     EndJob(_JobID);
@@ -2029,8 +2104,8 @@ end
 -- end;
 --
 function API.JobIsRunning(_JobID)
-    if Revision.Job.EventJobs[_JobID] then
-        return Revision.Job.EventJobs[_JobID][2] == true;
+    if Swift.Job.EventJobs[_JobID] then
+        return Swift.Job.EventJobs[_JobID][2] == true;
     end
     return JobIsRunning(_JobID);
 end
@@ -2045,9 +2120,9 @@ end
 -- API.ResumeJob(AnyJobID);
 --
 function API.ResumeJob(_JobID)
-    if Revision.Job.EventJobs[_JobID] then
-        if Revision.Job.EventJobs[_JobID][2] ~= true then
-            Revision.Job.EventJobs[_JobID][2] = true;
+    if Swift.Job.EventJobs[_JobID] then
+        if Swift.Job.EventJobs[_JobID][2] ~= true then
+            Swift.Job.EventJobs[_JobID][2] = true;
         end
         return;
     end
@@ -2064,9 +2139,9 @@ end
 -- API.YieldJob(AnyJobID);
 --
 function API.YieldJob(_JobID)
-    if Revision.Job.EventJobs[_JobID] then
-        if Revision.Job.EventJobs[_JobID][2] == true then
-            Revision.Job.EventJobs[_JobID][2] = false;
+    if Swift.Job.EventJobs[_JobID] then
+        if Swift.Job.EventJobs[_JobID][2] == true then
+            Swift.Job.EventJobs[_JobID][2] = false;
         end
         return;
     end
@@ -2188,12 +2263,12 @@ function API.StartRealTimeDelay(_Waittime, _Function, ...)
     end
     return API.StartHiResJob(
         function(_StartTime, _Delay, _Callback, _Arguments)
-            if (Revision.Job.SecondsSinceGameStart >= _StartTime + _Delay) then
+            if (Swift.Job.SecondsSinceGameStart >= _StartTime + _Delay) then
                 _Callback(unpack(_Arguments or {}));
                 return true;
             end
         end,
-        Revision.Job.SecondsSinceGameStart,
+        Swift.Job.SecondsSinceGameStart,
         _Waittime,
         _Function,
         {...}
@@ -2216,18 +2291,18 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @local
 --
 
-Revision.Save = {
+Swift.Save = {
     HistoryEditionQuickSave = false,
     SavingDisabled = false,
     LoadingDisabled = false,
 };
 
-function Revision.Save:Initalize()
+function Swift.Save:Initalize()
     self:SetupQuicksaveKeyCallback();
     self:SetupQuicksaveKeyTrigger();
 end
 
-function Revision.Save:OnSaveGameLoaded()
+function Swift.Save:OnSaveGameLoaded()
     self:SetupQuicksaveKeyTrigger();
     self:UpdateLoadButtons();
     self:UpdateSaveButtons();
@@ -2236,9 +2311,9 @@ end
 -- -------------------------------------------------------------------------- --
 -- HE Quicksave
 
-function Revision.Save:SetupQuicksaveKeyTrigger()
-    if Revision.Environment == QSB.Environment.LOCAL then
-        Revision.Job:CreateEventJob(
+function Swift.Save:SetupQuicksaveKeyTrigger()
+    if Swift.Environment == QSB.Environment.LOCAL then
+        Swift.Job:CreateEventJob(
             Events.LOGIC_EVENT_EVERY_TURN,
             function()
                 Input.KeyBindDown(
@@ -2253,20 +2328,20 @@ function Revision.Save:SetupQuicksaveKeyTrigger()
     end
 end
 
-function Revision.Save:SetupQuicksaveKeyCallback()
-    if Revision.Environment == QSB.Environment.LOCAL then
-        KeyBindings_SaveGame_Orig_Revision = KeyBindings_SaveGame;
+function Swift.Save:SetupQuicksaveKeyCallback()
+    if Swift.Environment == QSB.Environment.LOCAL then
+        KeyBindings_SaveGame_Orig_Swift = KeyBindings_SaveGame;
         KeyBindings_SaveGame = function(...)
             -- No quicksave if saving disabled
-            if Revision.Save.SavingDisabled then
+            if Swift.Save.SavingDisabled then
                 return;
             end
             -- No quicksave if forced by History Edition
-            if not Revision.Save.HistoryEditionQuickSave and not arg[1] then
+            if not Swift.Save.HistoryEditionQuickSave and not arg[1] then
                 return;
             end
             -- Do quicksave
-            KeyBindings_SaveGame_Orig_Revision();
+            KeyBindings_SaveGame_Orig_Swift();
         end
     end
 end
@@ -2274,11 +2349,11 @@ end
 -- -------------------------------------------------------------------------- --
 -- Disable Save
 
-function Revision.Save:DisableSaving(_Flag)
+function Swift.Save:DisableSaving(_Flag)
     self.SavingDisabled = _Flag == true;
-    if Revision.Environment == QSB.Environment.GLOBAL then
+    if Swift.Environment == QSB.Environment.GLOBAL then
         Logic.ExecuteInLuaLocalState(string.format(
-            [[Revision.Save:DisableSaving(%s)]],
+            [[Swift.Save:DisableSaving(%s)]],
             tostring(_Flag)
         ))
     else
@@ -2286,8 +2361,8 @@ function Revision.Save:DisableSaving(_Flag)
     end
 end
 
-function Revision.Save:UpdateSaveButtons()
-    if Revision.Environment == QSB.Environment.LOCAL then
+function Swift.Save:UpdateSaveButtons()
+    if Swift.Environment == QSB.Environment.LOCAL then
         local VisibleFlag = (self.SavingDisabled and 0) or 1;
         XGUIEng.ShowWidget("/InGame/InGame/MainMenu/Container/QuickSave", VisibleFlag);
         XGUIEng.ShowWidget("/InGame/InGame/MainMenu/Container/SaveGame", VisibleFlag);
@@ -2297,11 +2372,11 @@ end
 -- -------------------------------------------------------------------------- --
 -- Disable Load
 
-function Revision.Save:DisableLoading(_Flag)
+function Swift.Save:DisableLoading(_Flag)
     self.LoadingDisabled = _Flag == true;
-    if Revision.Environment == QSB.Environment.GLOBAL then
+    if Swift.Environment == QSB.Environment.GLOBAL then
         Logic.ExecuteInLuaLocalState(string.format(
-            [[Revision.Save:DisableLoading(%s)]],
+            [[Swift.Save:DisableLoading(%s)]],
             tostring(_Flag)
         ))
     else
@@ -2309,8 +2384,8 @@ function Revision.Save:DisableLoading(_Flag)
     end
 end
 
-function Revision.Save:UpdateLoadButtons()
-    if Revision.Environment == QSB.Environment.LOCAL then
+function Swift.Save:UpdateLoadButtons()
+    if Swift.Environment == QSB.Environment.LOCAL then
         local VisibleFlag = (self.LoadingDisabled and 0) or 1;
         XGUIEng.ShowWidget("/InGame/InGame/MainMenu/Container/LoadGame", VisibleFlag);
         XGUIEng.ShowWidget("/InGame/InGame/MainMenu/Container/QuickLoad", VisibleFlag);
@@ -2326,10 +2401,10 @@ end
 -- @within Spielstand
 --
 function API.DisableAutoSave(_Flag)
-    if Revision.Environment == QSB.Environment.GLOBAL then
-        Revision.Save.HistoryEditionQuickSave = _Flag == true;
+    if Swift.Environment == QSB.Environment.GLOBAL then
+        Swift.Save.HistoryEditionQuickSave = _Flag == true;
         Logic.ExecuteInLuaLocalState(string.format(
-            [[Revision.Save.HistoryEditionQuickSave = %s]],
+            [[Swift.Save.HistoryEditionQuickSave = %s]],
             tostring(_Flag == true)
         ))
     end
@@ -2341,7 +2416,7 @@ end
 -- @within Spielstand
 --
 function API.DisableSaving(_Flag)
-    Revision.Save:DisableSaving(_Flag);
+    Swift.Save:DisableSaving(_Flag);
 end
 
 ---
@@ -2350,7 +2425,7 @@ end
 -- @within Spielstand
 --
 function API.DisableLoading(_Flag)
-    Revision.Save:DisableLoading(_Flag);
+    Swift.Save:DisableLoading(_Flag);
 end
 
 --[[
@@ -2369,29 +2444,29 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @local
 --
 
-Revision.Chat = {
+Swift.Chat = {
     DebugInput = {};
 };
 
-function Revision.Chat:Initalize()
-    QSB.ScriptEvents.ChatOpened = Revision.Event:CreateScriptEvent("Event_ChatOpened");
-    QSB.ScriptEvents.ChatClosed = Revision.Event:CreateScriptEvent("Event_ChatClosed");
+function Swift.Chat:Initalize()
+    QSB.ScriptEvents.ChatOpened = Swift.Event:CreateScriptEvent("Event_ChatOpened");
+    QSB.ScriptEvents.ChatClosed = Swift.Event:CreateScriptEvent("Event_ChatClosed");
     for i= 1, 8 do
         self.DebugInput[i] = {};
     end
 end
 
-function Revision.Chat:OnSaveGameLoaded()
+function Swift.Chat:OnSaveGameLoaded()
 end
 
-function Revision.Chat:ShowTextInput(_PlayerID, _AllowDebug)
-    if  Revision.GameVersion == QSB.GameVersion.HISTORY_EDITION
+function Swift.Chat:ShowTextInput(_PlayerID, _AllowDebug)
+    if  Swift.GameVersion == QSB.GameVersion.HISTORY_EDITION
     and Framework.IsNetworkGame() then
         return;
     end
     if not GUI then
         Logic.ExecuteInLuaLocalState(string.format(
-            [[Revision.Chat:ShowTextInput(%d, %s)]],
+            [[Swift.Chat:ShowTextInput(%d, %s)]],
             _PlayerID,
             tostring(_AllowDebug == true)
         ))
@@ -2402,13 +2477,13 @@ function Revision.Chat:ShowTextInput(_PlayerID, _AllowDebug)
     self:ShowInputBox(_PlayerID, _AllowDebug == true);
 end
 
-function Revision.Chat:ShowInputBox(_PlayerID, _Debug)
+function Swift.Chat:ShowInputBox(_PlayerID, _Debug)
     if GUI.GetPlayerID() ~= _PlayerID then
         return;
     end
     self.DebugInput[_PlayerID] = _Debug == true;
 
-    Revision.Job:CreateEventJob(
+    Swift.Job:CreateEventJob(
         Events.LOGIC_EVENT_EVERY_TURN,
         function()
             -- Open chat
@@ -2417,14 +2492,14 @@ function Revision.Chat:ShowInputBox(_PlayerID, _Debug)
             XGUIEng.ShowWidget("/InGame/Root/Normal/ChatInput", 1);
             XGUIEng.SetFocus("/InGame/Root/Normal/ChatInput/ChatInput");
             -- Send event to global script
-            Revision.Event:DispatchScriptCommand(
+            Swift.Event:DispatchScriptCommand(
                 QSB.ScriptCommands.SendScriptEvent,
                 GUI.GetPlayerID(),
                 "ChatOpened",
                 _PlayerID
             );
             -- Send event to local script
-            Revision.Event:DispatchScriptEvent(
+            Swift.Event:DispatchScriptEvent(
                 QSB.ScriptEvents.ChatOpened,
                 _PlayerID
             );
@@ -2439,20 +2514,20 @@ function Revision.Chat:ShowInputBox(_PlayerID, _Debug)
     )
 end
 
-function Revision.Chat:PrepareInputVariable(_PlayerID)
-    if Revision.Environment == QSB.Environment.GLOBAL then
+function Swift.Chat:PrepareInputVariable(_PlayerID)
+    if Swift.Environment == QSB.Environment.GLOBAL then
         return;
     end
 
-    GUI_Chat.Abort_Orig_Revision = GUI_Chat.Abort_Orig_Revision or GUI_Chat.Abort;
-    GUI_Chat.Confirm_Orig_Revision = GUI_Chat.Confirm_Orig_Revision or GUI_Chat.Confirm;
+    GUI_Chat.Abort_Orig_Swift = GUI_Chat.Abort_Orig_Swift or GUI_Chat.Abort;
+    GUI_Chat.Confirm_Orig_Swift = GUI_Chat.Confirm_Orig_Swift or GUI_Chat.Confirm;
 
     GUI_Chat.Confirm = function()
         XGUIEng.ShowWidget("/InGame/Root/Normal/ChatInput", 0);
         local ChatMessage = XGUIEng.GetText("/InGame/Root/Normal/ChatInput/ChatInput");
-        local IsDebug = Revision.Chat.DebugInput[_PlayerID];
-        Revision.ChatBoxInput = ChatMessage;
-        Revision.Chat:SendInputToGlobalScript(ChatMessage, IsDebug);
+        local IsDebug = Swift.Chat.DebugInput[_PlayerID];
+        Swift.ChatBoxInput = ChatMessage;
+        Swift.Chat:SendInputToGlobalScript(ChatMessage, IsDebug);
         g_Chat.JustClosed = 1;
         if not Framework.IsNetworkGame() then
             Game.GameTimeSetFactor(_PlayerID, 1);
@@ -2476,11 +2551,11 @@ function Revision.Chat:PrepareInputVariable(_PlayerID)
     end
 end
 
-function Revision.Chat:SendInputToGlobalScript(_Text, _Debug)
+function Swift.Chat:SendInputToGlobalScript(_Text, _Debug)
     _Text = (_Text == nil and "") or _Text;
     local PlayerID = GUI.GetPlayerID();
     -- Send chat input to global script
-    Revision.Event:DispatchScriptCommand(
+    Swift.Event:DispatchScriptCommand(
         QSB.ScriptCommands.SendScriptEvent,
         0,
         "ChatClosed",
@@ -2489,7 +2564,7 @@ function Revision.Chat:SendInputToGlobalScript(_Text, _Debug)
         _Debug == true
     );
     -- Send chat input to local script
-    Revision.Event:DispatchScriptEvent(
+    Swift.Event:DispatchScriptEvent(
         QSB.ScriptEvents.ChatClosed,
         (_Text or "<<<ES>>>"),
         GUI.GetPlayerID(),
@@ -2513,7 +2588,7 @@ end
 -- @within System
 --
 function API.ShowTextInput(_PlayerID, _AllowDebug)
-    Revision.Chat:ShowTextInput(_PlayerID, _AllowDebug);
+    Swift.Chat:ShowTextInput(_PlayerID, _AllowDebug);
 end
 
 --[[
@@ -2532,7 +2607,7 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @local
 --
 
-Revision.Text = {
+Swift.Text = {
     Languages = {
         {"de", "Deutsch", "en"},
         {"en", "English", "en"},
@@ -2569,18 +2644,18 @@ Revision.Text = {
 
 QSB.Language = "de";
 
-function Revision.Text:Initalize()
-    QSB.ScriptEvents.LanguageSet = Revision.Event:CreateScriptEvent("Event_LanguageSet");
+function Swift.Text:Initalize()
+    QSB.ScriptEvents.LanguageSet = Swift.Event:CreateScriptEvent("Event_LanguageSet");
     self:DetectLanguage();
 end
 
-function Revision.Text:OnSaveGameLoaded()
+function Swift.Text:OnSaveGameLoaded()
 end
 
 -- -------------------------------------------------------------------------- --
 -- Language
 
-function Revision.Text:DetectLanguage()
+function Swift.Text:DetectLanguage()
     local DefaultLanguage = Network.GetDesiredLanguage();
     if DefaultLanguage ~= "de" and DefaultLanguage ~= "fr" then
         DefaultLanguage = "en";
@@ -2588,18 +2663,18 @@ function Revision.Text:DetectLanguage()
     QSB.Language = DefaultLanguage;
 end
 
-function Revision.Text:OnLanguageChanged(_PlayerID, _GUI_PlayerID, _Language)
+function Swift.Text:OnLanguageChanged(_PlayerID, _GUI_PlayerID, _Language)
     self:ChangeSystemLanguage(_PlayerID, _Language, _GUI_PlayerID);
 end
 
-function Revision.Text:ChangeSystemLanguage(_PlayerID, _Language, _GUI_PlayerID)
+function Swift.Text:ChangeSystemLanguage(_PlayerID, _Language, _GUI_PlayerID)
     local OldLanguage = QSB.Language;
     local NewLanguage = _Language;
     if _GUI_PlayerID == nil or _GUI_PlayerID == _PlayerID then
         QSB.Language = _Language;
     end
 
-    Revision.Event:DispatchScriptEvent(QSB.ScriptEvents.LanguageSet, OldLanguage, NewLanguage);
+    Swift.Event:DispatchScriptEvent(QSB.ScriptEvents.LanguageSet, OldLanguage, NewLanguage);
     Logic.ExecuteInLuaLocalState(string.format(
         [[
             local OldLanguage = "%s"
@@ -2607,7 +2682,7 @@ function Revision.Text:ChangeSystemLanguage(_PlayerID, _Language, _GUI_PlayerID)
             if GUI.GetPlayerID() == %d then
                 QSB.Language = NewLanguage
             end
-            Revision.Event:DispatchScriptEvent(QSB.ScriptEvents.LanguageSet, OldLanguage, NewLanguage)
+            Swift.Event:DispatchScriptEvent(QSB.ScriptEvents.LanguageSet, OldLanguage, NewLanguage)
         ]],
         OldLanguage,
         NewLanguage,
@@ -2615,7 +2690,7 @@ function Revision.Text:ChangeSystemLanguage(_PlayerID, _Language, _GUI_PlayerID)
     ));
 end
 
-function Revision.Text:Localize(_Text)
+function Swift.Text:Localize(_Text)
     local LocalizedText;
     if type(_Text) == "table" then
         LocalizedText = {};
@@ -2649,7 +2724,7 @@ end
 -- -------------------------------------------------------------------------- --
 -- Placeholder
 
-function Revision.Text:ConvertPlaceholders(_Text)
+function Swift.Text:ConvertPlaceholders(_Text)
     local s1, e1, s2, e2;
     while true do
         local Before, Placeholder, After, Replacement, s1, e1, s2, e2;
@@ -2674,7 +2749,7 @@ function Revision.Text:ConvertPlaceholders(_Text)
     return _Text;
 end
 
-function Revision.Text:SplicePlaceholderText(_Text, _Start)
+function Swift.Text:SplicePlaceholderText(_Text, _Start)
     local s1, e1 = _Text:find(_Start);
     local s2, e2 = _Text:find("}", e1);
 
@@ -2684,14 +2759,14 @@ function Revision.Text:SplicePlaceholderText(_Text, _Start)
     return Before, Placeholder, After, s1, e1, s2, e2;
 end
 
-function Revision.Text:ReplaceColorPlaceholders(_Text)
+function Swift.Text:ReplaceColorPlaceholders(_Text)
     for k, v in pairs(self.Colors) do
         _Text = _Text:gsub("{" ..k.. "}", v);
     end
     return _Text;
 end
 
-function Revision.Text:ReplaceValuePlaceholder(_Text)
+function Swift.Text:ReplaceValuePlaceholder(_Text)
     local Ref = _G;
     local Slice = string.slice(_Text, "%.");
     for i= 1, #Slice do
@@ -2720,7 +2795,7 @@ end
 -- foo 1 2 3
 -- bar 1 2 3
 -- muh 4
-function Revision.Text:CommandTokenizer(_Input)
+function Swift.Text:CommandTokenizer(_Input)
     local Commands = {};
     if _Input == nil then
         return Commands;
@@ -2814,7 +2889,7 @@ end
 -- -- Rückgabe: {"Deutsch", {"A"}}
 --
 function API.Localize(_Text)
-    return Revision.Text:Localize(_Text);
+    return Swift.Text:Localize(_Text);
 end
 
 ---
@@ -2833,7 +2908,7 @@ end
 -- API.Note("Das ist eine flüchtige Information!");
 --
 function API.Note(_Text)
-    _Text = Revision.Text:ConvertPlaceholders(Revision.Text:Localize(_Text));
+    _Text = Swift.Text:ConvertPlaceholders(Swift.Text:Localize(_Text));
     if not GUI then
         Logic.DEBUG_AddNote(_Text);
         return;
@@ -2857,7 +2932,7 @@ end
 -- API.StaticNote("Das ist eine dauerhafte Information!");
 --
 function API.StaticNote(_Text)
-    _Text = Revision.Text:ConvertPlaceholders(Revision.Text:Localize(_Text));
+    _Text = Swift.Text:ConvertPlaceholders(Swift.Text:Localize(_Text));
     if not GUI then
         Logic.ExecuteInLuaLocalState(string.format(
             [[GUI.AddStaticNote("%s")]],
@@ -2890,7 +2965,7 @@ end
 -- API.Message("Das ist eine WERTVOLLE Nachricht!", "ui/menu_left_gold_pay");
 --
 function API.Message(_Text, _Sound)
-    _Text = Revision.Text:ConvertPlaceholders(Revision.Text:Localize(_Text));
+    _Text = Swift.Text:ConvertPlaceholders(Swift.Text:Localize(_Text));
     if not GUI then
         Logic.ExecuteInLuaLocalState(string.format(
             [[API.Message("%s", %s)]],
@@ -2899,7 +2974,7 @@ function API.Message(_Text, _Sound)
         ));
         return;
     end
-    _Text = Revision.Text:ConvertPlaceholders(API.Localize(_Text));
+    _Text = Swift.Text:ConvertPlaceholders(API.Localize(_Text));
     if _Sound then
         _Sound = _Sound:gsub("/", "\\");
     end
@@ -2984,11 +3059,11 @@ end
 function API.ConvertPlaceholders(_Message)
     if type(_Message) == "table" then
         for k, v in pairs(_Message) do
-            _Message[k] = Revision.Text:ConvertPlaceholders(v);
+            _Message[k] = Swift.Text:ConvertPlaceholders(v);
         end
         return API.Localize(_Message);
     elseif type(_Message) == "string" then
-        return Revision.Text:ConvertPlaceholders(_Message);
+        return Swift.Text:ConvertPlaceholders(_Message);
     else
         return _Message;
     end
@@ -3014,7 +3089,7 @@ function API.AddNamePlaceholder(_Name, _Replacement)
         error("API.AddNamePlaceholder: Only strings, numbers, or tables are allowed!");
         return;
     end
-    Revision.Text.Placeholders.Names[_Name] = _Replacement;
+    Swift.Text.Placeholders.Names[_Name] = _Replacement;
 end
 
 ---
@@ -3038,7 +3113,7 @@ function API.AddEntityTypePlaceholder(_Type, _Replacement)
         error("API.AddEntityTypePlaceholder: EntityType does not exist!");
         return;
     end
-    Revision.Text.Placeholders.EntityTypes[_Type] = _Replacement;
+    Swift.Text.Placeholders.EntityTypes[_Type] = _Replacement;
 end
 
 --[[
@@ -3058,27 +3133,27 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @local
 --
 
-Revision.Bugfix = {};
+Swift.Bugfix = {};
 
-function Revision.Bugfix:Initalize()
-    if Revision.Environment == QSB.Environment.GLOBAL then
+function Swift.Bugfix:Initalize()
+    if Swift.Environment == QSB.Environment.GLOBAL then
         self:FixResourceSlotsInStorehouses();
         self:OverrideConstructionCompleteCallback();
         self:OverrideIsMerchantArrived();
         self:OverrideIsObjectiveCompleted();
     end
-    if Revision.Environment == QSB.Environment.LOCAL then
+    if Swift.Environment == QSB.Environment.LOCAL then
         self:FixInteractiveObjectClicked();
     end
 end
 
-function Revision.Bugfix:OnSaveGameLoaded()
+function Swift.Bugfix:OnSaveGameLoaded()
 end
 
 -- -------------------------------------------------------------------------- --
 -- Luxury for NPCs
 
-function Revision.Bugfix:FixResourceSlotsInStorehouses()
+function Swift.Bugfix:FixResourceSlotsInStorehouses()
     for i= 1, 8 do
         local StoreHouseID = Logic.GetStoreHouse(i);
         if StoreHouseID ~= 0 then
@@ -3091,7 +3166,7 @@ end
 -- -------------------------------------------------------------------------- --
 -- Respawning for ME barracks
 
-function Revision.Bugfix:OverrideConstructionCompleteCallback()
+function Swift.Bugfix:OverrideConstructionCompleteCallback()
     GameCallback_OnBuildingConstructionComplete_Orig_QSB_Core = GameCallback_OnBuildingConstructionComplete;
     GameCallback_OnBuildingConstructionComplete = function(_PlayerID, _EntityID)
         GameCallback_OnBuildingConstructionComplete_Orig_QSB_Core(_PlayerID, _EntityID);
@@ -3111,7 +3186,7 @@ end
 -- -------------------------------------------------------------------------- --
 -- Delivery checkpoint
 
-function Revision.Bugfix:OverrideIsMerchantArrived()
+function Swift.Bugfix:OverrideIsMerchantArrived()
     function QuestTemplate:IsMerchantArrived(objective)
         if objective.Data[3] ~= nil then
             if objective.Data[3] == 1 then
@@ -3155,7 +3230,7 @@ end
 -- -------------------------------------------------------------------------- --
 -- IO costs
 
-function Revision.Bugfix:FixInteractiveObjectClicked()
+function Swift.Bugfix:FixInteractiveObjectClicked()
     GUI_Interaction.InteractiveObjectClicked = function()
         local ButtonNumber = tonumber(XGUIEng.GetWidgetNameByID(XGUIEng.GetCurrentWidgetID()));
         local ObjectID = g_Interaction.ActiveObjectsOnScreen[ButtonNumber];
@@ -3214,7 +3289,7 @@ end
 -- -------------------------------------------------------------------------- --
 -- Destroy all units
 
-function Revision.Bugfix:OverrideIsObjectiveCompleted()
+function Swift.Bugfix:OverrideIsObjectiveCompleted()
     QuestTemplate.IsObjectiveCompleted_Orig_QSB_Kernel = QuestTemplate.IsObjectiveCompleted;
     QuestTemplate.IsObjectiveCompleted = function(self, objective)
         local objectiveType = objective.Type;
@@ -3246,7 +3321,7 @@ function Revision.Bugfix:OverrideIsObjectiveCompleted()
                 objective.Completed = true;
             end
         elseif objectiveType == Objective.Distance then
-            objective.Completed = Revision.Behavior:IsQuestPositionReached(self, objective);
+            objective.Completed = Swift.Behavior:IsQuestPositionReached(self, objective);
         else
             return self:IsObjectiveCompleted_Orig_QSB_Kernel(objective);
         end
@@ -3269,22 +3344,22 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @local
 --
 
-Revision.Utils = {}
+Swift.Utils = {}
 
 QSB.RefillAmounts = {};
 QSB.CustomVariable = {};
 
-function Revision.Utils:Initalize()
-    QSB.ScriptEvents.CustomValueChanged = Revision.Event:CreateScriptEvent("Event_CustomValueChanged");
-    if Revision.Environment == QSB.Environment.GLOBAL then
+function Swift.Utils:Initalize()
+    QSB.ScriptEvents.CustomValueChanged = Swift.Event:CreateScriptEvent("Event_CustomValueChanged");
+    if Swift.Environment == QSB.Environment.GLOBAL then
         self:OverwriteGeologistRefill();
     end
 end
 
-function Revision.Utils:OnSaveGameLoaded()
+function Swift.Utils:OnSaveGameLoaded()
 end
 
-function Revision.Utils:OverwriteGeologistRefill()
+function Swift.Utils:OverwriteGeologistRefill()
     if Framework.GetGameExtraNo() >= 1 then
         GameCallback_OnGeologistRefill_Orig_QSB_Kernel = GameCallback_OnGeologistRefill;
         GameCallback_OnGeologistRefill = function(_PlayerID, _TargetID, _GeologistID)
@@ -3305,7 +3380,7 @@ function Revision.Utils:OverwriteGeologistRefill()
     end
 end
 
-function Revision.Utils:TriggerEntityKilledCallbacks(_Entity, _Attacker)
+function Swift.Utils:TriggerEntityKilledCallbacks(_Entity, _Attacker)
     local DefenderID = GetID(_Entity);
     local AttackerID = GetID(_Attacker or 0);
     if AttackerID == 0 or DefenderID == 0 or Logic.GetEntityHealth(DefenderID) > 0 then
@@ -3324,32 +3399,32 @@ function Revision.Utils:TriggerEntityKilledCallbacks(_Entity, _Attacker)
     ));
 end
 
-function Revision.Utils:GetCustomVariable(_Name)
+function Swift.Utils:GetCustomVariable(_Name)
     return QSB.CustomVariable[_Name];
 end
 
-function Revision.Utils:SetCustomVariable(_Name, _Value)
-    Revision.Utils:UpdateCustomVariable(_Name, _Value);
+function Swift.Utils:SetCustomVariable(_Name, _Value)
+    Swift.Utils:UpdateCustomVariable(_Name, _Value);
     local Value = tostring(_Value);
     if type(_Value) ~= "number" then
         Value = [["]] ..Value.. [["]];
     end
     if GUI then
-        Revision.Event:DispatchScriptCommand(QSB.ScriptCommands.UpdateCustomVariable, 0, _Name, Value);
+        Swift.Event:DispatchScriptCommand(QSB.ScriptCommands.UpdateCustomVariable, 0, _Name, Value);
     else
         Logic.ExecuteInLuaLocalState(string.format(
-            [[Revision.Utils:UpdateCustomVariable("%s", %s)]],
+            [[Swift.Utils:UpdateCustomVariable("%s", %s)]],
             _Name,
             Value
         ));
     end
 end
 
-function Revision.Utils:UpdateCustomVariable(_Name, _Value)
+function Swift.Utils:UpdateCustomVariable(_Name, _Value)
     if QSB.CustomVariable[_Name] then
         local Old = QSB.CustomVariable[_Name];
         QSB.CustomVariable[_Name] = _Value;
-        Revision.Event:DispatchScriptEvent(
+        Swift.Event:DispatchScriptEvent(
             QSB.ScriptEvents.CustomValueChanged,
             _Name,
             Old,
@@ -3357,7 +3432,7 @@ function Revision.Utils:UpdateCustomVariable(_Name, _Value)
         );
     else
         QSB.CustomVariable[_Name] = _Value;
-        Revision.Event:DispatchScriptEvent(
+        Swift.Event:DispatchScriptEvent(
             QSB.ScriptEvents.CustomValueChanged,
             _Name,
             nil,
@@ -3382,7 +3457,7 @@ end
 -- local Value = API.ObtainCustomVariable("MyVariable", 0);
 --
 function API.SaveCustomVariable(_Name, _Value)
-    Revision.Utils:SetCustomVariable(_Name, _Value);
+    Swift.Utils:SetCustomVariable(_Name, _Value);
 end
 
 ---
@@ -4217,13 +4292,13 @@ function API.GroupHurt(_Entity, _Damage, _Attacker)
         if Health <= _Damage then
             _Damage = _Damage - Health;
             Logic.HurtEntity(EntityToHurt, Health);
-            Revision.Utils:TriggerEntityKilledCallbacks(EntityToHurt, _Attacker);
+            Swift.Utils:TriggerEntityKilledCallbacks(EntityToHurt, _Attacker);
             if IsLeader and _Damage > 0 then
                 API.GroupHurt(EntityToHurt, _Damage);
             end
         else
             Logic.HurtEntity(EntityToHurt, _Damage);
-            Revision.Utils:TriggerEntityKilledCallbacks(EntityToHurt, _Attacker);
+            Swift.Utils:TriggerEntityKilledCallbacks(EntityToHurt, _Attacker);
         end
     end
 end
@@ -4281,35 +4356,35 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @local
 --
 
-Revision.Quest = {}
+Swift.Quest = {}
 
-function Revision.Quest:Initalize()
-    QSB.ScriptEvents.QuestFailure = Revision.Event:CreateScriptEvent("Event_QuestFailure");
-    QSB.ScriptEvents.QuestInterrupt = Revision.Event:CreateScriptEvent("Event_QuestInterrupt");
-    QSB.ScriptEvents.QuestReset = Revision.Event:CreateScriptEvent("Event_QuestReset");
-    QSB.ScriptEvents.QuestSuccess = Revision.Event:CreateScriptEvent("Event_QuestSuccess");
-    QSB.ScriptEvents.QuestTrigger = Revision.Event:CreateScriptEvent("Event_QuestTrigger");
+function Swift.Quest:Initalize()
+    QSB.ScriptEvents.QuestFailure = Swift.Event:CreateScriptEvent("Event_QuestFailure");
+    QSB.ScriptEvents.QuestInterrupt = Swift.Event:CreateScriptEvent("Event_QuestInterrupt");
+    QSB.ScriptEvents.QuestReset = Swift.Event:CreateScriptEvent("Event_QuestReset");
+    QSB.ScriptEvents.QuestSuccess = Swift.Event:CreateScriptEvent("Event_QuestSuccess");
+    QSB.ScriptEvents.QuestTrigger = Swift.Event:CreateScriptEvent("Event_QuestTrigger");
 
-    if Revision.Environment == QSB.Environment.GLOBAL then
+    if Swift.Environment == QSB.Environment.GLOBAL then
         self:OverrideQuestSystemGlobal();
     end
 end
 
-function Revision.Quest:OnSaveGameLoaded()
+function Swift.Quest:OnSaveGameLoaded()
 end
 
-function Revision.Quest:OverrideQuestSystemGlobal()
+function Swift.Quest:OverrideQuestSystemGlobal()
     QuestTemplate.Trigger_Orig_QSB_Core = QuestTemplate.Trigger
     QuestTemplate.Trigger = function(_quest)
         QuestTemplate.Trigger_Orig_QSB_Core(_quest);
         for i=1,_quest.Objectives[0] do
             if _quest.Objectives[i].Type == Objective.Custom2 and _quest.Objectives[i].Data[1].SetDescriptionOverwrite then
                 local Desc = _quest.Objectives[i].Data[1]:SetDescriptionOverwrite(_quest);
-                Revision.Quest:ChangeCustomQuestCaptionText(Desc, _quest);
+                Swift.Quest:ChangeCustomQuestCaptionText(Desc, _quest);
                 break;
             end
         end
-        Revision.Quest:SendQuestStateEvent(_quest.Identifier, "QuestTrigger");
+        Swift.Quest:SendQuestStateEvent(_quest.Identifier, "QuestTrigger");
     end
 
     QuestTemplate.Interrupt_Orig_QSB_Core = QuestTemplate.Interrupt;
@@ -4327,35 +4402,35 @@ function Revision.Quest:OverrideQuestSystemGlobal()
             end
         end
 
-        Revision.Quest:SendQuestStateEvent(_Quest.Identifier, "QuestInterrupt");
+        Swift.Quest:SendQuestStateEvent(_Quest.Identifier, "QuestInterrupt");
     end
 
     QuestTemplate.Fail_Orig_QSB_Core = QuestTemplate.Fail;
     QuestTemplate.Fail = function(_Quest)
         _Quest:Fail_Orig_QSB_Core();
-        Revision.Quest:SendQuestStateEvent(_Quest.Identifier, "QuestFailure");
+        Swift.Quest:SendQuestStateEvent(_Quest.Identifier, "QuestFailure");
     end
 
     QuestTemplate.Success_Orig_QSB_Core = QuestTemplate.Success;
     QuestTemplate.Success = function(_Quest)
         _Quest:Success_Orig_QSB_Core();
-        Revision.Quest:SendQuestStateEvent(_Quest.Identifier, "QuestSuccess");
+        Swift.Quest:SendQuestStateEvent(_Quest.Identifier, "QuestSuccess");
     end
 end
 
-function Revision.Quest:SendQuestStateEvent(_QuestName, _StateName)
+function Swift.Quest:SendQuestStateEvent(_QuestName, _StateName)
     local QuestID = API.GetQuestID(_QuestName);
     if Quests[QuestID] then
-        Revision.Event:DispatchScriptEvent(QSB.ScriptEvents[_StateName], QuestID);
+        Swift.Event:DispatchScriptEvent(QSB.ScriptEvents[_StateName], QuestID);
         Logic.ExecuteInLuaLocalState(string.format(
-            [[Revision.Event:DispatchScriptEvent(QSB.ScriptEvents["%s"], %d)]],
+            [[Swift.Event:DispatchScriptEvent(QSB.ScriptEvents["%s"], %d)]],
             _StateName,
             QuestID
         ));
     end
 end
 
-function Revision.Quest:ChangeCustomQuestCaptionText(_Text, _Quest)
+function Swift.Quest:ChangeCustomQuestCaptionText(_Text, _Quest)
     if _Quest and _Quest.Visible then
         _Quest.QuestDescription = _Text;
         Logic.ExecuteInLuaLocalState([[
@@ -4535,9 +4610,9 @@ function API.RestartQuest(_QuestName, _NoMessage)
             Quest.Job = Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "Quest_Loop", 1, 0, {Quest.QueueID});
         end
         -- Note: Send the event
-        Revision.Event:DispatchScriptEvent(QSB.ScriptEvents.QuestReset, QuestID);
+        Swift.Event:DispatchScriptEvent(QSB.ScriptEvents.QuestReset, QuestID);
         Logic.ExecuteInLuaLocalState(string.format(
-            "Revision.Event:DispatchScriptEvent(QSB.ScriptEvents.QuestReset, %d)",
+            "Swift.Event:DispatchScriptEvent(QSB.ScriptEvents.QuestReset, %d)",
             QuestID
         ));
         return QuestID, Quest;
@@ -4630,38 +4705,38 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @local
 --
 
-Revision.Debug = {
+Swift.Debug = {
     CheckAtRun           = false;
     TraceQuests          = false;
     DevelopingCheats     = false;
     DevelopingShell      = false;
 };
 
-function Revision.Debug:Initalize()
-    QSB.ScriptEvents.DebugChatConfirmed = Revision.Event:CreateScriptEvent("Event_DebugChatConfirmed");
-    QSB.ScriptEvents.DebugConfigChanged = Revision.Event:CreateScriptEvent("Event_DebugConfigChanged");
+function Swift.Debug:Initalize()
+    QSB.ScriptEvents.DebugChatConfirmed = Swift.Event:CreateScriptEvent("Event_DebugChatConfirmed");
+    QSB.ScriptEvents.DebugConfigChanged = Swift.Event:CreateScriptEvent("Event_DebugConfigChanged");
 
-    if Revision.Environment == QSB.Environment.LOCAL then
+    if Swift.Environment == QSB.Environment.LOCAL then
         self:InitalizeQsbDebugHotkeys();
 
         API.AddScriptEventListener(
             QSB.ScriptEvents.ChatClosed,
             function(...)
-                Revision.Debug:ProcessDebugInput(unpack(arg));
+                Swift.Debug:ProcessDebugInput(unpack(arg));
             end
         );
     end
 end
 
-function Revision.Debug:OnSaveGameLoaded()
-    if Revision.Environment == QSB.Environment.LOCAL then
+function Swift.Debug:OnSaveGameLoaded()
+    if Swift.Environment == QSB.Environment.LOCAL then
         self:InitalizeDebugWidgets();
         self:InitalizeQsbDebugHotkeys();
     end
 end
 
-function Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)
-    if Revision.Environment == QSB.Environment.LOCAL then
+function Swift.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)
+    if Swift.Environment == QSB.Environment.LOCAL then
         return;
     end
 
@@ -4670,7 +4745,7 @@ function Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _Developing
     self.DevelopingCheats = _DevelopingCheats == true;
     self.DevelopingShell  = _DevelopingShell == true;
 
-    Revision.Event:DispatchScriptEvent(
+    Swift.Event:DispatchScriptEvent(
         QSB.ScriptEvents.DebugModeStatusChanged,
         self.CheckAtRun,
         self.TraceQuests,
@@ -4680,19 +4755,19 @@ function Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _Developing
 
     Logic.ExecuteInLuaLocalState(string.format(
         [[
-            Revision.Debug.CheckAtRun       = %s;
-            Revision.Debug.TraceQuests      = %s;
-            Revision.Debug.DevelopingCheats = %s;
-            Revision.Debug.DevelopingShell  = %s;
+            Swift.Debug.CheckAtRun       = %s;
+            Swift.Debug.TraceQuests      = %s;
+            Swift.Debug.DevelopingCheats = %s;
+            Swift.Debug.DevelopingShell  = %s;
 
-            Revision.Event:DispatchScriptEvent(
+            Swift.Event:DispatchScriptEvent(
                 QSB.ScriptEvents.DebugModeStatusChanged,
-                Revision.Debug.CheckAtRun,
-                Revision.Debug.TraceQuests,
-                Revision.Debug.DevelopingCheats,
-                Revision.Debug.DevelopingShell
+                Swift.Debug.CheckAtRun,
+                Swift.Debug.TraceQuests,
+                Swift.Debug.DevelopingCheats,
+                Swift.Debug.DevelopingShell
             );
-            Revision.Debug:InitalizeDebugWidgets();
+            Swift.Debug:InitalizeDebugWidgets();
         ]],
         tostring(self.CheckAtRun),
         tostring(self.TraceQuests),
@@ -4701,7 +4776,7 @@ function Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _Developing
     ));
 end
 
-function Revision.Debug:InitalizeDebugWidgets()
+function Swift.Debug:InitalizeDebugWidgets()
     if Network.IsNATReady ~= nil and Framework.IsNetworkGame() then
         return;
     end
@@ -4718,37 +4793,37 @@ function Revision.Debug:InitalizeDebugWidgets()
     end
 end
 
-function Revision.Debug:InitalizeQsbDebugHotkeys()
+function Swift.Debug:InitalizeQsbDebugHotkeys()
     if Framework.IsNetworkGame() then
         return;
     end
     -- Restart map
     Input.KeyBindDown(
         Keys.ModifierControl + Keys.ModifierShift + Keys.ModifierAlt + Keys.R,
-        "Revision.Debug:ProcessDebugShortcut('RestartMap')",
+        "Swift.Debug:ProcessDebugShortcut('RestartMap')",
         30,
         false
     );
     -- Open chat
     Input.KeyBindDown(
         Keys.ModifierShift + Keys.OemPipe,
-        "Revision.Debug:ProcessDebugShortcut('Terminal')",
+        "Swift.Debug:ProcessDebugShortcut('Terminal')",
         30,
         false
     );
 end
 
-function Revision.Debug:ProcessDebugShortcut(_Type, _Params)
+function Swift.Debug:ProcessDebugShortcut(_Type, _Params)
     if self.DevelopingCheats then
         if _Type == "RestartMap" then
-            API.RestartMap();
+            Framework.RestartMap();
         elseif _Type == "Terminal" then
             API.ShowTextInput(GUI.GetPlayerID(), true);
         end
     end
 end
 
-function Revision.Debug:ProcessDebugInput(_Input, _PlayerID, _DebugAllowed)
+function Swift.Debug:ProcessDebugInput(_Input, _PlayerID, _DebugAllowed)
     if _DebugAllowed then
         if _Input:lower():find("^restartmap") then
             self:ProcessDebugShortcut("RestartMap");
@@ -4757,9 +4832,9 @@ function Revision.Debug:ProcessDebugInput(_Input, _PlayerID, _DebugAllowed)
         elseif _Input:lower():find("^version") then
             local Slices = _Input:slice(" ");
             if Slices[2] then
-                for i= 1, #Revision.ModuleRegister do
-                    if Revision.ModuleRegister[i].Properties.Name ==  Slices[2] then
-                        GUI.AddStaticNote("Version: " ..Revision.ModuleRegister[i].Properties.Version);
+                for i= 1, #Swift.ModuleRegister do
+                    if Swift.ModuleRegister[i].Properties.Name ==  Slices[2] then
+                        GUI.AddStaticNote("Version: " ..Swift.ModuleRegister[i].Properties.Version);
                     end
                 end
                 return;
@@ -4811,7 +4886,7 @@ end
 -- @within System
 --
 function API.ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell)
-    Revision.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell);
+    Swift.Debug:ActivateDebugMode(_CheckAtRun, _TraceQuests, _DevelopingCheats, _DevelopingShell);
 end
 
 --[[
@@ -4830,7 +4905,7 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @local
 --
 
-Revision.ScriptingValue = {
+Swift.ScriptingValue = {
     SV = {
         Game = "Vanilla",
         Vanilla = {
@@ -4852,17 +4927,17 @@ Revision.ScriptingValue = {
     }
 }
 
-function Revision.ScriptingValue:Initalize()
-    if Revision.GameVersion == QSB.GameVersion.HISTORY_EDITION then
+function Swift.ScriptingValue:Initalize()
+    if Swift.GameVersion == QSB.GameVersion.HISTORY_EDITION then
         self.SV.Game = "HistoryEdition";
     end
     QSB.ScriptingValue = self.SV[self.SV.Game];
 end
 
-function Revision.ScriptingValue:OnSaveGameLoaded()
+function Swift.ScriptingValue:OnSaveGameLoaded()
     -- Porting savegames between game versions
     -- (Not recommended but we try to support it)
-    if Revision.GameVersion == QSB.GameVersion.HISTORY_EDITION then
+    if Swift.GameVersion == QSB.GameVersion.HISTORY_EDITION then
         self.SV.Game = "HistoryEdition";
     end
     QSB.ScriptingValue = self.SV[self.SV.Game];
@@ -4873,7 +4948,7 @@ QSB.ScriptingValue = {};
 -- -------------------------------------------------------------------------- --
 -- Conversion Methods
 
-function Revision.ScriptingValue:BitsInteger(num)
+function Swift.ScriptingValue:BitsInteger(num)
     local t = {};
     while num > 0 do
         rest = math.qmod(num, 2);
@@ -4884,7 +4959,7 @@ function Revision.ScriptingValue:BitsInteger(num)
     return t;
 end
 
-function Revision.ScriptingValue:BitsFraction(num, t)
+function Swift.ScriptingValue:BitsFraction(num, t)
     for i = 1, 48 do
         num = num * 2;
         if(num >= 1) then
@@ -4900,7 +4975,7 @@ function Revision.ScriptingValue:BitsFraction(num, t)
     return t;
 end
 
-function Revision.ScriptingValue:IntegerToFloat(num)
+function Swift.ScriptingValue:IntegerToFloat(num)
     if(num == 0) then
         return 0;
     end
@@ -4927,7 +5002,7 @@ function Revision.ScriptingValue:IntegerToFloat(num)
     return fraction * math.pow(2, exp) * sign;
 end
 
-function Revision.ScriptingValue:FloatToInteger(fval)
+function Swift.ScriptingValue:FloatToInteger(fval)
     if(fval == 0) then
         return 0;
     end
@@ -5065,7 +5140,7 @@ end
 -- local Converted = API.ConvertIntegerToFloat(Value)
 --
 function API.ConvertIntegerToFloat(_Value)
-    return Revision.ScriptingValue:IntegerToFloat(_Value);
+    return Swift.ScriptingValue:IntegerToFloat(_Value);
 end
 
 ---
@@ -5079,7 +5154,7 @@ end
 -- local Converted = API.ConvertFloatToInteger(Value)
 --
 function API.ConvertFloatToInteger(_Value)
-    return Revision.ScriptingValue:FloatToInteger(_Value);
+    return Swift.ScriptingValue:FloatToInteger(_Value);
 end
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
@@ -5097,7 +5172,7 @@ You may use and modify this file unter the terms of the MIT licence.
 -- @local
 --
 
-Revision.Behavior = {
+Swift.Behavior = {
     QuestCounter = 0,
     Text = {
         ActivateBuff = {
@@ -5153,19 +5228,19 @@ QSB.DestroyedSoldiers = {};
 QSB.EffectNameToID = {};
 QSB.InitalizedObjekts = {};
 
-function Revision.Behavior:Initalize()
-    if Revision.Environment == QSB.Environment.GLOBAL then
+function Swift.Behavior:Initalize()
+    if Swift.Environment == QSB.Environment.GLOBAL then
         self:OverrideQuestMarkers();
     end
-    if Revision.Environment == QSB.Environment.LOCAL then
+    if Swift.Environment == QSB.Environment.LOCAL then
         self:OverrideDisplayQuestObjective();
     end
 end
 
-function Revision.Behavior:OnSaveGameLoaded()
+function Swift.Behavior:OnSaveGameLoaded()
 end
 
-function Revision.Behavior:OverrideQuestMarkers()
+function Swift.Behavior:OverrideQuestMarkers()
     QuestTemplate.RemoveQuestMarkers = function(self)
         for i=1, self.Objectives[0] do
             if self.Objectives[i].Type == Objective.Distance then
@@ -5204,7 +5279,7 @@ function Revision.Behavior:OverrideQuestMarkers()
     end
 end
 
-function Revision.Behavior:OverrideDisplayQuestObjective()
+function Swift.Behavior:OverrideDisplayQuestObjective()
     GUI_Interaction.DisplayQuestObjective_Orig_QSB_Kernel = GUI_Interaction.DisplayQuestObjective
     GUI_Interaction.DisplayQuestObjective = function(_QuestIndex, _MessageKey)
         local Quest, QuestType = GUI_Interaction.GetPotentialSubQuestAndType(_QuestIndex);
@@ -5217,7 +5292,7 @@ function Revision.Behavior:OverrideDisplayQuestObjective()
     end
 end
 
-function Revision.Behavior:IsQuestPositionReached(_Quest, _Objective)
+function Swift.Behavior:IsQuestPositionReached(_Quest, _Objective)
     local IDdata2 = GetID(_Objective.Data[1]);
     if IDdata2 == -65566 then
         _Objective.Data[1] = Logic.GetKnightID(_Quest.ReceivingPlayer);
@@ -5293,7 +5368,7 @@ function B_Reward_DEBUG:GetCustomData(_Index)
     return {"true","false"};
 end
 
-Revision:RegisterBehavior(B_Reward_DEBUG);
+Swift:RegisterBehavior(B_Reward_DEBUG);
 
 -- -------------------------------------------------------------------------- --
 -- GOALS
@@ -5335,7 +5410,7 @@ function B_Goal_ActivateObject:GetMsgKey()
     return "Quest_Object_Activate"
 end
 
-Revision:RegisterBehavior(B_Goal_ActivateObject);
+Swift:RegisterBehavior(B_Goal_ActivateObject);
 
 -- -------------------------------------------------------------------------- --
 
@@ -5438,7 +5513,7 @@ function B_Goal_Deliver:GetMsgKey()
     return "Quest_Deliver_Goods"
 end
 
-Revision:RegisterBehavior(B_Goal_Deliver);
+Swift:RegisterBehavior(B_Goal_Deliver);
 
 -- -------------------------------------------------------------------------- --
 
@@ -5494,11 +5569,11 @@ end
 function B_Goal_Diplomacy:ChangeCaption(_Quest)
     local PlayerName = GetPlayerName(self.PlayerID) or "";
     local Text = string.format(
-        Revision:Localize(self.TextPattern),
-        Revision:Localize(self.DiploNameMap[self.DiplState]),
+        Swift:Localize(self.TextPattern),
+        Swift:Localize(self.DiploNameMap[self.DiplState]),
         PlayerName
     );
-    Revision.Quest:ChangeCustomQuestCaptionText(Text, _Quest);
+    Swift.Quest:ChangeCustomQuestCaptionText(Text, _Quest);
 end
 
 function B_Goal_Diplomacy:CustomFunction(_Quest)
@@ -5540,7 +5615,7 @@ function B_Goal_Diplomacy:GetCustomData(_Index)
     end
 end
 
-Revision:RegisterBehavior(B_Goal_Diplomacy);
+Swift:RegisterBehavior(B_Goal_Diplomacy);
 
 -- -------------------------------------------------------------------------- --
 
@@ -5598,7 +5673,7 @@ function B_Goal_DiscoverPlayer:GetMsgKey()
     return "Quest_Discover"
 end
 
-Revision:RegisterBehavior(B_Goal_DiscoverPlayer);
+Swift:RegisterBehavior(B_Goal_DiscoverPlayer);
 
 -- -------------------------------------------------------------------------- --
 
@@ -5646,7 +5721,7 @@ function B_Goal_DiscoverTerritory:GetMsgKey()
     return "Quest_Discover_Territory"
 end
 
-Revision:RegisterBehavior(B_Goal_DiscoverTerritory);
+Swift:RegisterBehavior(B_Goal_DiscoverTerritory);
 
 -- -------------------------------------------------------------------------- --
 
@@ -5710,7 +5785,7 @@ function B_Goal_DestroyPlayer:GetMsgKey()
     return "Quest_DestroyEntities_Building"
 end
 
-Revision:RegisterBehavior(B_Goal_DestroyPlayer)
+Swift:RegisterBehavior(B_Goal_DestroyPlayer)
 
 -- -------------------------------------------------------------------------- --
 
@@ -5766,7 +5841,7 @@ function B_Goal_StealInformation:GetMsgKey()
 
 end
 
-Revision:RegisterBehavior(B_Goal_StealInformation);
+Swift:RegisterBehavior(B_Goal_StealInformation);
 
 -- -------------------------------------------------------------------------- --
 
@@ -5825,7 +5900,7 @@ function B_Goal_DestroyAllPlayerUnits:GetMsgKey()
     return "Quest_DestroyEntities"
 end
 
-Revision:RegisterBehavior(B_Goal_DestroyAllPlayerUnits);
+Swift:RegisterBehavior(B_Goal_DestroyAllPlayerUnits);
 
 -- -------------------------------------------------------------------------- --
 
@@ -5895,7 +5970,7 @@ function B_Goal_DestroyScriptEntity:GetMsgKey()
     return "Quest_DestroyEntities"
 end
 
-Revision:RegisterBehavior(B_Goal_DestroyScriptEntity);
+Swift:RegisterBehavior(B_Goal_DestroyScriptEntity);
 
 -- -------------------------------------------------------------------------- --
 
@@ -5983,7 +6058,7 @@ function B_Goal_DestroyType:GetMsgKey()
     return "Quest_DestroyEntities"
 end
 
-Revision:RegisterBehavior(B_Goal_DestroyType);
+Swift:RegisterBehavior(B_Goal_DestroyType);
 
 -- -------------------------------------------------------------------------- --
 
@@ -6066,7 +6141,7 @@ function B_Goal_EntityDistance:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Goal_EntityDistance);
+Swift:RegisterBehavior(B_Goal_EntityDistance);
 
 -- -------------------------------------------------------------------------- --
 
@@ -6116,7 +6191,7 @@ function B_Goal_KnightDistance:AddParameter(_Index, _Parameter)
     end
 end
 
-Revision:RegisterBehavior(B_Goal_KnightDistance);
+Swift:RegisterBehavior(B_Goal_KnightDistance);
 
 ---
 -- Eine bestimmte Anzahl an Einheiten einer Kategorie muss sich auf dem
@@ -6254,7 +6329,7 @@ function B_Goal_UnitsOnTerritory:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Goal_UnitsOnTerritory);
+Swift:RegisterBehavior(B_Goal_UnitsOnTerritory);
 
 -- -------------------------------------------------------------------------- --
 
@@ -6318,14 +6393,14 @@ end
 
 function B_Goal_ActivateBuff:CustomFunction(_Quest)
    if not _Quest.QuestDescription or _Quest.QuestDescription == "" then
-        local tMapping = Revision.LuaBase:CopyTable(Revision.Behavior.Text.ActivateBuff.BuffsVanilla);
+        local tMapping = Swift.LuaBase:CopyTable(Swift.Behavior.Text.ActivateBuff.BuffsVanilla);
         if g_GameExtraNo >= 1 then
-            tMapping = Revision.LuaBase:CopyTable(Revision.Behavior.Text.ActivateBuff.BuffsEx1, tMapping);
+            tMapping = Swift.LuaBase:CopyTable(Swift.Behavior.Text.ActivateBuff.BuffsEx1, tMapping);
         end
-        Revision.Quest:ChangeCustomQuestCaptionText(
+        Swift.Quest:ChangeCustomQuestCaptionText(
             string.format(
-                Revision:Localize(Revision.Behavior.Text.ActivateBuff.Pattern),
-                Revision:Localize(tMapping[self.BuffName])
+                Swift:Localize(Swift.Behavior.Text.ActivateBuff.Pattern),
+                Swift:Localize(tMapping[self.BuffName])
             ),
             _Quest
         );
@@ -6404,7 +6479,7 @@ function B_Goal_ActivateBuff:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Goal_ActivateBuff);
+Swift:RegisterBehavior(B_Goal_ActivateBuff);
 
 -- -------------------------------------------------------------------------- --
 
@@ -6467,7 +6542,7 @@ function B_Goal_BuildRoad:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Goal_BuildRoad);
+Swift:RegisterBehavior(B_Goal_BuildRoad);
 
 -- -------------------------------------------------------------------------- --
 
@@ -6574,7 +6649,7 @@ function B_Goal_BuildWall:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Goal_BuildWall);
+Swift:RegisterBehavior(B_Goal_BuildWall);
 
 -- -------------------------------------------------------------------------- --
 
@@ -6618,7 +6693,7 @@ function B_Goal_Claim:GetMsgKey()
     return "Quest_Claim_Territory"
 end
 
-Revision:RegisterBehavior(B_Goal_Claim);
+Swift:RegisterBehavior(B_Goal_Claim);
 
 -- -------------------------------------------------------------------------- --
 
@@ -6660,7 +6735,7 @@ function B_Goal_ClaimXTerritories:GetMsgKey()
     return "Quest_Claim_Territory"
 end
 
-Revision:RegisterBehavior(B_Goal_ClaimXTerritories);
+Swift:RegisterBehavior(B_Goal_ClaimXTerritories);
 
 -- -------------------------------------------------------------------------- --
 
@@ -6715,7 +6790,7 @@ function B_Goal_Create:GetMsgKey()
     return Logic.IsEntityTypeInCategory( Entities[self.EntityName], EntityCategories.AttackableBuilding ) == 1 and "Quest_Create_Building" or "Quest_Create_Unit"
 end
 
-Revision:RegisterBehavior(B_Goal_Create);
+Swift:RegisterBehavior(B_Goal_Create);
 
 -- -------------------------------------------------------------------------- --
 
@@ -6761,7 +6836,7 @@ function B_Goal_Produce:GetMsgKey()
     return "Quest_Produce"
 end
 
-Revision:RegisterBehavior(B_Goal_Produce);
+Swift:RegisterBehavior(B_Goal_Produce);
 
 -- -------------------------------------------------------------------------- --
 
@@ -6825,7 +6900,7 @@ function B_Goal_GoodAmount:GetCustomData( _Index )
     return Data
 end
 
-Revision:RegisterBehavior(B_Goal_GoodAmount);
+Swift:RegisterBehavior(B_Goal_GoodAmount);
 
 -- -------------------------------------------------------------------------- --
 
@@ -6895,7 +6970,7 @@ function B_Goal_SatisfyNeed:GetMsgKey()
     -- No default message
 end
 
-Revision:RegisterBehavior(B_Goal_SatisfyNeed);
+Swift:RegisterBehavior(B_Goal_SatisfyNeed);
 
 -- -------------------------------------------------------------------------- --
 
@@ -6940,7 +7015,7 @@ function B_Goal_SettlersNumber:GetMsgKey()
     return "Quest_NumberSettlers";
 end
 
-Revision:RegisterBehavior(B_Goal_SettlersNumber);
+Swift:RegisterBehavior(B_Goal_SettlersNumber);
 
 -- -------------------------------------------------------------------------- --
 
@@ -6981,7 +7056,7 @@ function B_Goal_Spouses:GetMsgKey()
     return "Quest_NumberSpouses"
 end
 
-Revision:RegisterBehavior(B_Goal_Spouses);
+Swift:RegisterBehavior(B_Goal_Spouses);
 
 -- -------------------------------------------------------------------------- --
 
@@ -7039,11 +7114,11 @@ function B_Goal_SoldierCount:CustomFunction(_Quest)
     if not _Quest.QuestDescription or _Quest.QuestDescription == "" then
         local Relation = tostring(self.bRelSmallerThan);
         local PlayerName = GetPlayerName(self.PlayerID) or "";
-        Revision.Quest:ChangeCustomQuestCaptionText(
+        Swift.Quest:ChangeCustomQuestCaptionText(
             string.format(
-                Revision:Localize(Revision.Behavior.Text.SoldierCount.Pattern),
+                Swift:Localize(Swift.Behavior.Text.SoldierCount.Pattern),
                 PlayerName,
-                Revision:Localize(Revision.Behavior.Text.SoldierCount.Relation[Relation]),
+                Swift:Localize(Swift.Behavior.Text.SoldierCount.Relation[Relation]),
                 self.NumberOfUnits
             ),
             _Quest
@@ -7091,7 +7166,7 @@ function B_Goal_SoldierCount:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Goal_SoldierCount);
+Swift:RegisterBehavior(B_Goal_SoldierCount);
 
 -- -------------------------------------------------------------------------- --
 
@@ -7173,7 +7248,7 @@ function B_Goal_KnightTitle:GetCustomData( _Index )
     return {"Knight", "Mayor", "Baron", "Earl", "Marquees", "Duke", "Archduke"}
 end
 
-Revision:RegisterBehavior(B_Goal_KnightTitle);
+Swift:RegisterBehavior(B_Goal_KnightTitle);
 
 -- -------------------------------------------------------------------------- --
 
@@ -7224,9 +7299,9 @@ end
 function B_Goal_Festivals:CustomFunction(_Quest)
     if not _Quest.QuestDescription or _Quest.QuestDescription == "" then
         local PlayerName = GetPlayerName(self.PlayerID) or "";
-        Revision.Quest:ChangeCustomQuestCaptionText(
+        Swift.Quest:ChangeCustomQuestCaptionText(
             string.format(
-                Revision:Localize(Revision.Behavior.Text.Festivals.Pattern),
+                Swift:Localize(Swift.Behavior.Text.Festivals.Pattern),
                 PlayerName, self.NeededFestivals
             ), 
             _Quest
@@ -7280,7 +7355,7 @@ function B_Goal_Festivals:GetIcon()
     return {4,15}
 end
 
-Revision:RegisterBehavior(B_Goal_Festivals)
+Swift:RegisterBehavior(B_Goal_Festivals)
 
 -- -------------------------------------------------------------------------- --
 
@@ -7339,7 +7414,7 @@ function B_Goal_Capture:GetMsgKey()
     end
 end
 
-Revision:RegisterBehavior(B_Goal_Capture);
+Swift:RegisterBehavior(B_Goal_Capture);
 
 -- -------------------------------------------------------------------------- --
 
@@ -7421,7 +7496,7 @@ function B_Goal_CaptureType:GetMsgKey()
     end
 end
 
-Revision:RegisterBehavior(B_Goal_CaptureType);
+Swift:RegisterBehavior(B_Goal_CaptureType);
 
 -- -------------------------------------------------------------------------- --
 
@@ -7497,7 +7572,7 @@ function B_Goal_Protect:GetMsgKey()
     return "Quest_Protect"
 end
 
-Revision:RegisterBehavior(B_Goal_Protect);
+Swift:RegisterBehavior(B_Goal_Protect);
 
 -- -------------------------------------------------------------------------- --
 
@@ -7542,7 +7617,7 @@ function B_Goal_Refill:AddParameter(_Index, _Parameter)
 end
 
 if g_GameExtraNo > 0 then
-    Revision:RegisterBehavior(B_Goal_Refill);
+    Swift:RegisterBehavior(B_Goal_Refill);
 end
 
 -- -------------------------------------------------------------------------- --
@@ -7630,7 +7705,7 @@ function B_Goal_ResourceAmount:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Goal_ResourceAmount);
+Swift:RegisterBehavior(B_Goal_ResourceAmount);
 
 -- -------------------------------------------------------------------------- --
 
@@ -7656,7 +7731,7 @@ function B_Goal_InstantFailure:GetGoalTable()
     return {Objective.DummyFail};
 end
 
-Revision:RegisterBehavior(B_Goal_InstantFailure);
+Swift:RegisterBehavior(B_Goal_InstantFailure);
 
 -- -------------------------------------------------------------------------- --
 
@@ -7682,7 +7757,7 @@ function B_Goal_InstantSuccess:GetGoalTable()
     return {Objective.Dummy};
 end
 
-Revision:RegisterBehavior(B_Goal_InstantSuccess);
+Swift:RegisterBehavior(B_Goal_InstantSuccess);
 
 -- -------------------------------------------------------------------------- --
 
@@ -7711,7 +7786,7 @@ function B_Goal_NoChange:GetGoalTable()
     return { Objective.NoChange }
 end
 
-Revision:RegisterBehavior(B_Goal_NoChange);
+Swift:RegisterBehavior(B_Goal_NoChange);
 
 -- -------------------------------------------------------------------------- --
 
@@ -7778,7 +7853,7 @@ function B_Goal_MapScriptFunction:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Goal_MapScriptFunction);
+Swift:RegisterBehavior(B_Goal_MapScriptFunction);
 
 -- -------------------------------------------------------------------------- --
 
@@ -7892,7 +7967,7 @@ function B_Goal_CustomVariables:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Goal_CustomVariables)
+Swift:RegisterBehavior(B_Goal_CustomVariables)
 
 -- -------------------------------------------------------------------------- --
 
@@ -7976,10 +8051,10 @@ function B_Goal_TributeDiplomacy:GetTributeQuest(_Quest)
             FailureMsg = FailureMsg[Language];
         end
 
-        Revision.Behavior.QuestCounter = Revision.Behavior.QuestCounter+1;
+        Swift.Behavior.QuestCounter = Swift.Behavior.QuestCounter+1;
 
         local QuestID, Quest = QuestTemplate:New (
-            _Quest.Identifier.."_TributeDiplomacyQuest_" ..Revision.Behavior.QuestCounter,
+            _Quest.Identifier.."_TributeDiplomacyQuest_" ..Swift.Behavior.QuestCounter,
             _Quest.SendingPlayer,
             _Quest.ReceivingPlayer,
             {{ Objective.Deliver, {Goods.G_Gold, self.Amount}}},
@@ -8078,7 +8153,7 @@ function B_Goal_TributeDiplomacy:GetCustomData(_Index)
     end
 end
 
-Revision:RegisterBehavior(B_Goal_TributeDiplomacy);
+Swift:RegisterBehavior(B_Goal_TributeDiplomacy);
 
 -- -------------------------------------------------------------------------- --
 
@@ -8206,13 +8281,13 @@ function B_Goal_TributeClaim:CreateTributeQuest(_Quest)
             FailureMsg = FailureMsg[Language];
         end
 
-        Revision.Behavior.QuestCounter = Revision.Behavior.QuestCounter+1;
+        Swift.Behavior.QuestCounter = Swift.Behavior.QuestCounter+1;
 
         local OnFinished = function()
             self.Time = Logic.GetTime();
         end
         local QuestID, Quest = QuestTemplate:New(
-            _Quest.Identifier.."_TributeClaimQuest" ..Revision.Behavior.QuestCounter,
+            _Quest.Identifier.."_TributeClaimQuest" ..Swift.Behavior.QuestCounter,
             self.PlayerID,
             _Quest.ReceivingPlayer,
             {{ Objective.Deliver, {Goods.G_Gold, self.Amount}}},
@@ -8357,7 +8432,7 @@ function B_Goal_TributeClaim:GetCustomData(_Index)
     end
 end
 
-Revision:RegisterBehavior(B_Goal_TributeClaim);
+Swift:RegisterBehavior(B_Goal_TributeClaim);
 
 -- -------------------------------------------------------------------------- --
 -- REPRISALS
@@ -8414,7 +8489,7 @@ function B_Reprisal_InteractiveObjectDeactivate:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_InteractiveObjectDeactivate);
+Swift:RegisterBehavior(B_Reprisal_InteractiveObjectDeactivate);
 
 -- -------------------------------------------------------------------------- --
 
@@ -8489,7 +8564,7 @@ function B_Reprisal_InteractiveObjectActivate:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_InteractiveObjectActivate);
+Swift:RegisterBehavior(B_Reprisal_InteractiveObjectActivate);
 
 -- -------------------------------------------------------------------------- --
 
@@ -8531,7 +8606,7 @@ function B_Reprisal_SlightlyDiplomacyDecrease:AddParameter(_Index, _Parameter)
     end
 end
 
-Revision:RegisterBehavior(B_Reprisal_SlightlyDiplomacyDecrease);
+Swift:RegisterBehavior(B_Reprisal_SlightlyDiplomacyDecrease);
 
 -- -------------------------------------------------------------------------- --
 
@@ -8594,7 +8669,7 @@ function B_Reprisal_Diplomacy:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_Diplomacy);
+Swift:RegisterBehavior(B_Reprisal_Diplomacy);
 
 -- -------------------------------------------------------------------------- --
 
@@ -8646,7 +8721,7 @@ function B_Reprisal_DestroyEntity:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_DestroyEntity);
+Swift:RegisterBehavior(B_Reprisal_DestroyEntity);
 
 -- -------------------------------------------------------------------------- --
 
@@ -8697,7 +8772,7 @@ function B_Reprisal_DestroyEffect:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_DestroyEffect);
+Swift:RegisterBehavior(B_Reprisal_DestroyEffect);
 
 -- -------------------------------------------------------------------------- --
 
@@ -8723,7 +8798,7 @@ function B_Reprisal_Defeat:GetReprisalTable()
     return {Reprisal.Defeat};
 end
 
-Revision:RegisterBehavior(B_Reprisal_Defeat);
+Swift:RegisterBehavior(B_Reprisal_Defeat);
 
 -- -------------------------------------------------------------------------- --
 
@@ -8751,7 +8826,7 @@ function B_Reprisal_FakeDefeat:GetReprisalTable()
     return { Reprisal.FakeDefeat }
 end
 
-Revision:RegisterBehavior(B_Reprisal_FakeDefeat);
+Swift:RegisterBehavior(B_Reprisal_FakeDefeat);
 
 -- -------------------------------------------------------------------------- --
 
@@ -8847,7 +8922,7 @@ function B_Reprisal_ReplaceEntity:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_ReplaceEntity);
+Swift:RegisterBehavior(B_Reprisal_ReplaceEntity);
 
 -- -------------------------------------------------------------------------- --
 
@@ -8896,7 +8971,7 @@ function B_Reprisal_QuestRestart:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_QuestRestart);
+Swift:RegisterBehavior(B_Reprisal_QuestRestart);
 
 -- -------------------------------------------------------------------------- --
 
@@ -8945,7 +9020,7 @@ function B_Reprisal_QuestFailure:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_QuestFailure);
+Swift:RegisterBehavior(B_Reprisal_QuestFailure);
 
 -- -------------------------------------------------------------------------- --
 
@@ -8994,7 +9069,7 @@ function B_Reprisal_QuestSuccess:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_QuestSuccess);
+Swift:RegisterBehavior(B_Reprisal_QuestSuccess);
 
 -- -------------------------------------------------------------------------- --
 
@@ -9045,7 +9120,7 @@ function B_Reprisal_QuestActivate:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_QuestActivate)
+Swift:RegisterBehavior(B_Reprisal_QuestActivate)
 
 -- -------------------------------------------------------------------------- --
 
@@ -9101,7 +9176,7 @@ function B_Reprisal_QuestInterrupt:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_QuestInterrupt);
+Swift:RegisterBehavior(B_Reprisal_QuestInterrupt);
 
 -- -------------------------------------------------------------------------- --
 
@@ -9175,7 +9250,7 @@ function B_Reprisal_QuestForceInterrupt:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_QuestForceInterrupt);
+Swift:RegisterBehavior(B_Reprisal_QuestForceInterrupt);
 
 -- -------------------------------------------------------------------------- --
 
@@ -9274,7 +9349,7 @@ function B_Reprisal_CustomVariables:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_CustomVariables)
+Swift:RegisterBehavior(B_Reprisal_CustomVariables)
 
 -- -------------------------------------------------------------------------- --
 
@@ -9341,7 +9416,7 @@ function B_Reprisal_MapScriptFunction:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_MapScriptFunction);
+Swift:RegisterBehavior(B_Reprisal_MapScriptFunction);
 
 -- -------------------------------------------------------------------------- --
 
@@ -9425,7 +9500,7 @@ function B_Reprisal_Technology:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_Technology);
+Swift:RegisterBehavior(B_Reprisal_Technology);
 
 -- -------------------------------------------------------------------------- --
 -- REWARDS
@@ -9510,7 +9585,7 @@ function B_Reprisal_Technology:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_Technology);
+Swift:RegisterBehavior(B_Reprisal_Technology);
 
 -- -------------------------------------------------------------------------- --
 -- Rewards                                                                    --
@@ -9527,7 +9602,7 @@ function Reward_ObjectDeactivate(...)
     return B_Reward_InteractiveObjectDeactivate:new(...);
 end
 
-B_Reward_InteractiveObjectDeactivate = Revision.LuaBase:CopyTable(B_Reprisal_InteractiveObjectDeactivate);
+B_Reward_InteractiveObjectDeactivate = Swift.LuaBase:CopyTable(B_Reprisal_InteractiveObjectDeactivate);
 B_Reward_InteractiveObjectDeactivate.Name             = "Reward_InteractiveObjectDeactivate";
 B_Reward_InteractiveObjectDeactivate.Description.en   = "Reward: Deactivates an interactive object";
 B_Reward_InteractiveObjectDeactivate.Description.de   = "Lohn: Deaktiviert ein interaktives Objekt";
@@ -9538,7 +9613,7 @@ B_Reward_InteractiveObjectDeactivate.GetRewardTable = function(self, _Quest)
     return { Reward.Custom,{self, self.CustomFunction} }
 end
 
-Revision:RegisterBehavior(B_Reward_InteractiveObjectDeactivate);
+Swift:RegisterBehavior(B_Reward_InteractiveObjectDeactivate);
 
 -- -------------------------------------------------------------------------- --
 
@@ -9561,7 +9636,7 @@ function Reward_ObjectActivate(...)
     return B_Reward_InteractiveObjectActivate:new(...);
 end
 
-B_Reward_InteractiveObjectActivate = Revision.LuaBase:CopyTable(B_Reprisal_InteractiveObjectActivate);
+B_Reward_InteractiveObjectActivate = Swift.LuaBase:CopyTable(B_Reprisal_InteractiveObjectActivate);
 B_Reward_InteractiveObjectActivate.Name             = "Reward_InteractiveObjectActivate";
 B_Reward_InteractiveObjectActivate.Description.en   = "Reward: Activates an interactive object";
 B_Reward_InteractiveObjectActivate.Description.de   = "Lohn: Aktiviert ein interaktives Objekt";
@@ -9572,7 +9647,7 @@ B_Reward_InteractiveObjectActivate.GetRewardTable = function(self, _Quest)
     return { Reward.Custom,{self, self.CustomFunction} };
 end
 
-Revision:RegisterBehavior(B_Reward_InteractiveObjectActivate);
+Swift:RegisterBehavior(B_Reward_InteractiveObjectActivate);
 
 -- -------------------------------------------------------------------------- --
 
@@ -9778,7 +9853,7 @@ function B_Reward_ObjectInit:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reward_ObjectInit);
+Swift:RegisterBehavior(B_Reward_ObjectInit);
 
 -- -------------------------------------------------------------------------- --
 
@@ -9795,7 +9870,7 @@ function Reward_Diplomacy(...)
     return B_Reward_Diplomacy:new(...);
 end
 
-B_Reward_Diplomacy = Revision.LuaBase:CopyTable(B_Reprisal_Diplomacy);
+B_Reward_Diplomacy = Swift.LuaBase:CopyTable(B_Reprisal_Diplomacy);
 B_Reward_Diplomacy.Name             = "Reward_Diplomacy";
 B_Reward_Diplomacy.Description.en   = "Reward: Sets Diplomacy state of two Players to a stated value.";
 B_Reward_Diplomacy.Description.de   = "Lohn: Setzt den Diplomatiestatus zweier Spieler auf den angegebenen Wert.";
@@ -9806,7 +9881,7 @@ B_Reward_Diplomacy.GetRewardTable = function(self, _Quest)
     return { Reward.Custom,{self, self.CustomFunction} }
 end
 
-Revision:RegisterBehavior(B_Reward_Diplomacy);
+Swift:RegisterBehavior(B_Reward_Diplomacy);
 
 -- -------------------------------------------------------------------------- --
 
@@ -9848,7 +9923,7 @@ function B_Reward_SlightlyDiplomacyIncrease:AddParameter(_Index, _Parameter)
     end
 end
 
-Revision:RegisterBehavior(B_Reward_SlightlyDiplomacyIncrease);
+Swift:RegisterBehavior(B_Reward_SlightlyDiplomacyIncrease);
 
 -- -------------------------------------------------------------------------- --
 
@@ -10020,7 +10095,7 @@ function B_Reward_Merchant:GetCustomData(_Index)
     end
 end
 
-Revision:RegisterBehavior(B_Reward_Merchant)
+Swift:RegisterBehavior(B_Reward_Merchant)
 
 -- -------------------------------------------------------------------------- --
 
@@ -10038,7 +10113,7 @@ function Reward_DestroyEntity(...)
     return B_Reward_DestroyEntity:new(...);
 end
 
-B_Reward_DestroyEntity = Revision.LuaBase:CopyTable(B_Reprisal_DestroyEntity);
+B_Reward_DestroyEntity = Swift.LuaBase:CopyTable(B_Reprisal_DestroyEntity);
 B_Reward_DestroyEntity.Name = "Reward_DestroyEntity";
 B_Reward_DestroyEntity.Description.en = "Reward: Replaces an entity with an invisible script entity, which retains the entities name.";
 B_Reward_DestroyEntity.Description.de = "Lohn: Ersetzt eine Entity mit einer unsichtbaren Script-Entity, die den Namen übernimmt.";
@@ -10049,7 +10124,7 @@ B_Reward_DestroyEntity.GetRewardTable = function(self, _Quest)
     return { Reward.Custom,{self, self.CustomFunction} }
 end
 
-Revision:RegisterBehavior(B_Reward_DestroyEntity);
+Swift:RegisterBehavior(B_Reward_DestroyEntity);
 
 -- -------------------------------------------------------------------------- --
 
@@ -10064,7 +10139,7 @@ function Reward_DestroyEffect(...)
     return B_Reward_DestroyEffect:new(...);
 end
 
-B_Reward_DestroyEffect = Revision.LuaBase:CopyTable(B_Reprisal_DestroyEffect);
+B_Reward_DestroyEffect = Swift.LuaBase:CopyTable(B_Reprisal_DestroyEffect);
 B_Reward_DestroyEffect.Name = "Reward_DestroyEffect";
 B_Reward_DestroyEffect.Description.en = "Reward: Destroys an effect.";
 B_Reward_DestroyEffect.Description.de = "Lohn: Zerstört einen Effekt.";
@@ -10075,7 +10150,7 @@ B_Reward_DestroyEffect.GetRewardTable = function(self, _Quest)
     return { Reward.Custom, { self, self.CustomFunction } };
 end
 
-Revision:RegisterBehavior(B_Reward_DestroyEffect);
+Swift:RegisterBehavior(B_Reward_DestroyEffect);
 
 -- -------------------------------------------------------------------------- --
 
@@ -10191,7 +10266,7 @@ function B_Reward_CreateBattalion:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reward_CreateBattalion);
+Swift:RegisterBehavior(B_Reward_CreateBattalion);
 
 -- -------------------------------------------------------------------------- --
 
@@ -10314,7 +10389,7 @@ function B_Reward_CreateSeveralBattalions:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reward_CreateSeveralBattalions);
+Swift:RegisterBehavior(B_Reward_CreateSeveralBattalions);
 
 -- -------------------------------------------------------------------------- --
 
@@ -10418,7 +10493,7 @@ function B_Reward_CreateEffect:GetCustomData(_Index)
     return types;
 end
 
-Revision:RegisterBehavior(B_Reward_CreateEffect);
+Swift:RegisterBehavior(B_Reward_CreateEffect);
 
 -- -------------------------------------------------------------------------- --
 
@@ -10543,17 +10618,17 @@ function B_Reward_CreateEntity:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reward_CreateEntity);
+Swift:RegisterBehavior(B_Reward_CreateEntity);
 
 -- -------------------------------------------------------------------------- --
 
 -- Kompatibelität
-B_Reward_CreateSettler = Revision.LuaBase:CopyTable(B_Reward_CreateEntity);
+B_Reward_CreateSettler = Swift.LuaBase:CopyTable(B_Reward_CreateEntity);
 B_Reward_CreateSettler.Name = "Reward_CreateSettler";
 B_Reward_CreateSettler.Description.en = "Reward: Replaces an entity by a new one of a given type";
 B_Reward_CreateSettler.Description.de = "Lohn: Ersetzt eine Entity durch eine neue gegebenen Typs";
 B_Reward_CreateSettler.Description.fr = "Récompense: Remplace une entité par une nouvelle entité de type donné";
-Revision:RegisterBehavior(B_Reward_CreateSettler);
+Swift:RegisterBehavior(B_Reward_CreateSettler);
 
 -- -------------------------------------------------------------------------- --
 
@@ -10681,7 +10756,7 @@ function B_Reward_CreateSeveralEntities:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reward_CreateSeveralEntities);
+Swift:RegisterBehavior(B_Reward_CreateSeveralEntities);
 
 -- -------------------------------------------------------------------------- --
 
@@ -10746,7 +10821,7 @@ function B_Reward_MoveSettler:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reward_MoveSettler);
+Swift:RegisterBehavior(B_Reward_MoveSettler);
 
 -- -------------------------------------------------------------------------- --
 
@@ -10772,7 +10847,7 @@ function B_Reward_Victory:GetRewardTable()
     return {Reward.Victory};
 end
 
-Revision:RegisterBehavior(B_Reward_Victory);
+Swift:RegisterBehavior(B_Reward_Victory);
 
 -- -------------------------------------------------------------------------- --
 
@@ -10805,7 +10880,7 @@ function B_Reward_Defeat:CustomFunction(_Quest)
     Defeated(_Quest.ReceivingPlayer)
 end
 
-Revision:RegisterBehavior(B_Reward_Defeat);
+Swift:RegisterBehavior(B_Reward_Defeat);
 
 -- -------------------------------------------------------------------------- --
 
@@ -10833,7 +10908,7 @@ function B_Reward_FakeVictory:GetRewardTable()
     return { Reward.FakeVictory }
 end
 
-Revision:RegisterBehavior(B_Reward_FakeVictory);
+Swift:RegisterBehavior(B_Reward_FakeVictory);
 
 -- -------------------------------------------------------------------------- --
 
@@ -11001,7 +11076,7 @@ function B_Reward_AI_SpawnAndAttackTerritory:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reward_AI_SpawnAndAttackTerritory);
+Swift:RegisterBehavior(B_Reward_AI_SpawnAndAttackTerritory);
 
 -- -------------------------------------------------------------------------- --
 
@@ -11140,7 +11215,7 @@ function B_Reward_AI_SpawnAndAttackArea:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reward_AI_SpawnAndAttackArea);
+Swift:RegisterBehavior(B_Reward_AI_SpawnAndAttackArea);
 
 -- -------------------------------------------------------------------------- --
 
@@ -11298,7 +11373,7 @@ function B_Reward_AI_SpawnAndProtectArea:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reward_AI_SpawnAndProtectArea);
+Swift:RegisterBehavior(B_Reward_AI_SpawnAndProtectArea);
 
 -- -------------------------------------------------------------------------- --
 
@@ -11437,7 +11512,7 @@ function B_Reward_AI_SetNumericalFact:Debug(_Quest)
     return false
 end
 
-Revision:RegisterBehavior(B_Reward_AI_SetNumericalFact);
+Swift:RegisterBehavior(B_Reward_AI_SetNumericalFact);
 
 -- -------------------------------------------------------------------------- --
 
@@ -11505,7 +11580,7 @@ function B_Reward_AI_Aggressiveness:GetCustomData(_Index)
     return { "1", "2", "3" };
 end
 
-Revision:RegisterBehavior(B_Reward_AI_Aggressiveness)
+Swift:RegisterBehavior(B_Reward_AI_Aggressiveness)
 
 -- -------------------------------------------------------------------------- --
 
@@ -11564,7 +11639,7 @@ function B_Reward_AI_SetEnemy:Debug(_Quest)
     end
     return false;
 end
-Revision:RegisterBehavior(B_Reward_AI_SetEnemy)
+Swift:RegisterBehavior(B_Reward_AI_SetEnemy)
 
 -- -------------------------------------------------------------------------- --
 
@@ -11584,7 +11659,7 @@ function Reward_ReplaceEntity(...)
     return B_Reward_ReplaceEntity:new(...);
 end
 
-B_Reward_ReplaceEntity = Revision.LuaBase:CopyTable(B_Reprisal_ReplaceEntity);
+B_Reward_ReplaceEntity = Swift.LuaBase:CopyTable(B_Reprisal_ReplaceEntity);
 B_Reward_ReplaceEntity.Name = "Reward_ReplaceEntity";
 B_Reward_ReplaceEntity.Description.en = "Reward: Replaces an entity with a new one of a different type. The playerID can be changed too.";
 B_Reward_ReplaceEntity.Description.de = "Lohn: Ersetzt eine Entity durch eine neue anderen Typs. Es kann auch die Spielerzugehörigkeit geändert werden.";
@@ -11595,7 +11670,7 @@ B_Reward_ReplaceEntity.GetRewardTable = function(self, _Quest)
     return { Reward.Custom,{self, self.CustomFunction} }
 end
 
-Revision:RegisterBehavior(B_Reward_ReplaceEntity);
+Swift:RegisterBehavior(B_Reward_ReplaceEntity);
 
 -- -------------------------------------------------------------------------- --
 
@@ -11663,7 +11738,7 @@ function B_Reward_SetResourceAmount:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reward_SetResourceAmount);
+Swift:RegisterBehavior(B_Reward_SetResourceAmount);
 
 -- -------------------------------------------------------------------------- --
 
@@ -11706,7 +11781,7 @@ function B_Reward_Resources:GetRewardTable()
     return { Reward.Resources, GoodType, self.GoodAmount }
 end
 
-Revision:RegisterBehavior(B_Reward_Resources);
+Swift:RegisterBehavior(B_Reward_Resources);
 
 -- -------------------------------------------------------------------------- --
 
@@ -11841,7 +11916,7 @@ function B_Reward_SendCart:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reward_SendCart);
+Swift:RegisterBehavior(B_Reward_SendCart);
 
 -- -------------------------------------------------------------------------- --
 
@@ -11885,7 +11960,7 @@ function B_Reward_Units:GetRewardTable()
     return { Reward.Units, assert( Entities[self.EntityName] ), self.Amount }
 end
 
-Revision:RegisterBehavior(B_Reward_Units);
+Swift:RegisterBehavior(B_Reward_Units);
 
 -- -------------------------------------------------------------------------- --
 
@@ -11900,7 +11975,7 @@ function Reward_QuestRestart(...)
     return B_Reward_QuestRestart:new(...)
 end
 
-B_Reward_QuestRestart = Revision.LuaBase:CopyTable(B_Reprisal_QuestRestart);
+B_Reward_QuestRestart = Swift.LuaBase:CopyTable(B_Reprisal_QuestRestart);
 B_Reward_QuestRestart.Name = "Reward_QuestRestart";
 B_Reward_QuestRestart.Description.en = "Reward: Restarts a (completed) quest so it can be triggered and completed again.";
 B_Reward_QuestRestart.Description.de = "Lohn: Startet eine (beendete) Quest neu, damit diese neu ausgelöst und beendet werden kann.";
@@ -11911,7 +11986,7 @@ B_Reward_QuestRestart.GetRewardTable = function(self, _Quest)
     return { Reward.Custom,{self, self.CustomFunction} }
 end
 
-Revision:RegisterBehavior(B_Reward_QuestRestart);
+Swift:RegisterBehavior(B_Reward_QuestRestart);
 
 -- -------------------------------------------------------------------------- --
 
@@ -11926,7 +12001,7 @@ function Reward_QuestFailure(...)
     return B_Reward_QuestFailure:new(...)
 end
 
-B_Reward_QuestFailure = Revision.LuaBase:CopyTable(B_Reprisal_QuestFailure);
+B_Reward_QuestFailure = Swift.LuaBase:CopyTable(B_Reprisal_QuestFailure);
 B_Reward_QuestFailure.Name = "Reward_QuestFailure";
 B_Reward_QuestFailure.Description.en = "Reward: Lets another active quest fail.";
 B_Reward_QuestFailure.Description.de = "Lohn: Lässt eine andere aktive Quest fehlschlagen.";
@@ -11937,7 +12012,7 @@ B_Reward_QuestFailure.GetRewardTable = function(self, _Quest)
     return { Reward.Custom,{self, self.CustomFunction} }
 end
 
-Revision:RegisterBehavior(B_Reward_QuestFailure);
+Swift:RegisterBehavior(B_Reward_QuestFailure);
 
 -- -------------------------------------------------------------------------- --
 
@@ -11952,7 +12027,7 @@ function Reward_QuestSuccess(...)
     return B_Reward_QuestSuccess:new(...)
 end
 
-B_Reward_QuestSuccess = Revision.LuaBase:CopyTable(B_Reprisal_QuestSuccess);
+B_Reward_QuestSuccess = Swift.LuaBase:CopyTable(B_Reprisal_QuestSuccess);
 B_Reward_QuestSuccess.Name = "Reward_QuestSuccess";
 B_Reward_QuestSuccess.Description.en = "Reward: Completes another active quest successfully.";
 B_Reward_QuestSuccess.Description.de = "Lohn: Beendet eine andere aktive Quest erfolgreich.";
@@ -11963,7 +12038,7 @@ B_Reward_QuestSuccess.GetRewardTable = function(self, _Quest)
     return { Reward.Custom,{self, self.CustomFunction} }
 end
 
-Revision:RegisterBehavior(B_Reward_QuestSuccess);
+Swift:RegisterBehavior(B_Reward_QuestSuccess);
 
 -- -------------------------------------------------------------------------- --
 
@@ -11978,7 +12053,7 @@ function Reward_QuestActivate(...)
     return B_Reward_QuestActivate:new(...)
 end
 
-B_Reward_QuestActivate = Revision.LuaBase:CopyTable(B_Reprisal_QuestActivate);
+B_Reward_QuestActivate = Swift.LuaBase:CopyTable(B_Reprisal_QuestActivate);
 B_Reward_QuestActivate.Name = "Reward_QuestActivate";
 B_Reward_QuestActivate.Description.en = "Reward: Activates another quest that is not triggered yet.";
 B_Reward_QuestActivate.Description.de = "Lohn: Aktiviert eine andere Quest die noch nicht ausgelöst wurde.";
@@ -11989,7 +12064,7 @@ B_Reward_QuestActivate.GetRewardTable = function(self, _Quest)
     return {Reward.Custom, {self, self.CustomFunction} }
 end
 
-Revision:RegisterBehavior(B_Reward_QuestActivate)
+Swift:RegisterBehavior(B_Reward_QuestActivate)
 
 -- -------------------------------------------------------------------------- --
 
@@ -12004,7 +12079,7 @@ function Reward_QuestInterrupt(...)
     return B_Reward_QuestInterrupt:new(...)
 end
 
-B_Reward_QuestInterrupt = Revision.LuaBase:CopyTable(B_Reprisal_QuestInterrupt);
+B_Reward_QuestInterrupt = Swift.LuaBase:CopyTable(B_Reprisal_QuestInterrupt);
 B_Reward_QuestInterrupt.Name = "Reward_QuestInterrupt";
 B_Reward_QuestInterrupt.Description.en = "Reward: Interrupts another active quest without success or failure.";
 B_Reward_QuestInterrupt.Description.de = "Lohn: Beendet eine andere aktive Quest ohne Erfolg oder Misserfolg.";
@@ -12015,7 +12090,7 @@ B_Reward_QuestInterrupt.GetRewardTable = function(self, _Quest)
     return { Reward.Custom,{self, self.CustomFunction} }
 end
 
-Revision:RegisterBehavior(B_Reward_QuestInterrupt);
+Swift:RegisterBehavior(B_Reward_QuestInterrupt);
 
 -- -------------------------------------------------------------------------- --
 
@@ -12031,7 +12106,7 @@ function Reward_QuestForceInterrupt(...)
     return B_Reward_QuestForceInterrupt:new(...)
 end
 
-B_Reward_QuestForceInterrupt = Revision.LuaBase:CopyTable(B_Reprisal_QuestForceInterrupt);
+B_Reward_QuestForceInterrupt = Swift.LuaBase:CopyTable(B_Reprisal_QuestForceInterrupt);
 B_Reward_QuestForceInterrupt.Name = "Reward_QuestForceInterrupt";
 B_Reward_QuestForceInterrupt.Description.en = "Reward: Interrupts another quest (even when it isn't active yet) without success or failure.";
 B_Reward_QuestForceInterrupt.Description.de = "Lohn: Beendet eine andere Quest, auch wenn diese noch nicht aktiv ist ohne Erfolg oder Misserfolg.";
@@ -12042,7 +12117,7 @@ B_Reward_QuestForceInterrupt.GetRewardTable = function(self, _Quest)
     return { Reward.Custom,{self, self.CustomFunction} }
 end
 
-Revision:RegisterBehavior(B_Reward_QuestForceInterrupt);
+Swift:RegisterBehavior(B_Reward_QuestForceInterrupt);
 
 -- -------------------------------------------------------------------------- --
 
@@ -12073,7 +12148,7 @@ function Reward_CustomVariables(...)
     return B_Reward_CustomVariables:new(...);
 end
 
-B_Reward_CustomVariables = Revision.LuaBase:CopyTable(B_Reprisal_CustomVariables);
+B_Reward_CustomVariables = Swift.LuaBase:CopyTable(B_Reprisal_CustomVariables);
 B_Reward_CustomVariables.Name = "Reward_CustomVariables";
 B_Reward_CustomVariables.Description.en = "Reward: Executes a mathematical operation with this variable. The other operand can be a number or another custom variable.";
 B_Reward_CustomVariables.Description.de = "Lohn: Führt eine mathematische Operation mit der Variable aus. Der andere Operand kann eine Zahl oder eine Custom-Varible sein.";
@@ -12084,7 +12159,7 @@ B_Reward_CustomVariables.GetRewardTable = function(self, _Quest)
     return { Reward.Custom, {self, self.CustomFunction} };
 end
 
-Revision:RegisterBehavior(B_Reward_CustomVariables)
+Swift:RegisterBehavior(B_Reward_CustomVariables)
 
 -- -------------------------------------------------------------------------- --
 
@@ -12109,7 +12184,7 @@ function Reward_MapScriptFunction(...)
     return B_Reward_MapScriptFunction:new(...);
 end
 
-B_Reward_MapScriptFunction = Revision.LuaBase:CopyTable(B_Reprisal_MapScriptFunction);
+B_Reward_MapScriptFunction = Swift.LuaBase:CopyTable(B_Reprisal_MapScriptFunction);
 B_Reward_MapScriptFunction.Name = "Reward_MapScriptFunction";
 B_Reward_MapScriptFunction.Description.en = "Reward: Calls a function within the global map script if the quest has failed.";
 B_Reward_MapScriptFunction.Description.de = "Lohn: Ruft eine Funktion im globalen Kartenskript auf, wenn die Quest fehlschlägt.";
@@ -12120,7 +12195,7 @@ B_Reward_MapScriptFunction.GetRewardTable = function(self, _Quest)
     return {Reward.Custom, {self, self.CustomFunction}};
 end
 
-Revision:RegisterBehavior(B_Reward_MapScriptFunction);
+Swift:RegisterBehavior(B_Reward_MapScriptFunction);
 
 -- -------------------------------------------------------------------------- --
 
@@ -12137,7 +12212,7 @@ function Reward_Technology(...)
     return B_Reward_Technology:new(...);
 end
 
-B_Reward_Technology = Revision.LuaBase:CopyTable(B_Reprisal_Technology);
+B_Reward_Technology = Swift.LuaBase:CopyTable(B_Reprisal_Technology);
 B_Reward_Technology.Name = "Reward_Technology";
 B_Reward_Technology.Description.en = "Reward: Locks or unlocks a technology for the given player.";
 B_Reward_Technology.Description.de = "Lohn: Sperrt oder erlaubt eine Technolgie fuer den angegebenen Player.";
@@ -12148,7 +12223,7 @@ B_Reward_Technology.GetRewardTable = function(self, _Quest)
     return { Reward.Custom, {self, self.CustomFunction} }
 end
 
-Revision:RegisterBehavior(B_Reward_Technology);
+Swift:RegisterBehavior(B_Reward_Technology);
 
 ---
 -- Gibt dem Auftragnehmer eine Anzahl an Prestigepunkten.
@@ -12186,7 +12261,7 @@ function B_Reward_PrestigePoints :GetRewardTable()
     return { Reward.PrestigePoints, self.Points }
 end
 
-Revision:RegisterBehavior(B_Reward_PrestigePoints);
+Swift:RegisterBehavior(B_Reward_PrestigePoints);
 
 -- -------------------------------------------------------------------------- --
 
@@ -12258,7 +12333,7 @@ function B_Reward_AI_MountOutpost:Debug(_Quest)
     end
 end
 
-Revision:RegisterBehavior(B_Reward_AI_MountOutpost)
+Swift:RegisterBehavior(B_Reward_AI_MountOutpost)
 
 -- -------------------------------------------------------------------------- --
 
@@ -12311,7 +12386,7 @@ function B_Reward_QuestRestartForceActive:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reward_QuestRestartForceActive)
+Swift:RegisterBehavior(B_Reward_QuestRestartForceActive)
 
 -- -------------------------------------------------------------------------- --
 
@@ -12376,7 +12451,7 @@ function B_Reward_UpgradeBuilding:Debug(_Quest)
     end
 end
 
-Revision:RegisterBehavior(B_Reward_UpgradeBuilding)
+Swift:RegisterBehavior(B_Reward_UpgradeBuilding)
 
 ---
 -- Setzt das Upgrade Level des angegebenen Gebäudes.
@@ -12450,7 +12525,7 @@ function B_Reward_SetBuildingUpgradeLevel:GetCustomData(_Index)
     end
 end
 
-Revision:RegisterBehavior(B_Reward_SetBuildingUpgradeLevel);
+Swift:RegisterBehavior(B_Reward_SetBuildingUpgradeLevel);
 
 -- -------------------------------------------------------------------------- --
 -- TRIGGERS
@@ -12490,7 +12565,7 @@ function B_Trigger_PlayerDiscovered:AddParameter(_Index, _Parameter)
     end
 end
 
-Revision:RegisterBehavior(B_Trigger_PlayerDiscovered);
+Swift:RegisterBehavior(B_Trigger_PlayerDiscovered);
 
 -- -------------------------------------------------------------------------- --
 
@@ -12532,7 +12607,7 @@ function B_Trigger_OnDiplomacy:AddParameter(_Index, _Parameter)
     end
 end
 
-Revision:RegisterBehavior(B_Trigger_OnDiplomacy);
+Swift:RegisterBehavior(B_Trigger_OnDiplomacy);
 
 -- -------------------------------------------------------------------------- --
 
@@ -12595,7 +12670,7 @@ function B_Trigger_OnNeedUnsatisfied:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Trigger_OnNeedUnsatisfied);
+Swift:RegisterBehavior(B_Trigger_OnNeedUnsatisfied);
 
 -- -------------------------------------------------------------------------- --
 
@@ -12637,7 +12712,7 @@ function B_Trigger_OnResourceDepleted:CustomFunction(_Quest)
     return not ID or ID == 0 or Logic.GetResourceDoodadGoodType(ID) == 0 or Logic.GetResourceDoodadGoodAmount(ID) == 0
 end
 
-Revision:RegisterBehavior(B_Trigger_OnResourceDepleted);
+Swift:RegisterBehavior(B_Trigger_OnResourceDepleted);
 
 -- -------------------------------------------------------------------------- --
 
@@ -12710,7 +12785,7 @@ function B_Trigger_OnAmountOfGoods:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Trigger_OnAmountOfGoods);
+Swift:RegisterBehavior(B_Trigger_OnAmountOfGoods);
 
 -- -------------------------------------------------------------------------- --
 
@@ -12796,12 +12871,12 @@ function B_Trigger_OnQuestActiveWait:Reset(_Quest)
     self.WasActivated = nil;
 end
 
-Revision:RegisterBehavior(B_Trigger_OnQuestActiveWait);
+Swift:RegisterBehavior(B_Trigger_OnQuestActiveWait);
 
 -- -------------------------------------------------------------------------- --
 
 -- Kompatibelitätsmodus
-B_Trigger_OnQuestActive = Revision.LuaBase:CopyTable(B_Trigger_OnQuestActiveWait);
+B_Trigger_OnQuestActive = Swift.LuaBase:CopyTable(B_Trigger_OnQuestActiveWait);
 B_Trigger_OnQuestActive.Name = "Trigger_OnQuestActive";
 B_Trigger_OnQuestActive.Description.en = "Trigger: Starts the quest after another has been activated.";
 B_Trigger_OnQuestActive.Description.de = "Auslöser: Startet den Quest, wenn ein anderer aktiviert wird.";
@@ -12817,7 +12892,7 @@ function B_Trigger_OnQuestActive:AddParameter(_Index, _Parameter)
     end
 end
 
-Revision:RegisterBehavior(B_Trigger_OnQuestActive);
+Swift:RegisterBehavior(B_Trigger_OnQuestActive);
 
 -- -------------------------------------------------------------------------- --
 
@@ -12895,12 +12970,12 @@ function B_Trigger_OnQuestFailureWait:Reset(_Quest)
     self.WaitTimeTimer = nil;
 end
 
-Revision:RegisterBehavior(B_Trigger_OnQuestFailureWait);
+Swift:RegisterBehavior(B_Trigger_OnQuestFailureWait);
 
 -- -------------------------------------------------------------------------- --
 
 -- Kompatibelitätsmodus
-B_Trigger_OnQuestFailure = Revision.LuaBase:CopyTable(B_Trigger_OnQuestFailureWait);
+B_Trigger_OnQuestFailure = Swift.LuaBase:CopyTable(B_Trigger_OnQuestFailureWait);
 B_Trigger_OnQuestFailure.Name = "Trigger_OnQuestFailure";
 B_Trigger_OnQuestFailure.Description.en = "Trigger: Starts the quest after another has failed.";
 B_Trigger_OnQuestFailure.Description.de = "Auslöser: Startet den Quest, wenn ein anderer fehlschlägt.";
@@ -12916,7 +12991,7 @@ function B_Trigger_OnQuestFailure:AddParameter(_Index, _Parameter)
     end
 end
 
-Revision:RegisterBehavior(B_Trigger_OnQuestFailure);
+Swift:RegisterBehavior(B_Trigger_OnQuestFailure);
 
 -- -------------------------------------------------------------------------- --
 
@@ -12971,7 +13046,7 @@ function B_Trigger_OnQuestNotTriggered:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Trigger_OnQuestNotTriggered);
+Swift:RegisterBehavior(B_Trigger_OnQuestNotTriggered);
 
 -- -------------------------------------------------------------------------- --
 
@@ -13049,12 +13124,12 @@ function B_Trigger_OnQuestInterruptedWait:Reset(_Quest)
     self.WaitTimeTimer = nil;
 end
 
-Revision:RegisterBehavior(B_Trigger_OnQuestInterruptedWait);
+Swift:RegisterBehavior(B_Trigger_OnQuestInterruptedWait);
 
 -- -------------------------------------------------------------------------- --
 
 -- Kompatibelitätsmodus
-B_Trigger_OnQuestInterrupted = Revision.LuaBase:CopyTable(B_Trigger_OnQuestInterruptedWait);
+B_Trigger_OnQuestInterrupted = Swift.LuaBase:CopyTable(B_Trigger_OnQuestInterruptedWait);
 B_Trigger_OnQuestInterrupted.Name = "Trigger_OnQuestInterrupted";
 B_Trigger_OnQuestInterrupted.Description.en = "Trigger: Starts the quest after another is interrupted.";
 B_Trigger_OnQuestInterrupted.Description.de = "Auslöser: Startet den Quest, wenn ein anderer abgebrochen wurde.";
@@ -13070,7 +13145,7 @@ function B_Trigger_OnQuestInterrupted:AddParameter(_Index, _Parameter)
     end
 end
 
-Revision:RegisterBehavior(B_Trigger_OnQuestInterrupted);
+Swift:RegisterBehavior(B_Trigger_OnQuestInterrupted);
 
 -- -------------------------------------------------------------------------- --
 
@@ -13151,12 +13226,12 @@ function B_Trigger_OnQuestOverWait:Reset(_Quest)
     self.WaitTimeTimer = nil;
 end
 
-Revision:RegisterBehavior(B_Trigger_OnQuestOverWait);
+Swift:RegisterBehavior(B_Trigger_OnQuestOverWait);
 
 -- -------------------------------------------------------------------------- --
 
 -- Kompatibelitätsmodus
-B_Trigger_OnQuestOver = Revision.LuaBase:CopyTable(B_Trigger_OnQuestOverWait);
+B_Trigger_OnQuestOver = Swift.LuaBase:CopyTable(B_Trigger_OnQuestOverWait);
 B_Trigger_OnQuestOver.Name = "Trigger_OnQuestOver";
 B_Trigger_OnQuestOver.Description.en = "Trigger: Starts the quest after another finished.";
 B_Trigger_OnQuestOver.Description.de = "Auslöser: Startet den Quest, wenn ein anderer abgeschlossen wurde.";
@@ -13172,7 +13247,7 @@ function B_Trigger_OnQuestOver:AddParameter(_Index, _Parameter)
     end
 end
 
-Revision:RegisterBehavior(B_Trigger_OnQuestOver);
+Swift:RegisterBehavior(B_Trigger_OnQuestOver);
 
 -- -------------------------------------------------------------------------- --
 
@@ -13250,12 +13325,12 @@ function B_Trigger_OnQuestSuccessWait:Reset(_Quest)
     self.WaitTimeTimer = nil;
 end
 
-Revision:RegisterBehavior(B_Trigger_OnQuestSuccessWait);
+Swift:RegisterBehavior(B_Trigger_OnQuestSuccessWait);
 
 -- -------------------------------------------------------------------------- --
 
 -- Kompatibelitätsmodus
-B_Trigger_OnQuestSuccess = Revision.LuaBase:CopyTable(B_Trigger_OnQuestSuccessWait);
+B_Trigger_OnQuestSuccess = Swift.LuaBase:CopyTable(B_Trigger_OnQuestSuccessWait);
 B_Trigger_OnQuestSuccess.Name = "Trigger_OnQuestSuccess";
 B_Trigger_OnQuestSuccess.Description.en = "Trigger: Starts the quest after another finished successfully.";
 B_Trigger_OnQuestSuccess.Description.de = "Auslöser: Startet den Quest, wenn ein anderer erfolgreich abgeschlossen wurde.";
@@ -13271,7 +13346,7 @@ function B_Trigger_OnQuestSuccess:AddParameter(_Index, _Parameter)
     end
 end
 
-Revision:RegisterBehavior(B_Trigger_OnQuestSuccess);
+Swift:RegisterBehavior(B_Trigger_OnQuestSuccess);
 
 -- -------------------------------------------------------------------------- --
 
@@ -13367,7 +13442,7 @@ function B_Trigger_CustomVariables:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Trigger_CustomVariables)
+Swift:RegisterBehavior(B_Trigger_CustomVariables)
 
 -- -------------------------------------------------------------------------- --
 
@@ -13393,7 +13468,7 @@ function B_Trigger_AlwaysActive:GetTriggerTable()
     return {Triggers.Time, 0 }
 end
 
-Revision:RegisterBehavior(B_Trigger_AlwaysActive);
+Swift:RegisterBehavior(B_Trigger_AlwaysActive);
 
 -- -------------------------------------------------------------------------- --
 
@@ -13454,7 +13529,7 @@ function B_Trigger_OnMonth:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Trigger_OnMonth);
+Swift:RegisterBehavior(B_Trigger_OnMonth);
 
 -- -------------------------------------------------------------------------- --
 
@@ -13489,7 +13564,7 @@ function B_Trigger_OnMonsoon:CustomFunction(_Quest)
     end
 end
 
-Revision:RegisterBehavior(B_Trigger_OnMonsoon);
+Swift:RegisterBehavior(B_Trigger_OnMonsoon);
 
 -- -------------------------------------------------------------------------- --
 
@@ -13528,7 +13603,7 @@ function B_Trigger_Time:AddParameter(_Index, _Parameter)
     end
 end
 
-Revision:RegisterBehavior(B_Trigger_Time);
+Swift:RegisterBehavior(B_Trigger_Time);
 
 -- -------------------------------------------------------------------------- --
 
@@ -13560,7 +13635,7 @@ function B_Trigger_OnWaterFreezes:CustomFunction(_Quest)
     end
 end
 
-Revision:RegisterBehavior(B_Trigger_OnWaterFreezes);
+Swift:RegisterBehavior(B_Trigger_OnWaterFreezes);
 
 -- -------------------------------------------------------------------------- --
 
@@ -13591,7 +13666,7 @@ function B_Trigger_NeverTriggered:GetTriggerTable()
 
 end
 
-Revision:RegisterBehavior(B_Trigger_NeverTriggered)
+Swift:RegisterBehavior(B_Trigger_NeverTriggered)
 
 -- -------------------------------------------------------------------------- --
 
@@ -13658,7 +13733,7 @@ function B_Trigger_OnAtLeastOneQuestFailure:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Trigger_OnAtLeastOneQuestFailure);
+Swift:RegisterBehavior(B_Trigger_OnAtLeastOneQuestFailure);
 
 -- -------------------------------------------------------------------------- --
 
@@ -13725,7 +13800,7 @@ function B_Trigger_OnAtLeastOneQuestSuccess:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Trigger_OnAtLeastOneQuestSuccess);
+Swift:RegisterBehavior(B_Trigger_OnAtLeastOneQuestSuccess);
 
 -- -------------------------------------------------------------------------- --
 
@@ -13830,7 +13905,7 @@ function B_Trigger_OnAtLeastXOfYQuestsSuccess:GetCustomData(_Index)
     end
 end
 
-Revision:RegisterBehavior(B_Trigger_OnAtLeastXOfYQuestsSuccess)
+Swift:RegisterBehavior(B_Trigger_OnAtLeastXOfYQuestsSuccess)
 
 -- -------------------------------------------------------------------------- --
 
@@ -13891,7 +13966,7 @@ function B_Trigger_MapScriptFunction:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Trigger_MapScriptFunction);
+Swift:RegisterBehavior(B_Trigger_MapScriptFunction);
 
 ---
 -- Startet den Quest, sobald ein Effekt zerstört wird oder verschwindet.
@@ -13939,7 +14014,7 @@ function B_Trigger_OnEffectDestroyed:Debug(_Quest)
 		return true
 	end
 end
-Revision:RegisterBehavior(B_Trigger_OnEffectDestroyed)
+Swift:RegisterBehavior(B_Trigger_OnEffectDestroyed)
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
@@ -13978,21 +14053,21 @@ if not MapEditor and not GUI then
         
         -- Call directly for singleplayer
         if not Framework.IsNetworkGame() then
-            Revision:CreateRandomSeed();
+            Swift:CreateRandomSeed();
             if Mission_LocalOnQsbLoaded then
                 Mission_LocalOnQsbLoaded();
             end
 
         -- Send asynchron command to player in multiplayer
         else
-            function Revision_Selfload_ReadyTrigger()
+            function Swift_Selfload_ReadyTrigger()
                 if table.getn(API.GetDelayedPlayers()) == 0 then
-                    Revision:CreateRandomSeed();
-                    Revision.Event:DispatchScriptCommand(QSB.ScriptCommands.GlobalQsbLoaded, 0);
+                    Swift:CreateRandomSeed();
+                    Swift.Event:DispatchScriptCommand(QSB.ScriptCommands.GlobalQsbLoaded, 0);
                     return true;
                 end
             end
-            StartSimpleHiResJob("Revision_Selfload_ReadyTrigger")
+            StartSimpleHiResJob("Swift_Selfload_ReadyTrigger")
         end        
     ]]);
     API.Install();

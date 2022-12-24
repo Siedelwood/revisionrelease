@@ -288,7 +288,7 @@ function ModuleObjectInteraction.Global:OverrideObjectInteraction()
 end
 
 function ModuleObjectInteraction.Global:ProcessChatInput(_Text)
-    local Commands = Revision.Text:CommandTokenizer(_Text);
+    local Commands = Swift.Text:CommandTokenizer(_Text);
     for i= 1, #Commands, 1 do
         if Commands[1] == "enableobject" then
             local State = (Commands[3] and tonumber(Commands[3])) or nil;
@@ -695,7 +695,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleObjectInteraction);
+Swift:RegisterModule(ModuleObjectInteraction);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
@@ -1125,7 +1125,7 @@ function B_Goal_ActivateSeveralObjects:GetMsgKey()
     return "Quest_Object_Activate"
 end
 
-Revision:RegisterBehavior(B_Goal_ActivateSeveralObjects);
+Swift:RegisterBehavior(B_Goal_ActivateSeveralObjects);
 
 -- -------------------------------------------------------------------------- --
 

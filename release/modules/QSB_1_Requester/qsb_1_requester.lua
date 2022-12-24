@@ -164,8 +164,8 @@ function ModuleRequester.Local:OpenDialog(_PlayerID, _Title, _Text, _Action)
         assert(type(_Title) == "string");
         assert(type(_Text) == "string");
 
-        _Title = "{center}" .. Revision.Text:ConvertPlaceholders(_Title);
-        _Text  = Revision.Text:ConvertPlaceholders(_Text);
+        _Title = "{center}" .. Swift.Text:ConvertPlaceholders(_Title);
+        _Text  = Swift.Text:ConvertPlaceholders(_Text);
         if string.len(_Text) < 35 then
             _Text = _Text .. "{cr}";
         end
@@ -201,7 +201,7 @@ function ModuleRequester.Local:OpenDialog(_PlayerID, _Title, _Text, _Action)
         XGUIEng.SetText(RequesterDialog_Title.."White", _Title);
         XGUIEng.PushPage(RequesterDialog,false);
 
-        if Revision.Save.SavingDisabled then
+        if Swift.Save.SavingDisabled then
             self.SavingWasDisabled = true;
         end
         API.DisableSaving(true);
@@ -562,7 +562,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleRequester);
+Swift:RegisterModule(ModuleRequester);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
@@ -786,14 +786,14 @@ function API.DialogLanguageSelection(_PlayerID)
     end
 
     local DisplayedList = {};
-    for i= 1, #Revision.Text.Languages do
-        table.insert(DisplayedList, Revision.Text.Languages[i][2]);
+    for i= 1, #Swift.Text.Languages do
+        table.insert(DisplayedList, Swift.Text.Languages[i][2]);
     end
     local Action = function(_Selected)
         API.BroadcastScriptCommand(
             QSB.ScriptCommands.SetLanguageResult,
             GUI.GetPlayerID(),
-            Revision.Text.Languages[_Selected][1]
+            Swift.Text.Languages[_Selected][1]
         );
     end
     local Text = API.Localize(ModuleRequester.Shared.Text.ChooseLanguage);
@@ -815,14 +815,14 @@ function API.DefineLanguage(_Shortcut, _Name, _Fallback)
     assert(type(_Shortcut) == "string");
     assert(type(_Name) == "string");
     assert(type(_Fallback) == "string");
-    for k, v in pairs(Revision.Text.Languages) do
+    for k, v in pairs(Swift.Text.Languages) do
         if v[1] == _Shortcut then
             return;
         end
     end
-    table.insert(Revision.Text.Languages, {_Shortcut, _Name, _Fallback});
+    table.insert(Swift.Text.Languages, {_Shortcut, _Name, _Fallback});
     Logic.ExecuteInLuaLocalState(string.format([[
-        table.insert(Revision.Text.Languages, {"%s", "%s", "%s"})
+        table.insert(Swift.Text.Languages, {"%s", "%s", "%s"})
     ]], _Shortcut, _Name, _Fallback));
 end
 

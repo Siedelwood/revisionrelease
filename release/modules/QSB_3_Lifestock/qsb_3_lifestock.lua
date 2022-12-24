@@ -449,7 +449,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleLifestockBreeding);
+Swift:RegisterModule(ModuleLifestockBreeding);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.

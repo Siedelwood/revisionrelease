@@ -34,6 +34,7 @@
 
 <h2>Contents</h2>
 <ul>
+<li><a href="#Tables">Tables</a></li>
 <li><a href="#Fields">Fields</a></li>
 <li><a href="#Event">Event</a></li>
 <li><a href="#Goal">Goal</a></li>
@@ -468,6 +469,21 @@
 </p>
 
 
+<h2><a href="#Tables">Tables</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#QSB.Environment">QSB.Environment</a></td>
+	<td class="summary">Konstanten der Script Environments</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#QSB.GameVariant">QSB.GameVariant</a></td>
+	<td class="summary">Konstanten der Spielvarianten</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#QSB.GameVersion">QSB.GameVersion</a></td>
+	<td class="summary">Konstanten der Spielversionen</td>
+	</tr>
+</table>
 <h2><a href="#Fields">Fields</a></h2>
 <table class="function_list">
 	<tr>
@@ -1015,13 +1031,21 @@
 	<td class="summary">Gibt dem Entity einen eindeutigen Skriptnamen und gibt ihn zurück.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#API.GetGameVariant">API.GetGameVariant ()</a></td>
+	<td class="summary">Gibt die Variante des Spiels zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetGameVersion">API.GetGameVersion ()</a></td>
+	<td class="summary">Gibt die Version des Spiels zurück.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.GetScriptEnvironment">API.GetScriptEnvironment ()</a></td>
+	<td class="summary">Gibt die Skriptumgebung zurück.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#API.IsHistoryEditionNetworkGame">API.IsHistoryEditionNetworkGame ()</a></td>
 	<td class="summary">Prüft, ob das laufende Spiel eine Multiplayerpartie in der History Edition
  ist.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#API.RestartMap">API.RestartMap ()</a></td>
-	<td class="summary">Startet die Map sofort neu.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#API.SendCart">API.SendCart (_Position, _PlayerID, _GoodType, _Amount, _CartOverlay, _IgnoreReservation, _Overtake)</a></td>
@@ -1049,6 +1073,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#API.GetSlotPlayerID">API.GetSlotPlayerID (_SlotID)</a></td>
 	<td class="summary">Gibt den Spieler zurück, welcher den Slot okkupiert.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#API.IsMultiplayerLoaded">API.IsMultiplayerLoaded ()</a></td>
+	<td class="summary">Gibt zurück, ob die Sitzung geladen wurde.</td>
 	</tr>
 </table>
 <h2><a href="#Job">Job</a></h2>
@@ -1312,6 +1340,79 @@
 <br/>
 
 
+    <h2 class="section-header "><a name="Tables"></a>Tables</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "QSB.Environment"></a>
+    <strong>QSB.Environment</strong>
+    </dt>
+    <dd>
+    Konstanten der Script Environments
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">GLOBAL</span>
+         Die globale Skriptumgebung
+        </li>
+        <li><span class="parameter">LOCAL</span>
+          Die lokale Skriptumgebung
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "QSB.GameVariant"></a>
+    <strong>QSB.GameVariant</strong>
+    </dt>
+    <dd>
+    Konstanten der Spielvarianten
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">VANILLA</span>
+           Das unmodifizierte Spiel
+        </li>
+        <li><span class="parameter">COMMUNITY</span>
+         Der Community Patch
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "QSB.GameVersion"></a>
+    <strong>QSB.GameVersion</strong>
+    </dt>
+    <dd>
+    Konstanten der Spielversionen
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">ORIGINAL</span>
+                Das Originalspiel
+        </li>
+        <li><span class="parameter">HISTORY_EDITION</span>
+         Die History Edition
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
     <h2 class="section-header "><a name="Fields"></a>Fields</h2>
 
     <dl class="function">
@@ -4881,6 +4982,89 @@
 
 </dd>
     <dt>
+    <a name = "API.GetGameVariant"></a>
+    <strong>API.GetGameVariant ()</strong>
+    </dt>
+    <dd>
+    Gibt die Variante des Spiels zurück.
+<p> <b>Hinweis</b>: Unter der Variante wird verstanden, ob das unveränderte
+ Spiel oder der Community Patch gespielt wird.
+
+
+
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Spiel ist History Edition
+    </ol>
+
+
+    <h3>Verwandte Themen:</h3>
+    <ul>
+         <a href="../modules/qsb.html#QSB.GameVariant">QSB.GameVariant</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "API.GetGameVersion"></a>
+    <strong>API.GetGameVersion ()</strong>
+    </dt>
+    <dd>
+    Gibt die Version des Spiels zurück.
+<p> <b>Hinweis</b>: Unter der Version wird verstanden, ob das Originalspiel
+ oder die History Edition gespielt wird. Zwischen den einzelnen Patches
+ des Originalspiels oder der History Edition wird nicht unterschieden. Es
+ wird die aktuellste Version vorausgesetzt.
+
+
+
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Spiel ist History Edition
+    </ol>
+
+
+    <h3>Verwandte Themen:</h3>
+    <ul>
+         <a href="../modules/qsb.html#QSB.GameVersion">QSB.GameVersion</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "API.GetScriptEnvironment"></a>
+    <strong>API.GetScriptEnvironment ()</strong>
+    </dt>
+    <dd>
+    Gibt die Skriptumgebung zurück.
+<p> <b>Hinweis</b>: Unter dem Environment wird verstanden, ob es sich um das
+ globale oder das lokale Skript handelt.
+
+
+
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Spiel ist History Edition
+    </ol>
+
+
+    <h3>Verwandte Themen:</h3>
+    <ul>
+         <a href="../modules/qsb.html#QSB.Environment">QSB.Environment</a>
+    </ul>
+
+
+</dd>
+    <dt>
     <a name = "API.IsHistoryEditionNetworkGame"></a>
     <strong>API.IsHistoryEditionNetworkGame ()</strong>
     </dt>
@@ -4900,23 +5084,6 @@
            <span class="types"><span class="type">boolean</span></span>
         Spiel ist History Edition
     </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "API.RestartMap"></a>
-    <strong>API.RestartMap ()</strong>
-    </dt>
-    <dd>
-    Startet die Map sofort neu.
-<p> <b>Achtung</b>: Die Funktion Framework.RestartMap kann nicht mehr verwendet
- werden, da es sonst zu Fehlern mit dem Ladebildschirm kommt!
-
-
-
-
 
 
 
@@ -5117,6 +5284,29 @@
         <li>
            <span class="types"><span class="type">number</span></span>
         ID des Player</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "API.IsMultiplayerLoaded"></a>
+    <strong>API.IsMultiplayerLoaded ()</strong>
+    </dt>
+    <dd>
+    Gibt zurück, ob die Sitzung geladen wurde.
+<p> <h5>Multiplayer</h5>
+ Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
+
+
+
+
+    <h3>Rückgabe:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Sitzung ist geladen
     </ol>
 
 
@@ -7023,7 +7213,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-12-23 18:41:07 </i>
+<i style="float:right;">Last updated 2022-12-24 21:28:49 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 

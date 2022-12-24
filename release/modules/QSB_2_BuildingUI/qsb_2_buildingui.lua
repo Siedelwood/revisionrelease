@@ -681,7 +681,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleBuildingButtons);
+Swift:RegisterModule(ModuleBuildingButtons);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.

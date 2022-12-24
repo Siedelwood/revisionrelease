@@ -1058,7 +1058,7 @@ ModuleKnightTitleRequirements.Local.Description = {
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleKnightTitleRequirements);
+Swift:RegisterModule(ModuleKnightTitleRequirements);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.

@@ -538,7 +538,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleEntityMovement);
+Swift:RegisterModule(ModuleEntityMovement);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.

@@ -68,7 +68,6 @@ function ModuleGuiEffects.Global:OnGameStart()
     API.StartHiResJob(function()
         ModuleGuiEffects.Global:ControlTypewriter();
     end);
-    self:ShowInitialBlackscreen();
 end
 
 function ModuleGuiEffects.Global:OnEvent(_ID, ...)
@@ -143,7 +142,7 @@ function ModuleGuiEffects.Global:ActivateCinematicEvent(_PlayerID)
     Logic.ExecuteInLuaLocalState(string.format(
         [[API.SendScriptEvent(QSB.ScriptEvents.CinematicActivated, %d, %d);
           if GUI.GetPlayerID() == %d then
-            ModuleGuiEffects.Local.SavingWasDisabled = Revision.Save.SavingDisabled == true;
+            ModuleGuiEffects.Local.SavingWasDisabled = Swift.Save.SavingDisabled == true;
             API.DisableSaving(true);
           end]],
         ID,
@@ -167,17 +166,6 @@ function ModuleGuiEffects.Global:ConcludeCinematicEvent(_ID, _PlayerID)
         _PlayerID,
         _PlayerID
     ))
-end
-
-function ModuleGuiEffects.Global:ShowInitialBlackscreen()
-    if not Framework.IsNetworkGame() then
-        Logic.ExecuteInLuaLocalState([[
-            XGUIEng.PopPage();
-            API.ActivateColoredScreen(GUI.GetPlayerID(), 0, 0, 0, 255);
-            API.DeactivateNormalInterface(GUI.GetPlayerID());
-            XGUIEng.PushPage("/LoadScreen/LoadScreen", false);
-        ]]);
-    end
 end
 
 -- Local -------------------------------------------------------------------- --
@@ -205,10 +193,6 @@ end
 function ModuleGuiEffects.Local:OnEvent(_ID, ...)
     if _ID == QSB.ScriptEvents.LoadscreenClosed then
         self.LoadscreenClosed = true;
-        if not Framework.IsNetworkGame() then
-            self:InterfaceDeactivateImageBackground(GUI.GetPlayerID());
-            self:InterfaceActivateNormalInterface(GUI.GetPlayerID());
-        end
     elseif _ID == QSB.ScriptEvents.CinematicActivated then
         self.CinematicEventStatus[arg[2]][arg[1]] = 1;
     elseif _ID == QSB.ScriptEvents.CinematicConcluded then
@@ -670,7 +654,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleGuiEffects);
+Swift:RegisterModule(ModuleGuiEffects);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.

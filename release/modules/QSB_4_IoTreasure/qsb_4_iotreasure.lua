@@ -193,7 +193,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleTreasure);
+Swift:RegisterModule(ModuleTreasure);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.

@@ -154,7 +154,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleInteractiveSites);
+Swift:RegisterModule(ModuleInteractiveSites);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.

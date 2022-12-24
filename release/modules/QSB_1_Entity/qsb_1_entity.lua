@@ -473,7 +473,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleEntity);
+Swift:RegisterModule(ModuleEntity);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.

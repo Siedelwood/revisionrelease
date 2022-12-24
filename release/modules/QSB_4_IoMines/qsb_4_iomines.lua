@@ -168,7 +168,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleInteractiveMines);
+Swift:RegisterModule(ModuleInteractiveMines);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.

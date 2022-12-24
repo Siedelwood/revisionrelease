@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8" />
-        <title>Revision</title>
+        <title>Swift</title>
         <link rel="stylesheet" href="css/main.css" />
         <script src="js/jquery.js"></script>
         <script src="js/search.js"></script>
@@ -10,7 +10,7 @@
     <body>
         <div id="modules">
             <div id="searchContainer">
-                <h1>Revision</h1>
+                <h1>Swift</h1>
                 <hr/>
                 <p>
                     <ul>
@@ -36,7 +36,61 @@
                 </div>
                 <div id="directlinkContainer">
                     <div style="margin-bottom: 10px;"><b>Funktionen</b></div>
-                    <div id="qsb.qsb.scriptevents" class="result method"><a href="modules/qsb.html#QSB.ScriptEvents">QSB.ScriptEvents</a><br>Events, um auf Ereignisse zu reagieren.<span class="docInvisibleContent">
+                    <div id="qsb.qsb.environment" class="result method"><a href="modules/qsb.html#QSB.Environment">QSB.Environment</a><br>Konstanten der Script Environments<span class="docInvisibleContent">
+    Konstanten der Script Environments
+
+
+    &#x3C;h3&#x3E;Fields:&#x3C;/h3&#x3E;
+    &#x3C;ul&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;GLOBAL&#x3C;/span&#x3E;
+         Die globale Skriptumgebung
+        &#x3C;/li&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;LOCAL&#x3C;/span&#x3E;
+          Die lokale Skriptumgebung
+        &#x3C;/li&#x3E;
+    &#x3C;/ul&#x3E;
+
+
+
+
+
+</span></div><div id="qsb.qsb.gamevariant" class="result method"><a href="modules/qsb.html#QSB.GameVariant">QSB.GameVariant</a><br>Konstanten der Spielvarianten<span class="docInvisibleContent">
+    Konstanten der Spielvarianten
+
+
+    &#x3C;h3&#x3E;Fields:&#x3C;/h3&#x3E;
+    &#x3C;ul&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;VANILLA&#x3C;/span&#x3E;
+           Das unmodifizierte Spiel
+        &#x3C;/li&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;COMMUNITY&#x3C;/span&#x3E;
+         Der Community Patch
+        &#x3C;/li&#x3E;
+    &#x3C;/ul&#x3E;
+
+
+
+
+
+</span></div><div id="qsb.qsb.gameversion" class="result method"><a href="modules/qsb.html#QSB.GameVersion">QSB.GameVersion</a><br>Konstanten der Spielversionen<span class="docInvisibleContent">
+    Konstanten der Spielversionen
+
+
+    &#x3C;h3&#x3E;Fields:&#x3C;/h3&#x3E;
+    &#x3C;ul&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;ORIGINAL&#x3C;/span&#x3E;
+                Das Originalspiel
+        &#x3C;/li&#x3E;
+        &#x3C;li&#x3E;&#x3C;span class="parameter"&#x3E;HISTORY_EDITION&#x3C;/span&#x3E;
+         Die History Edition
+        &#x3C;/li&#x3E;
+    &#x3C;/ul&#x3E;
+
+
+
+
+
+</span></div><div id="qsb.qsb.scriptevents" class="result method"><a href="modules/qsb.html#QSB.ScriptEvents">QSB.ScriptEvents</a><br>Events, um auf Ereignisse zu reagieren.<span class="docInvisibleContent">
     Events, um auf Ereignisse zu reagieren.
 &#x3C;p&#x3E; &#x3C;h5&#x3E;Was sind Script Events&#x3C;/h5&#x3E;
 &#x3C;p&#x3E; Um dem Mapper das (z.T. fehlerbehaftete) Überschreiben von Game Callbacks
@@ -2932,6 +2986,74 @@
 
 
 
+</span></div><div id="qsb.api.getgamevariant" class="result method"><a href="modules/qsb.html#API.GetGameVariant">API.GetGameVariant</a><br>Gibt die Variante des Spiels zurück.<span class="docInvisibleContent">
+    Gibt die Variante des Spiels zurück.
+&#x3C;p&#x3E; &#x3C;b&#x3E;Hinweis&#x3C;/b&#x3E;: Unter der Variante wird verstanden, ob das unveränderte
+ Spiel oder der Community Patch gespielt wird.
+
+
+
+
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
+    &#x3C;ol&#x3E;
+
+           &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;boolean&#x3C;/span&#x3E;&#x3C;/span&#x3E;
+        Spiel ist History Edition
+    &#x3C;/ol&#x3E;
+
+
+    &#x3C;h3&#x3E;Verwandte Themen:&#x3C;/h3&#x3E;
+    &#x3C;ul&#x3E;
+         &#x3C;a href="../modules/qsb.html#QSB.GameVariant"&#x3E;QSB.GameVariant&#x3C;/a&#x3E;
+    &#x3C;/ul&#x3E;
+
+
+</span></div><div id="qsb.api.getgameversion" class="result method"><a href="modules/qsb.html#API.GetGameVersion">API.GetGameVersion</a><br>Gibt die Version des Spiels zurück.<span class="docInvisibleContent">
+    Gibt die Version des Spiels zurück.
+&#x3C;p&#x3E; &#x3C;b&#x3E;Hinweis&#x3C;/b&#x3E;: Unter der Version wird verstanden, ob das Originalspiel
+ oder die History Edition gespielt wird. Zwischen den einzelnen Patches
+ des Originalspiels oder der History Edition wird nicht unterschieden. Es
+ wird die aktuellste Version vorausgesetzt.
+
+
+
+
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
+    &#x3C;ol&#x3E;
+
+           &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;boolean&#x3C;/span&#x3E;&#x3C;/span&#x3E;
+        Spiel ist History Edition
+    &#x3C;/ol&#x3E;
+
+
+    &#x3C;h3&#x3E;Verwandte Themen:&#x3C;/h3&#x3E;
+    &#x3C;ul&#x3E;
+         &#x3C;a href="../modules/qsb.html#QSB.GameVersion"&#x3E;QSB.GameVersion&#x3C;/a&#x3E;
+    &#x3C;/ul&#x3E;
+
+
+</span></div><div id="qsb.api.getscriptenvironment" class="result method"><a href="modules/qsb.html#API.GetScriptEnvironment">API.GetScriptEnvironment</a><br>Gibt die Skriptumgebung zurück.<span class="docInvisibleContent">
+    Gibt die Skriptumgebung zurück.
+&#x3C;p&#x3E; &#x3C;b&#x3E;Hinweis&#x3C;/b&#x3E;: Unter dem Environment wird verstanden, ob es sich um das
+ globale oder das lokale Skript handelt.
+
+
+
+
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
+    &#x3C;ol&#x3E;
+
+           &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;boolean&#x3C;/span&#x3E;&#x3C;/span&#x3E;
+        Spiel ist History Edition
+    &#x3C;/ol&#x3E;
+
+
+    &#x3C;h3&#x3E;Verwandte Themen:&#x3C;/h3&#x3E;
+    &#x3C;ul&#x3E;
+         &#x3C;a href="../modules/qsb.html#QSB.Environment"&#x3E;QSB.Environment&#x3C;/a&#x3E;
+    &#x3C;/ul&#x3E;
+
+
 </span></div><div id="qsb.api.ishistoryeditionnetworkgame" class="result method"><a href="modules/qsb.html#API.IsHistoryEditionNetworkGame">API.IsHistoryEditionNetworkGame</a><br>Prüft, ob das laufende Spiel eine Multiplayerpartie in der History Edition ist.<span class="docInvisibleContent">
     Prüft, ob das laufende Spiel eine Multiplayerpartie in der History Edition
  ist.
@@ -2948,18 +3070,6 @@
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;boolean&#x3C;/span&#x3E;&#x3C;/span&#x3E;
         Spiel ist History Edition
     &#x3C;/ol&#x3E;
-
-
-
-
-</span></div><div id="qsb.api.restartmap" class="result method"><a href="modules/qsb.html#API.RestartMap">API.RestartMap</a><br>Startet die Map sofort neu.<span class="docInvisibleContent">
-    Startet die Map sofort neu.
-&#x3C;p&#x3E; &#x3C;b&#x3E;Achtung&#x3C;/b&#x3E;: Die Funktion Framework.RestartMap kann nicht mehr verwendet
- werden, da es sonst zu Fehlern mit dem Ladebildschirm kommt!
-
-
-
-
 
 
 
@@ -3126,6 +3236,24 @@
         &#x3C;li&#x3E;
            &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;number&#x3C;/span&#x3E;&#x3C;/span&#x3E;
         ID des Player&#x3C;/li&#x3E;
+    &#x3C;/ol&#x3E;
+
+
+
+
+</span></div><div id="qsb.api.ismultiplayerloaded" class="result method"><a href="modules/qsb.html#API.IsMultiplayerLoaded">API.IsMultiplayerLoaded</a><br>Gibt zurück, ob die Sitzung geladen wurde.<span class="docInvisibleContent">
+    Gibt zurück, ob die Sitzung geladen wurde.
+&#x3C;p&#x3E; &#x3C;h5&#x3E;Multiplayer&#x3C;/h5&#x3E;
+ Nur für Multiplayer ausgelegt! Nicht im Singleplayer nutzen!
+
+
+
+
+    &#x3C;h3&#x3E;Rückgabe:&#x3C;/h3&#x3E;
+    &#x3C;ol&#x3E;
+
+           &#x3C;span class="types"&#x3E;&#x3C;span class="type"&#x3E;boolean&#x3C;/span&#x3E;&#x3C;/span&#x3E;
+        Sitzung ist geladen
     &#x3C;/ol&#x3E;
 
 

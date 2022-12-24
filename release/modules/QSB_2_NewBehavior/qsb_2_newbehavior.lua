@@ -370,7 +370,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleBehaviorCollection);
+Swift:RegisterModule(ModuleBehaviorCollection);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
@@ -469,7 +469,7 @@ function B_Goal_MoveToPosition:GetCustomData( _Index )
     return Data
 end
 
-Revision:RegisterBehavior(B_Goal_MoveToPosition);
+Swift:RegisterBehavior(B_Goal_MoveToPosition);
 
 -- -------------------------------------------------------------------------- --
 
@@ -527,7 +527,7 @@ function B_Goal_WinQuest:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Goal_WinQuest);
+Swift:RegisterBehavior(B_Goal_WinQuest);
 
 -- -------------------------------------------------------------------------- --
 
@@ -603,7 +603,7 @@ function B_Goal_AmmunitionAmount:GetCustomData( _Index )
     end
 end
 
-Revision:RegisterBehavior(B_Goal_AmmunitionAmount);
+Swift:RegisterBehavior(B_Goal_AmmunitionAmount);
 
 -- -------------------------------------------------------------------------- --
 
@@ -657,7 +657,7 @@ end
 function B_Goal_CityReputation:SetCaption(_Quest)
     if not _Quest.QuestDescription or _Quest.QuestDescription == "" then
         local Text = string.format(API.Localize(self.Text), self.Reputation);
-        Revision.Quest:ChangeCustomQuestCaptionText(Text .."%", _Quest);
+        Swift.Quest:ChangeCustomQuestCaptionText(Text .."%", _Quest);
     end
 end
 
@@ -673,7 +673,7 @@ function B_Goal_CityReputation:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Goal_CityReputation);
+Swift:RegisterBehavior(B_Goal_CityReputation);
 
 -- -------------------------------------------------------------------------- --
 
@@ -764,7 +764,7 @@ function B_Goal_DestroySpawnedEntities:GetCustomData(_Index)
     end
 end
 
-Revision:RegisterBehavior(B_Goal_DestroySpawnedEntities);
+Swift:RegisterBehavior(B_Goal_DestroySpawnedEntities);
 
 -- -------------------------------------------------------------------------- --
 
@@ -875,7 +875,7 @@ function B_Goal_StealGold:SetDescriptionOverwrite(_Quest)
 end
 
 function B_Goal_StealGold:CustomFunction(_Quest)
-    Revision.Quest:ChangeCustomQuestCaptionText(self:SetDescriptionOverwrite(_Quest), _Quest);
+    Swift.Quest:ChangeCustomQuestCaptionText(self:SetDescriptionOverwrite(_Quest), _Quest);
     if self.StohlenGold >= self.Amount then
         return true;
     end
@@ -898,7 +898,7 @@ function B_Goal_StealGold:Reset(_Quest)
     self.StohlenGold = 0;
 end
 
-Revision:RegisterBehavior(B_Goal_StealGold)
+Swift:RegisterBehavior(B_Goal_StealGold)
 
 -- -------------------------------------------------------------------------- --
 
@@ -1050,7 +1050,7 @@ function B_Goal_StealFromBuilding:Interrupt(_Quest)
     Logic.DestroyEffect(self.Marker);
 end
 
-Revision:RegisterBehavior(B_Goal_StealFromBuilding)
+Swift:RegisterBehavior(B_Goal_StealFromBuilding)
 
 -- -------------------------------------------------------------------------- --
 
@@ -1180,7 +1180,7 @@ function B_Goal_SpyOnBuilding:Interrupt(_Quest)
     Logic.DestroyEffect(self.Marker);
 end
 
-Revision:RegisterBehavior(B_Goal_SpyOnBuilding);
+Swift:RegisterBehavior(B_Goal_SpyOnBuilding);
 
 -- -------------------------------------------------------------------------- --
 
@@ -1261,7 +1261,7 @@ function B_Goal_FetchItems:AddParameter(_Index, _Parameter)
 end
 
 function B_Goal_FetchItems:CustomFunction(_Quest)
-    Revision.Quest:ChangeCustomQuestCaptionText("{center}" ..API.Localize(self.Text[2]), _Quest);
+    Swift.Quest:ChangeCustomQuestCaptionText("{center}" ..API.Localize(self.Text[2]), _Quest);
     if not self.Finished then
         self:GetPositions(_Quest);
         self:CreateMarker(_Quest);
@@ -1346,7 +1346,7 @@ function B_Goal_FetchItems:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Goal_FetchItems);
+Swift:RegisterBehavior(B_Goal_FetchItems);
 
 -- -------------------------------------------------------------------------- --
 
@@ -1404,9 +1404,9 @@ end
 function B_Goal_DestroySoldiers:CustomFunction(_Quest)
     if not _Quest.QuestDescription or _Quest.QuestDescription == "" then
         local PlayerName = GetPlayerName(self.AttackedPlayer) or ("Player " ..self.AttackedPlayer);
-        Revision.Quest:ChangeCustomQuestCaptionText(
+        Swift.Quest:ChangeCustomQuestCaptionText(
             string.format(
-                Revision.Text:Localize(self.Text),
+                Swift.Text:Localize(self.Text),
                 PlayerName, self.KillsNeeded
             ),
             _Quest
@@ -1434,7 +1434,7 @@ function B_Goal_DestroySoldiers:GetIcon()
     return {7,12}
 end
 
-Revision:RegisterBehavior(B_Goal_DestroySoldiers);
+Swift:RegisterBehavior(B_Goal_DestroySoldiers);
 
 -- -------------------------------------------------------------------------- --
 -- Reprisals                                                                  --
@@ -1534,7 +1534,7 @@ function B_Reprisal_SetPosition:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_SetPosition);
+Swift:RegisterBehavior(B_Reprisal_SetPosition);
 
 -- -------------------------------------------------------------------------- --
 
@@ -1601,7 +1601,7 @@ function B_Reprisal_ChangePlayer:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_ChangePlayer);
+Swift:RegisterBehavior(B_Reprisal_ChangePlayer);
 
 -- -------------------------------------------------------------------------- --
 
@@ -1691,7 +1691,7 @@ function B_Reprisal_SetVisible:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_SetVisible);
+Swift:RegisterBehavior(B_Reprisal_SetVisible);
 
 -- -------------------------------------------------------------------------- --
 
@@ -1777,7 +1777,7 @@ function B_Reprisal_SetVulnerability:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_SetVulnerability);
+Swift:RegisterBehavior(B_Reprisal_SetVulnerability);
 
 -- -------------------------------------------------------------------------- --
 
@@ -1850,7 +1850,7 @@ function B_Reprisal_SetModel:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_SetModel);
+Swift:RegisterBehavior(B_Reprisal_SetModel);
 
 -- -------------------------------------------------------------------------- --
 -- Rewards                                                                    --
@@ -1874,7 +1874,7 @@ function Reward_SetPosition(...)
     return B_Reward_SetPosition:new(...);
 end
 
-B_Reward_SetPosition = Revision.LuaBase:CopyTable(B_Reprisal_SetPosition);
+B_Reward_SetPosition = Swift.LuaBase:CopyTable(B_Reprisal_SetPosition);
 B_Reward_SetPosition.Name = "Reward_SetPosition";
 B_Reward_SetPosition.Description.en = "Reward: Places an entity relative to the position of another. The entity can look the target.";
 B_Reward_SetPosition.Description.de = "Lohn: Setzt eine Entity relativ zur Position einer anderen. Die Entity kann zum Ziel ausgerichtet werden.";
@@ -1885,7 +1885,7 @@ B_Reward_SetPosition.GetRewardTable = function(self, _Quest)
     return { Reward.Custom, { self, self.CustomFunction } };
 end
 
-Revision:RegisterBehavior(B_Reward_SetPosition);
+Swift:RegisterBehavior(B_Reward_SetPosition);
 
 -- -------------------------------------------------------------------------- --
 
@@ -1901,7 +1901,7 @@ function Reward_ChangePlayer(...)
     return B_Reward_ChangePlayer:new(...);
 end
 
-B_Reward_ChangePlayer = Revision.LuaBase:CopyTable(B_Reprisal_ChangePlayer);
+B_Reward_ChangePlayer = Swift.LuaBase:CopyTable(B_Reprisal_ChangePlayer);
 B_Reward_ChangePlayer.Name = "Reward_ChangePlayer";
 B_Reward_ChangePlayer.Description.en = "Reward: Changes the owner of the entity or a battalion.";
 B_Reward_ChangePlayer.Description.de = "Lohn: Ändert den Besitzer einer Entity oder eines Battalions.";
@@ -1912,7 +1912,7 @@ B_Reward_ChangePlayer.GetRewardTable = function(self, _Quest)
     return { Reward.Custom, { self, self.CustomFunction } };
 end
 
-Revision:RegisterBehavior(B_Reward_ChangePlayer);
+Swift:RegisterBehavior(B_Reward_ChangePlayer);
 
 -- -------------------------------------------------------------------------- --
 
@@ -2009,7 +2009,7 @@ function B_Reward_MoveToPosition:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reward_MoveToPosition);
+Swift:RegisterBehavior(B_Reward_MoveToPosition);
 
 -- -------------------------------------------------------------------------- --
 
@@ -2127,7 +2127,7 @@ function B_Reward_VictoryWithParty:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reward_VictoryWithParty);
+Swift:RegisterBehavior(B_Reward_VictoryWithParty);
 
 -- -------------------------------------------------------------------------- --
 
@@ -2143,7 +2143,7 @@ function Reward_SetVisible(...)
     return B_Reward_SetVisible:new(...)
 end
 
-B_Reward_SetVisible = Revision.LuaBase:CopyTable(B_Reprisal_SetVisible);
+B_Reward_SetVisible = Swift.LuaBase:CopyTable(B_Reprisal_SetVisible);
 B_Reward_SetVisible.Name = "Reward_SetVisible";
 B_Reward_SetVisible.Description.en = "Reward: Changes the visibility of an entity. If the entity is a spawner the spawned entities will be affected.";
 B_Reward_SetVisible.Description.de = "Lohn: Setzt die Sichtbarkeit einer Entity. Handelt es sich um einen Spawner werden auch die gespawnten Entities beeinflusst.";
@@ -2154,7 +2154,7 @@ B_Reward_SetVisible.GetRewardTable = function(self, _Quest)
     return { Reward.Custom, { self, self.CustomFunction } }
 end
 
-Revision:RegisterBehavior(B_Reward_SetVisible);
+Swift:RegisterBehavior(B_Reward_SetVisible);
 
 -- -------------------------------------------------------------------------- --
 
@@ -2174,7 +2174,7 @@ function Reward_SetVulnerability(...)
     return B_Reward_SetVulnerability:new(...);
 end
 
-B_Reward_SetVulnerability = Revision.LuaBase:CopyTable(B_Reprisal_SetVulnerability);
+B_Reward_SetVulnerability = Swift.LuaBase:CopyTable(B_Reprisal_SetVulnerability);
 B_Reward_SetVulnerability.Name = "Reward_SetVulnerability";
 B_Reward_SetVulnerability.Description.en = "Reward: Changes the vulnerability of the entity. If the entity is a spawner the spawned entities will be affected.";
 B_Reward_SetVulnerability.Description.de = "Lohn: Macht eine Entity verwundbar oder unverwundbar. Handelt es sich um einen Spawner, sind die gespawnten Entities betroffen.";
@@ -2185,7 +2185,7 @@ B_Reward_SetVulnerability.GetRewardTable = function(self, _Quest)
     return { Reward.Custom, { self, self.CustomFunction } }
 end
 
-Revision:RegisterBehavior(B_Reward_SetVulnerability);
+Swift:RegisterBehavior(B_Reward_SetVulnerability);
 
 -- -------------------------------------------------------------------------- --
 
@@ -2205,7 +2205,7 @@ function Reward_SetModel(...)
     return B_Reward_SetModel:new(...);
 end
 
-B_Reward_SetModel = Revision.LuaBase:CopyTable(B_Reprisal_SetModel);
+B_Reward_SetModel = Swift.LuaBase:CopyTable(B_Reprisal_SetModel);
 B_Reward_SetModel.Name = "Reward_SetModel";
 B_Reward_SetModel.Description.en = "Reward: Changes the model of the entity. Be careful, some models crash the game.";
 B_Reward_SetModel.Description.de = "Lohn: Ändert das Model einer Entity. Achtung: Einige Modelle führen zum Absturz.";
@@ -2216,7 +2216,7 @@ B_Reward_SetModel.GetRewardTable = function(self, _Quest)
     return { Reward.Custom, { self, self.CustomFunction } }
 end
 
-Revision:RegisterBehavior(B_Reward_SetModel);
+Swift:RegisterBehavior(B_Reward_SetModel);
 
 -- -------------------------------------------------------------------------- --
 
@@ -2292,7 +2292,7 @@ function B_Reward_AI_SetEntityControlled:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reward_AI_SetEntityControlled);
+Swift:RegisterBehavior(B_Reward_AI_SetEntityControlled);
 
 -- -------------------------------------------------------------------------- --
 -- Trigger                                                                    --
@@ -2399,7 +2399,7 @@ function B_Trigger_OnAtLeastXOfYQuestsFailed:GetCustomData(_Index)
     end
 end
 
-Revision:RegisterBehavior(B_Trigger_OnAtLeastXOfYQuestsFailed)
+Swift:RegisterBehavior(B_Trigger_OnAtLeastXOfYQuestsFailed)
 
 -- -------------------------------------------------------------------------- --
 
@@ -2457,7 +2457,7 @@ function B_Trigger_AmmunitionDepleted:Debug(_Quest)
     return false
 end
 
-Revision:RegisterBehavior(B_Trigger_AmmunitionDepleted)
+Swift:RegisterBehavior(B_Trigger_AmmunitionDepleted)
 
 -- -------------------------------------------------------------------------- --
 
@@ -2527,7 +2527,7 @@ function B_Trigger_OnExactOneQuestIsWon:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Trigger_OnExactOneQuestIsWon);
+Swift:RegisterBehavior(B_Trigger_OnExactOneQuestIsWon);
 
 -- -------------------------------------------------------------------------- --
 
@@ -2597,5 +2597,5 @@ function B_Trigger_OnExactOneQuestIsLost:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Trigger_OnExactOneQuestIsLost);
+Swift:RegisterBehavior(B_Trigger_OnExactOneQuestIsLost);
 

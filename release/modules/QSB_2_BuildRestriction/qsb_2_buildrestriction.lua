@@ -421,7 +421,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleBuildRestriction);
+Swift:RegisterModule(ModuleBuildRestriction);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.

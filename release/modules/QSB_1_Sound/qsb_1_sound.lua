@@ -91,7 +91,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleSound);
+Swift:RegisterModule(ModuleSound);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.

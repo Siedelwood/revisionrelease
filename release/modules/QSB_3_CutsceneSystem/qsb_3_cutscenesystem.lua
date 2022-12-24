@@ -738,7 +738,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleCutsceneSystem);
+Swift:RegisterModule(ModuleCutsceneSystem);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
@@ -907,7 +907,7 @@ end
 -- @within Anwenderfunktionen
 --
 function API.IsCutsceneActive(_PlayerID)
-    if Revision.Environment == QSB.Environment.GLOBAL then
+    if API.GetScriptEnvironment() == QSB.Environment.GLOBAL then
         return ModuleCutsceneSystem.Global:GetCurrentCutscene(_PlayerID) ~= nil;
     end
     return ModuleCutsceneSystem.Local:GetCurrentCutscene(_PlayerID) ~= nil;
@@ -1104,7 +1104,7 @@ function B_Reprisal_Cutscene:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_Cutscene);
+Swift:RegisterBehavior(B_Reprisal_Cutscene);
 
 -- -------------------------------------------------------------------------- --
 
@@ -1121,7 +1121,7 @@ function Reward_Cutscene(...)
     return B_Reward_Cutscene:new(...);
 end
 
-B_Reward_Cutscene = Revision.LuaBase:CopyTable(B_Reprisal_Cutscene);
+B_Reward_Cutscene = Swift.LuaBase:CopyTable(B_Reprisal_Cutscene);
 B_Reward_Cutscene.Name = "Reward_Cutscene";
 B_Reward_Cutscene.Description.en = "Reward: Calls a function to start an new Cutscene.";
 B_Reward_Cutscene.Description.de = "Lohn: Ruft die Funktion auf und startet die enthaltene Cutscene.";
@@ -1132,7 +1132,7 @@ B_Reward_Cutscene.GetRewardTable = function(self, _Quest)
     return { Reward.Custom, {self, self.CustomFunction} }
 end
 
-Revision:RegisterBehavior(B_Reward_Cutscene);
+Swift:RegisterBehavior(B_Reward_Cutscene);
 
 -- -------------------------------------------------------------------------- --
 
@@ -1207,5 +1207,5 @@ function B_Trigger_Cutscene:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Trigger_Cutscene);
+Swift:RegisterBehavior(B_Trigger_Cutscene);
 

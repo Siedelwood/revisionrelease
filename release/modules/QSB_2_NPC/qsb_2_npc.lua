@@ -512,7 +512,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleNpcInteraction);
+Swift:RegisterModule(ModuleNpcInteraction);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
@@ -896,5 +896,5 @@ function B_Goal_NPC:GetIcon()
     return {14,10}
 end
 
-Revision:RegisterBehavior(B_Goal_NPC);
+Swift:RegisterBehavior(B_Goal_NPC);
 

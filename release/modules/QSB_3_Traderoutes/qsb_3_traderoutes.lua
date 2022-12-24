@@ -373,7 +373,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleShipSalesment);
+Swift:RegisterModule(ModuleShipSalesment);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.

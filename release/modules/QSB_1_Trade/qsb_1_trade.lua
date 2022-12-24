@@ -717,7 +717,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleTrade);
+Swift:RegisterModule(ModuleTrade);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.

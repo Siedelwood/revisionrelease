@@ -460,7 +460,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleGuiControl);
+Swift:RegisterModule(ModuleGuiControl);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.

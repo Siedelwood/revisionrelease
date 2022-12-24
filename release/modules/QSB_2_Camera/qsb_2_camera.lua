@@ -131,7 +131,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleCamera);
+Swift:RegisterModule(ModuleCamera);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.

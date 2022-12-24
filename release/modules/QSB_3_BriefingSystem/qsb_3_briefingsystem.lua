@@ -1268,7 +1268,7 @@ end
 
 -- -------------------------------------------------------------------------- --
 
-Revision:RegisterModule(ModuleBriefingSystem);
+Swift:RegisterModule(ModuleBriefingSystem);
 
 --[[
 Copyright (C) 2023 totalwarANGEL - All Rights Reserved.
@@ -1592,7 +1592,7 @@ end
 -- @within Anwenderfunktionen
 --
 function API.IsBriefingActive(_PlayerID)
-    if Revision.Environment == QSB.Environment.GLOBAL then
+    if API.GetScriptEnvironment() == QSB.Environment.GLOBAL then
         return ModuleBriefingSystem.Global:GetCurrentBriefing(_PlayerID) ~= nil;
     end
     return ModuleBriefingSystem.Local:GetCurrentBriefing(_PlayerID) ~= nil;
@@ -2085,7 +2085,7 @@ function B_Reprisal_Briefing:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Reprisal_Briefing);
+Swift:RegisterBehavior(B_Reprisal_Briefing);
 
 -- -------------------------------------------------------------------------- --
 
@@ -2102,7 +2102,7 @@ function Reward_Briefing(...)
     return B_Reward_Briefing:new(...);
 end
 
-B_Reward_Briefing = Revision.LuaBase:CopyTable(B_Reprisal_Briefing);
+B_Reward_Briefing = Swift.LuaBase:CopyTable(B_Reprisal_Briefing);
 B_Reward_Briefing.Name = "Reward_Briefing";
 B_Reward_Briefing.Description.en = "Reward: Calls a function to start an new briefing.";
 B_Reward_Briefing.Description.de = "Lohn: Ruft die Funktion auf und startet das enthaltene Briefing.";
@@ -2113,7 +2113,7 @@ B_Reward_Briefing.GetRewardTable = function(self, _Quest)
     return { Reward.Custom,{self, self.CustomFunction} }
 end
 
-Revision:RegisterBehavior(B_Reward_Briefing);
+Swift:RegisterBehavior(B_Reward_Briefing);
 
 -- -------------------------------------------------------------------------- --
 
@@ -2188,5 +2188,5 @@ function B_Trigger_Briefing:Debug(_Quest)
     return false;
 end
 
-Revision:RegisterBehavior(B_Trigger_Briefing);
+Swift:RegisterBehavior(B_Trigger_Briefing);
 
