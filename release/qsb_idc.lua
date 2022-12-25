@@ -1240,7 +1240,7 @@ function Swift.LuaBase:ConvertTableToString(_Table)
             key = "\""..k.."\"";
         end
         if type(v) == "table" then
-            String = String .. "[" .. key .. "] = " .. table.tostring(v) .. ", ";
+            String = String .. "[" .. key .. "] = " .. self:ConvertTableToString(v) .. ", ";
         elseif type(v) == "number" then
             String = String .. "[" .. key .. "] = " .. v .. ", ";
         elseif type(v) == "string" then
@@ -6262,13 +6262,7 @@ function B_Goal_UnitsOnTerritory:AddParameter(_Index, _Parameter)
 end
 
 function B_Goal_UnitsOnTerritory:CustomFunction(_Quest)
-    local PlayerEntities;
-    if API.SearchEntitiesOfCategoryInTerritory then
-        local PlayerID = (self.PlayerID == -1 and nil) or self.PlayerID;
-        PlayerEntities = API.SearchEntitiesOfCategoryInTerritory(self.TerritoryID, EntityCategories[self.Category], PlayerID);
-    else
-        PlayerEntities = self:GetEntities(self.TerritoryID, self.PlayerID, EntityCategories[self.Category]);
-    end
+    local PlayerEntities = self:GetEntities(self.TerritoryID, self.PlayerID, EntityCategories[self.Category]);
     if self.bRelSmallerThan == false and #PlayerEntities >= self.NumberOfUnits then
         return true;
     elseif self.bRelSmallerThan == true and #PlayerEntities < self.NumberOfUnits then
@@ -15443,6 +15437,7 @@ function API.SetPlayerName(_playerID,_name)
             _playerID,
             _name
         ));
+        return;
     end
     GUI_MissionStatistic.PlayerNames[_playerID] = _name
     QSB.PlayerNames[_playerID] = _name;
@@ -25745,6 +25740,12 @@ function ModuleNpcInteraction.Global:InteractionIsAppropriateHero(_ScriptName)
     return Appropriate;
 end
 
+function ModuleNpcInteraction.Global:GetEntityMovementTarget(_EntityID)
+    local X = API.GetFloat(_EntityID, QSB.ScriptingValue.Destination.X);
+    local Y = API.GetFloat(_EntityID, QSB.ScriptingValue.Destination.Y);
+    return {X= X, Y= Y};
+end
+
 function ModuleNpcInteraction.Global:RotateActorsToEachother(_PlayerID)
     local PlayerKnights = {};
     Logic.GetKnights(_PlayerID, PlayerKnights);
@@ -25762,7 +25763,7 @@ function ModuleNpcInteraction.Global:RotateActorsToEachother(_PlayerID)
 end
 
 function ModuleNpcInteraction.Global:AdjustHeroTalkingDistance(_Distance)
-    local Distance = _Distance * API.GetEntityScale(QSB.Npc.LastNpcEntityID);
+    local Distance = _Distance * API.GetFloat(QSB.Npc.LastNpcEntityID, QSB.ScriptingValue.Size);
     if API.GetDistance(QSB.Npc.LastHeroEntityID, QSB.Npc.LastNpcEntityID) <= Distance * 0.7 then
         local Orientation = Logic.GetEntityOrientation(QSB.Npc.LastNpcEntityID);
         local x1, y1, z1 = Logic.EntityGetPos(QSB.Npc.LastHeroEntityID);
@@ -31909,7 +31910,7 @@ end
 function ModuleBriefingSystem.Global:CreateBriefingAddMCPage(_Briefing)
     _Briefing.AddMCPage = function(self, _Page)
         -- Create base page
-        local Page = self:AddPage(_Briefing);
+        local Page = self:AddPage(_Page);
 
         -- Multiple choice selection
         Page.GetSelected = function(self)
@@ -31920,14 +31921,14 @@ function ModuleBriefingSystem.Global:CreateBriefingAddMCPage(_Briefing)
         end
 
         -- Multiple Choice
-        if _Page.MC then
-            for i= 1, #_Page.MC do
-                _Page.MC[i][1] = API.Localize(_Page.MC[i][1]);
-                _Page.MC[i].ID = _Page.MC[i].ID or i;
+        if Page.MC then
+            for i= 1, #Page.MC do
+                Page.MC[i][1] = API.Localize(Page.MC[i][1]);
+                Page.MC[i].ID = Page.MC[i].ID or i;
             end
-            _Page.BigBars = true;
-            _Page.DisableSkipping = true;
-            _Page.Duration = -1;
+            Page.BigBars = true;
+            Page.DisableSkipping = true;
+            Page.Duration = -1;
         end
         -- Return page
         return Page;
@@ -32021,9 +32022,9 @@ function ModuleBriefingSystem.Global:TransformAnimations(_PlayerID)
                         Entry.Duration = v[i][1] or (2 * 60);
                         Entry.Start = {
                             Position = (type(v[i][2]) ~= "table" and {v[i][2],0}) or v[i][2],
-                            Rotation = v[i][3] or -45,
-                            Zoom     = v[i][4] or 9000,
-                            Angle    = v[i][5] or 47,
+                            Rotation = v[i][3] or QSB.Briefing.CAMERA_ROTATIONDEFAULT,
+                            Zoom     = v[i][4] or QSB.Briefing.CAMERA_ZOOMDEFAULT,
+                            Angle    = v[i][5] or QSB.Briefing.CAMERA_ANGLEDEFAULT,
                         };
                         local EndPosition = v[i][6] or Entry.Start.Position;
                         Entry.End = {
