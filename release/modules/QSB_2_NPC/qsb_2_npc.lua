@@ -11,7 +11,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ModuleNpcInteraction = {
     Properties = {
         Name = "ModuleNpcInteraction",
-        Version = "4.0.0 (ALPHA 1.0.0)",
+        Version = "3.0.0 (BETA 2.0.0)",
     },
 
     Global = {
@@ -525,7 +525,7 @@ You may use and modify this file unter the terms of the MIT licence.
 -- -------------------------------------------------------------------------- --
 
 ---
--- Dieses Modul erlaubt NPC-Charaktere interaktiv zu machen.
+-- Ermöglicht die Interaktion mit NPC-Charakteren.
 --
 -- Ein NPC ist ein Charakter, der durch den Helden eines Spielers angesprochen
 -- werden kann. Auf das Ansprechen kann eine beliebige Aktion folgen. Mittels

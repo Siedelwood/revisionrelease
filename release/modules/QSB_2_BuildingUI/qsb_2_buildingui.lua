@@ -11,7 +11,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ModuleBuildingButtons = {
     Properties = {
         Name = "ModuleBuildingButtons",
-        Version = "4.0.0 (ALPHA 1.0.0)",
+        Version = "3.0.0 (BETA 2.0.0)",
     },
 
     Global = {},
@@ -658,8 +658,8 @@ function ModuleBuildingButtons.Local:BindButtons(_ID)
         self.BuildingButtons.Configuration[ButtonName].Bind = ButtonOverride[i];
         XGUIEng.ShowWidget("/InGame/Root/Normal/BuildingButtons/" ..ButtonName, 1);
         XGUIEng.DisableButton("/InGame/Root/Normal/BuildingButtons/" ..ButtonName, 0);
-        local X = ButtonOverride[i][1];
-        local Y = ButtonOverride[i][2];
+        local X = ButtonOverride[i].Position[1];
+        local Y = ButtonOverride[i].Position[2];
         if not X or not Y then
             local AnchorPosition = {12, 296};
             X = AnchorPosition[1] + (64 * (i-1));
@@ -694,7 +694,7 @@ You may use and modify this file unter the terms of the MIT licence.
 -- -------------------------------------------------------------------------- --
 
 ---
--- Zusätzliche Buttons im Gebäudemenü platzieren.
+-- Ermöglicht es zusätzliche Buttons im Gebäudemenü platzieren.
 --
 -- <b>Vorausgesetzte Module:</b>
 -- <ul>

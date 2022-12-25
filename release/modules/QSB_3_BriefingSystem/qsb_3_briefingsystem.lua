@@ -11,6 +11,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ModuleBriefingSystem = {
     Properties = {
         Name = "ModuleBriefingSystem",
+        Version = "3.0.0 (BETA 2.0.0)",
     },
 
     Global = {
@@ -1281,7 +1282,7 @@ You may use and modify this file unter the terms of the MIT licence.
 -- -------------------------------------------------------------------------- --
 
 ---
--- Ermöglicht es Briefing zu verwenden.
+-- Ermöglicht Briefings für verschiedene Verwendungszwecke.
 --
 -- Briefings dienen zur Darstellung von Dialogen oder zur näheren Erleuterung
 -- der aktuellen Spielsituation. Mit Multiple Choice können dem Spieler mehrere

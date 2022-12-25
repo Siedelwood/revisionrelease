@@ -11,6 +11,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ModuleTreasure = {
     Properties = {
         Name = "ModuleTreasure",
+        Version = "3.0.0 (BETA 2.0.0)",
     },
 
     Global = {
@@ -206,7 +207,7 @@ You may use and modify this file unter the terms of the MIT licence.
 -- -------------------------------------------------------------------------- --
 
 ---
--- Es können Schatztruhen mit zufälligem Inhalt erzeugt werden.
+-- Es können Schatztruhen und Ruinen mit Inhalten bestückt werden.
 -- 
 -- Der Schatz einer Kiste oder Ruine wird nach Aktivierung in einem Karren
 -- abtransportiert.

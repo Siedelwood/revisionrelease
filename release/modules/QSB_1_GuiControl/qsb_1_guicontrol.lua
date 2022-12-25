@@ -11,7 +11,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ModuleGuiControl = {
     Properties = {
         Name = "ModuleGuiControl",
-        Version = "4.0.0 (ALPHA 1.0.0)"
+        Version = "3.0.0 (BETA 2.0.0)"
     },
 
     Global = {},
@@ -267,14 +267,14 @@ function ModuleGuiControl.Local:SetIcon(_WidgetID, _Coordinates, _Size, _Name)
 end
 
 function ModuleGuiControl.Local:TooltipNormal(_title, _text, _disabledText)
-    if _title and _title:find("[A-Za-z0-9]+/[A-Za-z0-9]+$") then
+    if _title and _title:find("^[A-Za-z0-9_]+/[A-Za-z0-9_]+$") then
         _title = XGUIEng.GetStringTableText(_title);
     end
-    if _text and _text:find("[A-Za-z0-9]+/[A-Za-z0-9]+$") then
+    if _text and _text:find("^[A-Za-z0-9_]+/[A-Za-z0-9_]+$") then
         _text = XGUIEng.GetStringTableText(_text);
     end
     _disabledText = _disabledText or "";
-    if _disabledText and _disabledText:find("[A-Za-z0-9]+/[A-Za-z0-9]+$") then
+    if _disabledText and _disabledText:find("^[A-Za-z0-9_]+/[A-Za-z0-9_]+$") then
         _disabledText = XGUIEng.GetStringTableText(_disabledText);
     end
 
@@ -313,13 +313,13 @@ function ModuleGuiControl.Local:TooltipCosts(_title,_text,_disabledText,_costs,_
     for i= 1, 4, 1 do
         Costs[i] = _costs[i];
     end
-    if _title and _title:find("[A-Za-z0-9]+/[A-Za-z0-9]+$") then
+    if _title and _title:find("^[A-Za-z0-9_]+/[A-Za-z0-9_]+$") then
         _title = XGUIEng.GetStringTableText(_title);
     end
-    if _text and _text:find("[A-Za-z0-9]+/[A-Za-z0-9]+$") then
+    if _text and _text:find("^[A-Za-z0-9_]+/[A-Za-z0-9_]+$") then
         _text = XGUIEng.GetStringTableText(_text);
     end
-    if _disabledText and _disabledText:find("^[A-Za-z0-9]+/[A-Za-z0-9]+$") then
+    if _disabledText and _disabledText:find("^[A-Za-z0-9_]+/[A-Za-z0-9_]+$") then
         _disabledText = XGUIEng.GetStringTableText(_disabledText);
     end
 
@@ -473,7 +473,7 @@ You may use and modify this file unter the terms of the MIT licence.
 -- -------------------------------------------------------------------------- --
 
 ---
--- Die Anzeige von Menüoptionen steuern.
+-- Ermöglicht, die Anzeige von Menüoptionen zu steuern.
 --
 -- Es können verschiedene Anzeigen ausgetauscht werden.
 -- <ul>

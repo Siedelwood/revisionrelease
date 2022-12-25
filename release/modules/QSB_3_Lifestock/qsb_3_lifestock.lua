@@ -11,7 +11,7 @@ You may use and modify this file unter the terms of the MIT licence.
 ModuleLifestockBreeding = {
     Properties = {
         Name = "ModuleLifestockBreeding",
-        Version = "4.0.0 (ALPHA 1.0.0)",
+        Version = "3.0.0 (BETA 2.0.0)",
     },
 
     Global = {
@@ -462,7 +462,7 @@ You may use and modify this file unter the terms of the MIT licence.
 -- -------------------------------------------------------------------------- --
 
 ---
--- Ermöglicht die Aufzucht von Schafe und Kühe durch den Spieler.
+-- Schafe und Kühe können vom Spieler gezüchtet werden.
 -- 
 -- Verschiedene Kenngrößen können angepasst werden.
 --

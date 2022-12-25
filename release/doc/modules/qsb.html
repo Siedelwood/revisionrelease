@@ -34,13 +34,12 @@
 
 <h2>Contents</h2>
 <ul>
-<li><a href="#Tables">Tables</a></li>
-<li><a href="#Fields">Fields</a></li>
 <li><a href="#Event">Event</a></li>
 <li><a href="#Goal">Goal</a></li>
 <li><a href="#Reprisal">Reprisal</a></li>
 <li><a href="#Reward">Reward</a></li>
 <li><a href="#Trigger">Trigger</a></li>
+<li><a href="#Konstanten">Konstanten</a></li>
 <li><a href="#System">System</a></li>
 <li><a href="#Multiplayer">Multiplayer</a></li>
 <li><a href="#Job">Job</a></li>
@@ -101,31 +100,11 @@
  schlagen Lieferungen bei bestimmten Lagerhäusern nicht mehr fehl.</li>
  <li>Bei interaktiven Objekten können jetzt auch nur zwei Rohstoffe anstatt
  von Gold und einem Rohstoff als Kosten benutzt werden.</li>
- <li>Spezielle Script Entities werden nicht mehr fälschlich mitgezählt.</li>
- </ul>
-<p> <h5>Scripting Values</h5>
- Bei den Scripting Values handelt es sich um einige Werte, die direkt im
- Arbeitsspeicher manipuliert werden können und Auswirkungen auf Entities
- haben.
-<p> Liste der derzeit unterstützten Werte:
- <ul>
- <li><b>QSB.ScriptingValue.Destination.X</b><br>
- Gibt die Z-Koordinate des Bewegungsziels als Float zurück.</li>
- <li><b>QSB.ScriptingValue.Destination.Y</b><br>
- Gibt die Y-Koordinate des Bewegungsziels als Float zurück.</li>
- <li><b>QSB.ScriptingValue.Health</b><br>
- Setzt die Gesundheit eines Entity ohne Folgeaktionen zu triggern.</li>
- <li><b>QSB.ScriptingValue.Player</b><br>
- Setzt den Besitzer des Entity ohne Plausibelitätsprüfungen.</li>
- <li><b>QSB.ScriptingValue.Size</b><br>
- Setzt den Größenfaktor eines Entities als Float.</li>
- <li><b>QSB.ScriptingValue.Visible</b><br>
- Sichtbarkeit eines Entities abfragen (801280 == sichtbar)</li>
- <li><b>QSB.ScriptingValue.NPC</b><br>
- NPC-Flag eines Siedlers setzen (0 = inaktiv, 1 - 4 = aktiv)</li>
+ <li>Spezielle Script Entities werden bei Goal_DestroyAllPlayerUnids nicht
+ mehr fälschlich mitgezählt.</li>
  </ul>
 <p> <h5>Platzhalter</h5>
-<p> <u>Mehrsprachige Texte:</u>
+<p> <u>Mehrsprachige Texte:</u><br>
  Anstatt eines Strings wird ein Table mit dem gleichen Text in verschiedenen
  Sprachen angegeben. Der richtige Text wird anhand der eingestellten Sprache
  gewählt. Wenn nichts vorgegeben wird, ist die Systemsprache voreingestellt.
@@ -134,12 +113,17 @@
  English (en) und Deutsch (de) vorhanden sein. <br>
  Einige Features lokalisieren Texte automatisch. <br>
  (Siehe dazu: <a href="#API.Localize">API.Localize</a>)
-<p> <u>Platzhalter in Texten:</u>
+<p> <u>Platzhalter in Texten:</u><br>
  In Texten können vordefinierte Farben, Namen für Entity-Typen und benannte
  Entities, sowie Inhalte von Variablen ersetzt werden. Dies wird von einigen
  QSB-Features automatisch vorgenommen. Es kann Mittels API-Funktion auch
  manuell angestoßen werden. <br>
  (Siehe dazu: <a href="#API.ConvertPlaceholders">API.ConvertPlaceholders</a>)
+<p> <h5>Scripting Values</h5>
+ Bei den Scripting Values handelt es sich um einige Werte, die direkt im
+ Arbeitsspeicher manipuliert werden können und Auswirkungen auf Entities
+ haben.<br>
+ (Siehe dazu: <a href="#ScriptingValue">QSB.ScriptingValue</a>)
 <p> <h5>Entwicklungsmodus</h5>
 <p> Die QSB kann verschiedene Optionen zum schnelleren Testen und finden von
  fehlern aktivieren. <br>
@@ -157,22 +141,24 @@
  <td>Map sofort neu starten</td>
  </tr>
  <tr>
- <td>&gt; [Befehl]</td>
+ <td>&gt; Befehl</td>
  <td>Einen Lua Befehl im globalen Skript ausführen.
- (Die Zeichen", ', {, } können nicht verwendet werden)</td>
+ (Die Zeichen " ' { } können nicht verwendet werden)</td>
  </tr>
  <tr>
- <td>&gt;&gt; [Befehl]</td>
+ <td>&gt;&gt; Befehl</td>
  <td>Einen Lua Befehl im lokalen Skript ausführen.
- (Die Zeichen", ', {, } können nicht verwendet werden)</td>
+ (Die Zeichen " ' { } können nicht verwendet werden)</td>
  </tr>
  <tr>
- <td>&lt; [Pfad]</td>
- <td>Lua-Datei zur Laufzeit ins globale Skript laden.</td>
+ <td>&lt; Pfad</td>
+ <td>Lua-Datei zur Laufzeit ins globale Skript laden.
+ (Es muss / anstatt \ verwendet werden)</td>
  </tr>
  <tr>
- <td>&lt;&lt; [Pfad]</td>
- <td>Lua-Datei zur Laufzeit ins lokale Skript laden.</td>
+ <td>&lt;&lt; Pfad</td>
+ <td>Lua-Datei zur Laufzeit ins lokale Skript laden.
+ (Es muss / anstatt \ verwendet werden)</td>
  </tr>
  </table>
 <p> <b>Cheats:</b><br>
@@ -469,28 +455,6 @@
 </p>
 
 
-<h2><a href="#Tables">Tables</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#QSB.Environment">QSB.Environment</a></td>
-	<td class="summary">Konstanten der Script Environments</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#QSB.GameVariant">QSB.GameVariant</a></td>
-	<td class="summary">Konstanten der Spielvarianten</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#QSB.GameVersion">QSB.GameVersion</a></td>
-	<td class="summary">Konstanten der Spielversionen</td>
-	</tr>
-</table>
-<h2><a href="#Fields">Fields</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#QSB.ScriptEvents">QSB.ScriptEvents</a></td>
-	<td class="summary">Events, um auf Ereignisse zu reagieren.</td>
-	</tr>
-</table>
 <h2><a href="#Event">Event</a></h2>
 <table class="function_list">
 	<tr>
@@ -500,6 +464,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#API.RemoveScriptEventListener">API.RemoveScriptEventListener (_EventID, _ID)</a></td>
 	<td class="summary">Entfernt einen Listener von dem Event.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#QSB.ScriptEvents">QSB.ScriptEvents</a></td>
+	<td class="summary">Events, um auf Ereignisse zu reagieren.</td>
 	</tr>
 </table>
 <h2><a href="#Goal">Goal</a></h2>
@@ -1020,6 +988,21 @@
 	<td class="summary">Startet den Quest sobald der Timer abgelaufen ist.</td>
 	</tr>
 </table>
+<h2><a href="#Konstanten">Konstanten</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#QSB.Environment">QSB.Environment</a></td>
+	<td class="summary">Konstanten der Script Environments</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#QSB.GameVariant">QSB.GameVariant</a></td>
+	<td class="summary">Konstanten der Spielvarianten</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#QSB.GameVersion">QSB.GameVersion</a></td>
+	<td class="summary">Konstanten der Spielversionen</td>
+	</tr>
+</table>
 <h2><a href="#System">System</a></h2>
 <table class="function_list">
 	<tr>
@@ -1334,147 +1317,16 @@
 	<td class="name" nowrap><a href="#API.SetInteger">API.SetInteger (_Entity, _SV, _Value)</a></td>
 	<td class="summary">Setzt den Wert auf dem übergebenen Index für das Entity.</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#QSB.ScriptingValue">QSB.ScriptingValue</a></td>
+	<td class="summary">Liste der unterstützten Scripting Values.</td>
+	</tr>
 </table>
 
 <br/>
 <br/>
 
 
-    <h2 class="section-header "><a name="Tables"></a>Tables</h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "QSB.Environment"></a>
-    <strong>QSB.Environment</strong>
-    </dt>
-    <dd>
-    Konstanten der Script Environments
-
-
-    <h3>Fields:</h3>
-    <ul>
-        <li><span class="parameter">GLOBAL</span>
-         Die globale Skriptumgebung
-        </li>
-        <li><span class="parameter">LOCAL</span>
-          Die lokale Skriptumgebung
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "QSB.GameVariant"></a>
-    <strong>QSB.GameVariant</strong>
-    </dt>
-    <dd>
-    Konstanten der Spielvarianten
-
-
-    <h3>Fields:</h3>
-    <ul>
-        <li><span class="parameter">VANILLA</span>
-           Das unmodifizierte Spiel
-        </li>
-        <li><span class="parameter">COMMUNITY</span>
-         Der Community Patch
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "QSB.GameVersion"></a>
-    <strong>QSB.GameVersion</strong>
-    </dt>
-    <dd>
-    Konstanten der Spielversionen
-
-
-    <h3>Fields:</h3>
-    <ul>
-        <li><span class="parameter">ORIGINAL</span>
-                Das Originalspiel
-        </li>
-        <li><span class="parameter">HISTORY_EDITION</span>
-         Die History Edition
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-</dl>
-    <h2 class="section-header "><a name="Fields"></a>Fields</h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "QSB.ScriptEvents"></a>
-    <strong>QSB.ScriptEvents</strong>
-    </dt>
-    <dd>
-    Events, um auf Ereignisse zu reagieren.
-<p> <h5>Was sind Script Events</h5>
-<p> Um dem Mapper das (z.T. fehlerbehaftete) Überschreiben von Game Callbacks
- oder anlegen von (echten) Triggern zu ersparen, wurden die Script Events
- eingeführt. Sie vereinheitlichen alle diese Operationen. Ein Event kann
- von einem Modul oder in den Skripten des Anwenders über einen Event Listener
- oder ein spezielles Game Callback gefangen werden.
-<p> Ein Event zu fangen bedeutet auf ein eingetretenes Ereignis - z.B. Wenn ein
- Spielstand geladen wurde - zu reagieren. Events werden immer sowohl im
- globalen als auch lokalen Skript ausgelöst, wenn ein entsprechendes Ereignis
- aufgetreten ist, anstatt vieler Callbacks, die auf eine spezifische Umgebung
- beschränkt sind.
-<p> Module bringen manchmal Events mit. Jedes Modul, welches ein neues Event
- einführt, wird es in seiner API-Beschreibung aufgführen.
-<p> <u>Script Events, die von der QSB direkt bereitgestellt werden:</u>
-
-
-
-    <ul>
-        <li><span class="parameter">ChatOpened</span>
-               Das Chatfenster wird angezeigt (Parameter: PlayerID)
-        </li>
-        <li><span class="parameter">ChatClosed</span>
-               Die Chateingabe wird bestätigt (Parameter: Text, PlayerID)
-        </li>
-        <li><span class="parameter">LanguageSet</span>
-              Die Sprache wurde geändert (Parameter: OldLanguage, NewLanguage)
-        </li>
-        <li><span class="parameter">QuestFailure</span>
-             Ein Quest schlug fehl (Parameter: QuestID)
-        </li>
-        <li><span class="parameter">QuestInterrupt</span>
-           Ein Quest wurde unterbrochen (Parameter: QuestID)
-        </li>
-        <li><span class="parameter">QuestReset</span>
-               Ein Quest wurde zurückgesetzt (Parameter: QuestID)
-        </li>
-        <li><span class="parameter">QuestSuccess</span>
-             Ein Quest wurde erfolgreich abgeschlossen (Parameter: QuestID)
-        </li>
-        <li><span class="parameter">QuestTrigger</span>
-             Ein Quest wurde aktiviert (Parameter: QuestID)
-        </li>
-        <li><span class="parameter">LoadscreenClosed</span>
-         Der Ladebildschirm wurde beendet.
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-</dl>
     <h2 class="section-header "><a name="Event"></a>Event</h2>
 
     <dl class="function">
@@ -1550,6 +1402,64 @@
     <ul>
          <a href="../modules/qsb.html#API.AddScriptEventListener">API.AddScriptEventListener</a>
     </ul>
+
+
+</dd>
+    <dt>
+    <a name = "QSB.ScriptEvents"></a>
+    <strong>QSB.ScriptEvents</strong>
+    </dt>
+    <dd>
+    Events, um auf Ereignisse zu reagieren.
+<p> <h5>Was sind Script Events</h5>
+<p> Um dem Mapper das (z.T. fehlerbehaftete) Überschreiben von Game Callbacks
+ oder anlegen von (echten) Triggern zu ersparen, wurden die Script Events
+ eingeführt. Sie vereinheitlichen alle diese Operationen. Ein Event kann
+ von einem Modul oder in den Skripten des Anwenders über einen Event Listener
+ oder ein spezielles Game Callback gefangen werden.
+<p> Ein Event zu fangen bedeutet auf ein eingetretenes Ereignis - z.B. Wenn ein
+ Spielstand geladen wurde - zu reagieren. Events werden immer sowohl im
+ globalen als auch lokalen Skript ausgelöst, wenn ein entsprechendes Ereignis
+ aufgetreten ist, anstatt vieler Callbacks, die auf eine spezifische Umgebung
+ beschränkt sind.
+<p> Module bringen manchmal Events mit. Jedes Modul, welches ein neues Event
+ einführt, wird es in seiner API-Beschreibung aufgführen.
+<p> <u>Script Events, die von der QSB direkt bereitgestellt werden:</u>
+
+
+
+    <ul>
+        <li><span class="parameter">ChatOpened</span>
+               Das Chatfenster wird angezeigt (Parameter: PlayerID)
+        </li>
+        <li><span class="parameter">ChatClosed</span>
+               Die Chateingabe wird bestätigt (Parameter: Text, PlayerID)
+        </li>
+        <li><span class="parameter">LanguageSet</span>
+              Die Sprache wurde geändert (Parameter: OldLanguage, NewLanguage)
+        </li>
+        <li><span class="parameter">QuestFailure</span>
+             Ein Quest schlug fehl (Parameter: QuestID)
+        </li>
+        <li><span class="parameter">QuestInterrupt</span>
+           Ein Quest wurde unterbrochen (Parameter: QuestID)
+        </li>
+        <li><span class="parameter">QuestReset</span>
+               Ein Quest wurde zurückgesetzt (Parameter: QuestID)
+        </li>
+        <li><span class="parameter">QuestSuccess</span>
+             Ein Quest wurde erfolgreich abgeschlossen (Parameter: QuestID)
+        </li>
+        <li><span class="parameter">QuestTrigger</span>
+             Ein Quest wurde aktiviert (Parameter: QuestID)
+        </li>
+        <li><span class="parameter">LoadscreenClosed</span>
+         Der Ladebildschirm wurde beendet.
+        </li>
+    </ul>
+
+
+
 
 
 </dd>
@@ -4902,6 +4812,79 @@
 
 </dd>
 </dl>
+    <h2 class="section-header "><a name="Konstanten"></a>Konstanten</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "QSB.Environment"></a>
+    <strong>QSB.Environment</strong>
+    </dt>
+    <dd>
+    Konstanten der Script Environments
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">GLOBAL</span>
+         Die globale Skriptumgebung
+        </li>
+        <li><span class="parameter">LOCAL</span>
+          Die lokale Skriptumgebung
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "QSB.GameVariant"></a>
+    <strong>QSB.GameVariant</strong>
+    </dt>
+    <dd>
+    Konstanten der Spielvarianten
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">VANILLA</span>
+           Das unmodifizierte Spiel
+        </li>
+        <li><span class="parameter">COMMUNITY</span>
+         Der Community Patch
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "QSB.GameVersion"></a>
+    <strong>QSB.GameVersion</strong>
+    </dt>
+    <dd>
+    Konstanten der Spielversionen
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">ORIGINAL</span>
+                Das Originalspiel
+        </li>
+        <li><span class="parameter">HISTORY_EDITION</span>
+         Die History Edition
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
     <h2 class="section-header "><a name="System"></a>System</h2>
 
     <dl class="function">
@@ -7206,6 +7189,36 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
     </ul>
 
 </dd>
+    <dt>
+    <a name = "QSB.ScriptingValue"></a>
+    <strong>QSB.ScriptingValue</strong>
+    </dt>
+    <dd>
+    Liste der unterstützten Scripting Values.
+<p> <ul>
+ <li><b>QSB.ScriptingValue.Destination.X</b><br>
+ Gibt die Z-Koordinate des Bewegungsziels als Float zurück.</li>
+ <li><b>QSB.ScriptingValue.Destination.Y</b><br>
+ Gibt die Y-Koordinate des Bewegungsziels als Float zurück.</li>
+ <li><b>QSB.ScriptingValue.Health</b><br>
+ Setzt die Gesundheit eines Entity ohne Folgeaktionen zu triggern.</li>
+ <li><b>QSB.ScriptingValue.Player</b><br>
+ Setzt den Besitzer des Entity ohne Plausibelitätsprüfungen.</li>
+ <li><b>QSB.ScriptingValue.Size</b><br>
+ Setzt den Größenfaktor eines Entities als Float.</li>
+ <li><b>QSB.ScriptingValue.Visible</b><br>
+ Sichtbarkeit eines Entities abfragen (801280 == sichtbar)</li>
+ <li><b>QSB.ScriptingValue.NPC</b><br>
+ NPC-Flag eines Siedlers setzen (0 = inaktiv, 1 - 4 = aktiv)</li>
+ </ul>
+
+
+
+
+
+
+
+</dd>
 </dl>
 
 
@@ -7213,7 +7226,7 @@ API.AddNamePlaceholder(<span class="string">"Scriptname"</span>, {de = <span cla
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2022-12-24 21:28:49 </i>
+<i style="float:right;">Last updated 2022-12-25 13:28:03 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 
