@@ -12,7 +12,7 @@ API = {};
 SCP = {Core = {}};
 
 QSB = {};
-QSB.Version = "3.0.0 (BETA 2.0.0)";
+QSB.Version = "3.0.0 (BETA 2.0.1)";
 
 ---
 -- Stellt wichtige Kernfunktionen bereit.
@@ -1617,8 +1617,8 @@ function Swift.Event:EncodeScriptCommandParameters(...)
     for i= 1, #arg do
         local Parameter = arg[i];
         if type(Parameter) == "string" then
-            Parameter = string.replaceAll(Parameter, '#', "<<<HT>>>");
-            Parameter = string.replaceAll(Parameter, '"', "<<<QT>>>");
+            Parameter = string.gsub(Parameter, '#', "<<<HT>>>");
+            Parameter = string.gsub(Parameter, '"', "<<<QT>>>");
             if Parameter:len() == 0 then
                 Parameter = "<<<ES>>>";
             end
