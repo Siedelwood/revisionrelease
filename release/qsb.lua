@@ -11943,8 +11943,8 @@ end
 B_Reward_Units = {
     Name = "Reward_Units",
     Description = {
-        en = "Reward: Units",
-        de = "Lohn: Einheiten",
+        en = "Reward: Creates units for the quest receiver.",
+        de = "Lohn: Erzeugt einige Einheiten für den Auftragnehmer.",
         fr = "Récompense: Unités",
     },
     Parameter = {
@@ -12247,8 +12247,8 @@ end
 B_Reward_PrestigePoints  = {
     Name = "Reward_PrestigePoints",
     Description = {
-        en = "Reward: Prestige",
-        de = "Lohn: Prestige",
+        en = "Reward: Gives the quest receiver prestige.",
+        de = "Lohn: Gibt dem Auftragnehmer Prestige.",
         fr = "Récompense: Prestige",
     },
     Parameter = {
