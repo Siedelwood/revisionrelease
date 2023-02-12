@@ -12,7 +12,7 @@ API = {};
 SCP = {Core = {}};
 
 QSB = {};
-QSB.Version = "3.0.0 (BETA 2.0.0)";
+QSB.Version = "3.0.0 (BETA 2.0.1)";
 
 ---
 -- Stellt wichtige Kernfunktionen bereit.
@@ -1617,8 +1617,8 @@ function Swift.Event:EncodeScriptCommandParameters(...)
     for i= 1, #arg do
         local Parameter = arg[i];
         if type(Parameter) == "string" then
-            Parameter = string.replaceAll(Parameter, '#', "<<<HT>>>");
-            Parameter = string.replaceAll(Parameter, '"', "<<<QT>>>");
+            Parameter = string.gsub(Parameter, '#', "<<<HT>>>");
+            Parameter = string.gsub(Parameter, '"', "<<<QT>>>");
             if Parameter:len() == 0 then
                 Parameter = "<<<ES>>>";
             end
@@ -11943,8 +11943,8 @@ end
 B_Reward_Units = {
     Name = "Reward_Units",
     Description = {
-        en = "Reward: Units",
-        de = "Lohn: Einheiten",
+        en = "Reward: Creates units for the quest receiver.",
+        de = "Lohn: Erzeugt einige Einheiten für den Auftragnehmer.",
         fr = "Récompense: Unités",
     },
     Parameter = {
@@ -12247,8 +12247,8 @@ end
 B_Reward_PrestigePoints  = {
     Name = "Reward_PrestigePoints",
     Description = {
-        en = "Reward: Prestige",
-        de = "Lohn: Prestige",
+        en = "Reward: Gives the quest receiver prestige.",
+        de = "Lohn: Gibt dem Auftragnehmer Prestige.",
         fr = "Récompense: Prestige",
     },
     Parameter = {
